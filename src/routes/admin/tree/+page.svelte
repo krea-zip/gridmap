@@ -11,17 +11,24 @@
 	// its row is picked to sit near its prerequisites. Because both are known
 	// numbers, edge endpoints are exact and the SVG needs no DOM reading.
 	// ─────────────────────────────────────────────
-	import {
-		MAJOR_SUBJECTS,
-		PROGRAMME_SUBJECTS,
-		byCode,
-		electiveSetFor,
-		hasCode,
-		pickSetFor,
-		requiredSetFor,
-		subjectById
-	} from '$lib/data';
+	import { useOffice } from '$lib/features/office/workspace.svelte';
+	import { programmeFor } from '$lib/features/office/requirements';
+	import { variantOf } from '$lib/curriculum/snapshot';
 	import type { ProgrammeRole } from '$lib/types';
+
+	// the draft, not the published catalogue, so a prerequisite edited in the
+	// office shows here before it's published. a cross-listed course answers
+	// to each of its codes, as it does in the planner
+	const office = useOffice();
+	const catalogue = $derived(
+		new Map((office.document?.curriculum.courses ?? []).flatMap((c) => c.codes.map((code) => [code, c] as const)))
+	);
+	const hasCode = (code: string) => catalogue.has(code);
+	const byCode = (code: string) => catalogue.get(code)!;
+	const subjects = $derived(office.document?.curriculum.subjects ?? []);
+	const subjectById = (id: string) => subjects.find((s) => s.id === id) ?? { id, label: id };
+	const MAJOR_SUBJECTS = $derived(subjects.filter((s) => s.majorable));
+	const PROGRAMME_SUBJECTS = $derived(subjects.filter((s) => s.id !== 'core' && s.id !== 'open'));
 
 	let subject = $state('mathematics');
 	let role = $state<ProgrammeRole>('major');
@@ -33,23 +40,27 @@
 
 	// keep the subject valid when the role narrows the list (arts is a minor only)
 	$effect(() => {
-		if (!subjectOpts.some((s) => s.id === subject)) subject = subjectOpts[0].id;
+		if (subjectOpts.length && !subjectOpts.some((s) => s.id === subject)) subject = subjectOpts[0].id;
 	});
 
 	// ── the programme's course set ──
 	// required + the 'choose N from' pools, which are required choices; the
 	// elective pool is opt-in because for a big department it is most of the
 	// catalogue and buries the spine of the degree
+	let programme = $derived(
+		office.document &&
+			programmeFor(office.document, new Date().getFullYear(), subject, variantOf(role, fourYear, false))
+	);
 	let core = $derived.by(() => {
 		const set = new Set<string>();
-		for (const c of requiredSetFor(subject, role, fourYear, false)) if (hasCode(c)) set.add(c);
-		for (const c of pickSetFor(subject, role, fourYear, false)) if (hasCode(c)) set.add(c);
+		for (const c of programme?.required ?? []) if (hasCode(c)) set.add(c);
+		for (const c of programme?.picks ?? []) if (hasCode(c)) set.add(c);
 		return set;
 	});
 	let electives = $derived.by(() => {
 		const set = new Set<string>();
 		if (!withElectives) return set;
-		for (const c of electiveSetFor(subject, role, fourYear, false)) if (hasCode(c) && !core.has(c)) set.add(c);
+		for (const c of programme?.electives ?? []) if (hasCode(c) && !core.has(c)) set.add(c);
 		return set;
 	});
 

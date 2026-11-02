@@ -3,7 +3,7 @@
 // every office route and load goes through here, so access is checked in
 // one place. row-level security in supabase is the real guard; these checks
 // give a clear error before the database refuses.
-import { error, type RequestEvent } from '@sveltejs/kit';
+import { error, fail, isHttpError, type RequestEvent } from '@sveltejs/kit';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
 	makeOfficeDocument,
@@ -121,4 +121,82 @@ async function publishedOffice(db: SupabaseClient): Promise<OfficeDocument> {
 		published ?? (snapshot as unknown as CurriculumSnapshot),
 		published?.descriptions ?? descriptions
 	);
+}
+
+/** move the saved draft along review: submitted, approved, or back to draft.
+ *  nothing with errors goes up for approval */
+export async function transitionDraft(db: SupabaseClient, revision: number, status: string, note: string) {
+	if (!['draft', 'submitted', 'approved'].includes(status)) error(400, 'Unknown review action.');
+	if (status !== 'draft') {
+		const { data, error: problem } = await db.from('office_workspace').select('document').maybeSingle();
+		databaseError(problem);
+		const issues = validateOffice(data?.document).filter((i) => i.severity === 'error');
+		if (issues.length)
+			error(400, `Resolve ${issues.length} errors before submitting or approving. ${issues[0].message}`);
+	}
+	const { error: problem } = await db.rpc('office_transition', {
+		p_revision: revision,
+		p_status: status,
+		p_note: note
+	});
+	databaseError(problem);
+}
+
+/** publish the approved revision as the new release; the database builds
+ *  the public snapshot, so office-only notes never leave it */
+export async function publishDraft(db: SupabaseClient, revision: number): Promise<string> {
+	const { data, error: problem } = await db.from('office_workspace').select('document,revision').single();
+	databaseError(problem);
+	if (!data || data.revision !== revision) error(409, 'The draft changed. Reload it before publishing.');
+	const issues = validateOffice(data.document).filter((i) => i.severity === 'error');
+	if (issues.length) error(400, `Resolve ${issues.length} errors before publishing.`);
+	const result = await db.rpc('office_publish', { p_revision: revision });
+	databaseError(result.error);
+	return result.data;
+}
+
+/** ask vercel to rebuild the site with the release. the build pulls the
+ *  current release from supabase (npm run curriculum:pull), so students see
+ *  it once the deploy finishes; the live site stays up meanwhile */
+export async function requestDeploy(db: SupabaseClient, release: string, hook: string | undefined) {
+	let status: 'requested' | 'failed' | 'not-configured' = 'not-configured';
+	let message = 'Published in Supabase. Add VERCEL_DEPLOY_HOOK in Vercel to update the website automatically.';
+	if (hook) {
+		try {
+			const url = new URL(hook);
+			// only ever post to vercel: the hook is a secret url, not a free fetch
+			if (url.protocol !== 'https:' || url.hostname !== 'api.vercel.com') throw Error('not a vercel hook');
+			const response = await fetch(url, { method: 'POST', signal: AbortSignal.timeout(15000) });
+			if (!response.ok) throw Error('deploy request failed');
+			status = 'requested';
+			message = 'Website update requested. The current website stays available while Vercel builds this release.';
+		} catch {
+			status = 'failed';
+			message = 'Published in Supabase, but the website update could not be requested. Retry the website update.';
+		}
+	}
+	const { error: problem } = await db.rpc('office_deployment', {
+		p_release: release,
+		p_status: status,
+		p_message: message
+	});
+	databaseError(problem);
+	return { status, message };
+}
+
+/** the catalogue students see now, as an office document to compare against */
+export async function publishedDocument(db: SupabaseClient): Promise<OfficeDocument> {
+	return publishedOffice(db);
+}
+
+/** run an office step inside a form action: a refusal (no access, a stale
+ *  revision, errors in the draft) comes back as the form's message instead
+ *  of an error page, so staff stay where they were */
+export async function attempt<T>(step: () => Promise<T>) {
+	try {
+		return await step();
+	} catch (e) {
+		if (isHttpError(e)) return fail(e.status, { message: e.body.message });
+		throw e;
+	}
 }

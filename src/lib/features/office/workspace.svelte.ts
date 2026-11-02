@@ -5,7 +5,14 @@
 // silently overwrite each other.
 import { createContext } from 'svelte';
 import { invalidate } from '$app/navigation';
-import { publication, changesBetween, type OfficeDocument, type OfficeRole, type WorkspacePayload } from './model';
+import {
+	DEFAULT_POLICIES,
+	publication,
+	changesBetween,
+	type OfficeDocument,
+	type OfficeRole,
+	type WorkspacePayload
+} from './model';
 import { validateOffice } from './validation';
 
 export class Workspace {
@@ -38,6 +45,8 @@ export class Workspace {
 
 	/** take the draft the server loaded; unsaved edits are replaced */
 	load(payload: WorkspacePayload, role: OfficeRole) {
+		// drafts saved before policies existed get the regulation defaults
+		payload.document.curriculum.policies ??= structuredClone(DEFAULT_POLICIES);
 		this.document = payload.document;
 		this.saved = structuredClone(payload.document);
 		this.baseline = structuredClone(payload.document);
@@ -69,37 +78,6 @@ export class Workspace {
 			this.status = data.status;
 			this.saved = draft;
 			this.message = `Saved · revision ${this.revision}`;
-		});
-	}
-
-	async transition(status: string, note: string) {
-		if (this.dirty) {
-			this.error = 'Save your changes before sending this draft for review.';
-			return;
-		}
-		await this.#run(async () => {
-			const data = await this.#post('workspace', { action: 'transition', status, revision: this.revision, note });
-			this.revision = data.revision;
-			this.status = data.status;
-			this.message = `Draft ${status} · revision ${this.revision}`;
-		});
-	}
-
-	async publish(retry = false) {
-		if (this.dirty && !retry) {
-			this.error = 'Save and approve the changed draft before publishing.';
-			return;
-		}
-		await this.#run(async () => {
-			const data = await this.#post('publish', { revision: this.revision, retry });
-			this.release = data.release;
-			this.deployment = data.message;
-			this.message = data.message;
-			if (!retry) {
-				this.status = 'published';
-				this.revision++;
-				this.baseline = this.document ? $state.snapshot(this.document) : null;
-			}
 		});
 	}
 

@@ -1,217 +1,138 @@
 <script lang="ts">
-	import {
-		COURSES,
-		PROGRAMME_SUBJECTS,
-		requiredSetFor,
-		electiveSetFor,
-		pickSetFor,
-		requiredCreditsFor,
-		creditsFor
-	} from '$lib/data';
-	import { batchKey, loadBatchEdits, saveBatchEdits, type BatchRule } from '$lib/batchEdits';
-	import type { ProgrammeRole } from '$lib/types';
-	let edits = $state(loadBatchEdits());
-	let year = $state(2026);
+	// one batch's exceptions to its degree requirements ("ENVS201 is required
+	// for the 2022 batch"). every batch inherits its requirement set; only the
+	// courses that changed for one batch, programme and track are listed here.
+	import { useOffice } from '$lib/features/office/workspace.svelte';
+	import { VARIANTS } from '$lib/features/office/model';
+	import { batchYears, programmeFor } from '$lib/features/office/requirements';
+	import type { BatchRuleRecord, Variant } from '$lib/curriculum/snapshot';
+
+	const office = useOffice();
+	const doc = $derived(office.document);
+
+	let batch = $state(new Date().getFullYear());
 	let subject = $state('computer science');
-	let role = $state<ProgrammeRole>('major');
-	let fourYear = $state(true);
-	let double = $state(false);
+	let variant = $state<Variant>('single_major_4yr');
 	let search = $state('');
-	let message = $state('');
-	let key = $derived(batchKey(year, subject, role, fourYear, double));
-	let rule = $derived(edits[key] ?? { courses: {} });
-	let required = $derived(
-		new Set([...requiredSetFor(subject, role, fourYear, double), ...pickSetFor(subject, role, fourYear, double)])
+
+	const programme = $derived(doc && programmeFor(doc, batch, subject, variant));
+	const required = $derived(new Set([...(programme?.required ?? []), ...(programme?.picks ?? [])]));
+	const electives = $derived(new Set(programme?.electives ?? []));
+	const rule = $derived(
+		doc?.curriculum.batchRules.find((r) => r.batch === batch && r.subject === subject && r.variant === variant)
 	);
-	let elective = $derived(new Set(electiveSetFor(subject, role, fourYear, double)));
-	let baseCredits = $derived(requiredCreditsFor(subject, role, fourYear, double));
-	let totalCredits = $derived(creditsFor(subject, role, fourYear, double));
-	let courses = $derived(
-		COURSES.filter(
+	const courses = $derived(
+		(doc?.curriculum.courses ?? []).filter(
 			(c) =>
+				!c.retired &&
 				c.subject !== 'core' &&
-				(c.subjects.includes(subject) || c.code in rule.courses || required.has(c.code)) &&
+				(c.subjects.includes(subject) || required.has(c.code) || !!rule?.courses[c.code]) &&
 				`${c.codes.join(' ')} ${c.title}`.toLowerCase().includes(search.toLowerCase())
 		)
 	);
-	function commit(next: BatchRule) {
-		if (next.requiredCredits !== undefined && next.requiredCredits > totalCredits) {
-			message = 'Required credits cannot exceed the programme total.';
-			return;
-		}
-		const updated = { ...edits, [key]: next };
-		if (!Object.keys(next.courses).length && next.requiredCredits === undefined) delete updated[key];
-		try {
-			saveBatchEdits(updated);
-			edits = updated;
-			message = 'Saved in this browser. Open the planner to apply.';
-		} catch {
-			message = 'Could not save. Browser storage may be full or unavailable.';
-		}
+	const inherited = (code: string) => (required.has(code) ? 'required' : electives.has(code) ? 'elective' : 'other');
+
+	/** the batch's rule record, created on its first override and dropped
+	 *  once it overrides nothing, so the draft carries no empty records */
+	function update(change: (r: BatchRuleRecord) => void) {
+		if (!doc) return;
+		const rules = doc.curriculum.batchRules;
+		let r = rules.find((x) => x.batch === batch && x.subject === subject && x.variant === variant);
+		if (!r) rules.push((r = { batch, subject, variant, courses: {} }));
+		change(r);
+		if (!Object.keys(r.courses).length && r.requiredCredits === undefined) rules.splice(rules.indexOf(r), 1);
 	}
+
 	function setCourse(code: string, value: string) {
-		const courses = { ...rule.courses };
-		if (value === 'required' || value === 'elective') courses[code] = value;
-		else delete courses[code];
-		commit({ ...rule, courses });
+		update((r) => {
+			if (value === 'required' || value === 'elective') r.courses[code] = value;
+			else delete r.courses[code];
+		});
 	}
 </script>
 
-<div class="doc wide">
-	<h1>Batch overrides</h1>
-	<p class="intro">
-		Every batch inherits the same curriculum. Override only the courses that changed for a specific batch, programme and
-		degree track. Other batches stay unchanged.
-	</p>
-	<div class="selectors">
+<h1>Batch requirements</h1>
+<p class="office-lead">
+	Every batch inherits its degree requirements. Override only the courses that changed for one batch, programme and
+	track; other batches stay as they are.
+</p>
+
+{#if doc}
+	<div class="office-row">
 		<label
-			>Batch starts<select bind:value={year}
-				>{#each [2022, 2023, 2024, 2025, 2026] as y}<option value={y}>{y}</option>{/each}</select
-			></label
-		>
+			>Batch starting
+			<select bind:value={batch}>
+				{#each batchYears(doc) as y (y)}<option value={y}>{y}</option>{/each}
+			</select>
+		</label>
 		<label
-			>Subject<select bind:value={subject}
-				>{#each PROGRAMME_SUBJECTS as s}<option value={s.id}>{s.label}</option>{/each}</select
-			></label
-		>
+			>Programme
+			<select bind:value={subject}>
+				{#each doc.curriculum.subjects.filter((s) => s.id !== 'core') as s (s.id)}<option value={s.id}>{s.label}</option
+					>{/each}
+			</select>
+		</label>
 		<label
-			>Role<select bind:value={role}
-				><option value="major">major</option><option value="minor">minor</option><option value="concentration"
-					>concentration</option
-				></select
-			></label
-		>
-		<label class="check"><input type="checkbox" bind:checked={fourYear} />4-year</label>
-		{#if role === 'major'}<label class="check"><input type="checkbox" bind:checked={double} />double major</label>{/if}
-	</div>
-	<div class="budget">
+			>Track
+			<select bind:value={variant}>
+				{#each VARIANTS as v (v.id)}<option value={v.id}>{v.label}</option>{/each}
+			</select>
+		</label>
 		<label
-			>Required credits <input
+			>Required credits
+			<input
 				type="number"
 				min="0"
-				max={totalCredits}
-				placeholder={String(baseCredits ?? 'shared default')}
-				value={rule.requiredCredits ?? ''}
+				max={programme?.credits.total}
+				placeholder={String(programme?.credits.required ?? 'inherited')}
+				value={rule?.requiredCredits ?? ''}
+				disabled={!office.canEdit}
 				onchange={(e) => {
-					const value = e.currentTarget.value;
-					if (value !== '' && (!Number.isInteger(Number(value)) || Number(value) < 0)) {
-						message = 'Enter a non-negative whole number.';
-						return;
-					}
-					commit({ ...rule, requiredCredits: value === '' ? undefined : Number(value) });
+					const v = e.currentTarget.value;
+					update((r) => (r.requiredCredits = v === '' ? undefined : Math.max(0, Math.round(Number(v)))));
 				}}
-			/></label
-		>
-		<span>Blank inherits the default. Programme total: {totalCredits} cr.</span>
-		<button onclick={() => commit({ courses: {} })} disabled={!edits[key]}>Reset this batch / track</button>
+			/>
+		</label>
 	</div>
-	<p class="status" role="status">
-		{message ||
-			`${Object.keys(rule.courses).length} course overrides for ${year}-${String(year + (fourYear ? 4 : 3)).slice(-2)}`}
-	</p>
-	<input class="search" type="search" aria-label="find a course" placeholder="Find a course" bind:value={search} />
-	<table>
-		<thead><tr><th>Course</th><th>Shared default</th><th>This batch</th></tr></thead>
-		<tbody
-			>{#each courses as c (c.code)}
-				<tr class:changed={!!rule.courses[c.code]}
-					><td><strong>{c.code}</strong> {c.title}</td><td
-						>{required.has(c.code)
-							? 'required'
-							: elective.has(c.code) || c.subjects.includes(subject)
-								? 'elective'
-								: 'other'}</td
-					>
-					<td
-						><select
-							aria-label={`Requirement for ${c.code}`}
-							value={rule.courses[c.code] ?? ''}
-							onchange={(e) => setCourse(c.code, e.currentTarget.value)}
-						>
-							<option value="">inherit default</option><option value="required">required</option><option
-								value="elective">elective</option
-							>
-						</select></td
-					></tr
-				>
-			{/each}</tbody
-		>
-	</table>
-	<p class="intro">
-		Batch overrides are included in the export on the Changes page. Switching batches does not move courses in an edited
-		student plan.
-	</p>
-</div>
+
+	{#if !programme}
+		<p class="office-note">This programme has no requirements for that batch and track yet.</p>
+	{:else}
+		<p class="office-help">
+			{Object.keys(rule?.courses ?? {}).length} overrides · programme total {programme.credits.total} credits · blank credits
+			inherit the default
+		</p>
+		<label>Find a course<input type="search" bind:value={search} /></label>
+		<div class="office-table-scroll">
+			<table>
+				<thead><tr><th>Course</th><th>Inherited</th><th>This batch</th></tr></thead>
+				<tbody>
+					{#each courses as c (c.code)}
+						<tr class:changed={!!rule?.courses[c.code]}>
+							<td><b>{c.code}</b> {c.title}</td>
+							<td>{inherited(c.code)}</td>
+							<td>
+								<select
+									aria-label="Requirement for {c.code}"
+									value={rule?.courses[c.code] ?? ''}
+									disabled={!office.canEdit}
+									onchange={(e) => setCourse(c.code, e.currentTarget.value)}
+								>
+									<option value="">inherit</option>
+									<option value="required">required</option>
+									<option value="elective">elective</option>
+								</select>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+	{/if}
+{/if}
 
 <style>
-	.intro {
-		max-width: 85rem;
-		line-height: 1.6;
-		margin: 1rem 0 2rem;
-		color: var(--color-text-muted);
-		font-size: 1.4rem;
-	}
-	.selectors,
-	.budget {
-		display: flex;
-		align-items: end;
-		gap: 1.6rem;
-		flex-wrap: wrap;
-		margin: 1.6rem 0;
-		font-size: 1.3rem;
-	}
-	label {
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-	}
-	.check {
-		flex-direction: row;
-		align-items: center;
-		padding-bottom: 0.8rem;
-	}
-	select,
-	input,
-	button {
-		padding: 0.7rem 1rem;
-		border: 1px solid var(--color-border-card);
-		border-radius: 4px;
-		background: var(--color-bg-light);
-		color: var(--color-text);
-		font: inherit;
-	}
-	button {
-		cursor: pointer;
-	}
-	button:disabled {
-		opacity: 0.5;
-	}
-	.status {
-		min-height: 2rem;
-		font-size: 1.3rem;
-	}
-	.search {
-		width: 32rem;
-		margin: 1rem 0;
-	}
-	table {
-		width: 100%;
-		border-collapse: collapse;
-		font-size: 1.3rem;
-	}
-	th,
-	td {
-		text-align: left;
-		padding: 1rem;
-		border-bottom: 1px solid var(--color-border-light);
-	}
-	th {
-		color: var(--color-text-muted);
-	}
-	strong {
-		margin-right: 1rem;
-	}
-	.changed {
-		background: var(--color-hover-medium);
+	.changed td {
+		background: color-mix(in srgb, var(--color-accent) 8%, transparent);
 	}
 </style>
