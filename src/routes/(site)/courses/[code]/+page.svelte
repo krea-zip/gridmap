@@ -31,10 +31,22 @@
 	</header>
 
 	<dl class="facts">
-		<div><dt>credits</dt><dd>{data.creditsPending ? 'to be confirmed' : data.credits}</dd></div>
-		<div><dt>runs in</dt><dd>{trimesters(data.offered)}</dd></div>
-		<div><dt>open to</dt><dd>{years(data.eligibleYears)}</dd></div>
-		{#if data.terms.length}<div><dt>last offered</dt><dd>{data.terms[0]}</dd></div>{/if}
+		<div>
+			<dt>credits</dt>
+			<dd>{data.creditsPending ? 'to be confirmed' : data.credits}</dd>
+		</div>
+		<div>
+			<dt>runs in</dt>
+			<dd>{trimesters(data.offered)}</dd>
+		</div>
+		<div>
+			<dt>open to</dt>
+			<dd>{years(data.eligibleYears)}</dd>
+		</div>
+		{#if data.terms.length}<div>
+				<dt>last offered</dt>
+				<dd>{data.terms[0]}</dd>
+			</div>{/if}
 	</dl>
 
 	{#if data.description}
@@ -82,7 +94,9 @@
 			<h2>Recently taught by</h2>
 			<ul class="people">
 				{#each data.lecturers as l (l.id)}
-					<li><a href="/lecturers/{l.id}">{l.name}</a>{#if l.title}<span>{l.title}</span>{/if}</li>
+					<li>
+						<a href="/lecturers/{l.id}">{l.name}</a>{#if l.title}<span>{l.title}</span>{/if}
+					</li>
 				{/each}
 			</ul>
 			{#if data.terms.length > 1}<p class="note">Offered in {data.terms.join(', ')}.</p>{/if}

@@ -38,8 +38,7 @@ class Settings {
 			const raw = localStorage.getItem(STORAGE_KEY);
 			if (raw) {
 				const saved = JSON.parse(raw) as { theme?: unknown; textSize?: unknown };
-				if (saved.theme === 'light' || saved.theme === 'dark' || saved.theme === 'system')
-					this.theme = saved.theme;
+				if (saved.theme === 'light' || saved.theme === 'dark' || saved.theme === 'system') this.theme = saved.theme;
 				if (TEXT_SIZES.some((s) => s.id === saved.textSize)) this.textSize = saved.textSize as TextSize;
 			}
 		} catch {

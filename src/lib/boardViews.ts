@@ -6,7 +6,17 @@
 // kept out of the plan store so it stays about the plan.
 // ─────────────────────────────────────────────
 
-import { RECORDED_TERMS, TRIM_STANDARD_MAX, byCode, facultyOf, hasCode, isCore, ranIn, satisfiedBy, termLabel } from './data';
+import {
+	RECORDED_TERMS,
+	TRIM_STANDARD_MAX,
+	byCode,
+	facultyOf,
+	hasCode,
+	isCore,
+	ranIn,
+	satisfiedBy,
+	termLabel
+} from './data';
 import { MAX_YEARS, type BreakKind, type Plan } from './plan.svelte';
 import { slotAt, slotOrder, type Here } from './calendar';
 import type { TrimNum } from './types';
@@ -20,13 +30,14 @@ export function runRecord(code: string, trim: TrimNum) {
 	const recorded = RECORDED_TERMS[trim];
 	const history = ranIn(code);
 	const ran = history.filter((t) => recorded.includes(t));
-	const kind: RunKind = !recorded.length || !history.length
-		? 'unknown' // a course added since the timetables, or a trimester with none
-		: ran.length === recorded.length
-			? 'always'
-			: ran.length
-				? 'sometimes'
-				: 'never';
+	const kind: RunKind =
+		!recorded.length || !history.length
+			? 'unknown' // a course added since the timetables, or a trimester with none
+			: ran.length === recorded.length
+				? 'always'
+				: ran.length
+					? 'sometimes'
+					: 'never';
 	return { kind, ran, recorded };
 }
 
@@ -175,7 +186,15 @@ export function milestones(plan: Plan): Milestone[] {
 		running += inYear;
 		const exit = EXIT_AWARDS.find((e) => e.year === year);
 		const short = exit ? Math.max(0, exit.credits - running) : 0;
-		return { year, credits: running, inYear, off: off.map(({ trim, kind }) => ({ trim, kind })), exit, met: !!exit && short === 0, short };
+		return {
+			year,
+			credits: running,
+			inYear,
+			off: off.map(({ trim, kind }) => ({ trim, kind })),
+			exit,
+			met: !!exit && short === 0,
+			short
+		};
 	});
 }
 
@@ -256,7 +275,8 @@ export function whatIfVerdict(plan: Plan): Verdict | null {
 	const need = new Map<string, Needed>();
 	for (const set of plan.whatIfSets)
 		for (const code of set.required)
-			if (hasCode(code) && !onPlan(code)) need.set(byCode(code).code, { code: byCode(code).code, why: 'required', at: null });
+			if (hasCode(code) && !onPlan(code))
+				need.set(byCode(code).code, { code: byCode(code).code, why: 'required', at: null });
 	const neededAs = (pre: string) => [byCode(pre).code, ...satisfiedBy(pre)].find((x) => need.has(x));
 	const queue = [...need.keys()];
 	while (queue.length) {
@@ -352,7 +372,10 @@ export function whatIfVerdict(plan: Plan): Verdict | null {
 	let ifDropped: Verdict['ifDropped'] = null;
 	if (!onTime && ahead.stops.length) {
 		const d = schedule(true);
-		ifDropped = { finish: d.finish !== null ? slotAt(d.finish) : null, onTime: d.all && d.finish !== null && d.finish <= degreeEnd };
+		ifDropped = {
+			finish: d.finish !== null ? slotAt(d.finish) : null,
+			onTime: d.all && d.finish !== null && d.finish <= degreeEnd
+		};
 	}
 	const needed = [...need.values()]
 		.map((n) => {

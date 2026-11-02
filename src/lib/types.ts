@@ -41,12 +41,7 @@ export type Subject = {
 export type ProgrammeRole = 'major' | 'minor' | 'concentration';
 
 /** How the degree is structured, picked in the sidebar */
-export type StructureKind =
-	| 'single-major'
-	| 'double-major'
-	| 'major-minor'
-	| 'major-conc'
-	| 'major-minor-conc';
+export type StructureKind = 'single-major' | 'double-major' | 'major-minor' | 'major-conc' | 'major-minor-conc';
 
 export type Programme = {
 	role: ProgrammeRole;

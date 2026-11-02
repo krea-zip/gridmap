@@ -33,9 +33,7 @@ export function selectCatalogue({
 	reveal,
 	courseType
 }: CatalogueOptions): Course[] {
-	const checked = subject
-		? [subject]
-		: filters.filter((id) => id === 'core' || selectedSubjects.includes(id));
+	const checked = subject ? [subject] : filters.filter((id) => id === 'core' || selectedSubjects.includes(id));
 	const query = search.trim().toLowerCase();
 	const list = COURSES.filter((course) => {
 		if (trim && !course.offered.includes(trim)) return false;

@@ -10,11 +10,7 @@
 	import FeedbackForm from './FeedbackForm.svelte';
 	import PixelIcon from './PixelIcon.svelte';
 
-	let {
-		onclose,
-		ontour,
-		onimport
-	}: { onclose: () => void; ontour: () => void; onimport: () => void } = $props();
+	let { onclose, ontour, onimport }: { onclose: () => void; ontour: () => void; onimport: () => void } = $props();
 	const plan = usePlan();
 
 	const THEMES: { id: ThemeChoice; label: string }[] = [
@@ -30,10 +26,7 @@
 	let saveName = $state('');
 	// a name you'd actually recognise in a list: the degree it is
 	let suggestedName = $derived(
-		[
-			plan.programmes.map((pr) => subjectById(pr.subject).short).join(' + '),
-			plan.fourYear ? '4yr' : '3yr'
-		].join(' · ')
+		[plan.programmes.map((pr) => subjectById(pr.subject).short).join(' + '), plan.fourYear ? '4yr' : '3yr'].join(' · ')
 	);
 
 	function saveNow() {
@@ -193,16 +186,14 @@
 			<summary>read more</summary>
 			<ol>
 				<li>
-					<a href="/downloads/kcal-canvas-extension.zip" download>download the extension</a> and
-					unzip it.
+					<a href="/downloads/kcal-canvas-extension.zip" download>download the extension</a> and unzip it.
 				</li>
 				<li>
-					chrome / edge: extensions → developer mode → load unpacked → pick the folder. firefox:
-					about:debugging → this firefox → load temporary add-on → manifest.json.
+					chrome / edge: extensions → developer mode → load unpacked → pick the folder. firefox: about:debugging → this
+					firefox → load temporary add-on → manifest.json.
 				</li>
 				<li>
-					on Krea Exam, open My Mark List. click the extension, then “Read this page locally” and
-					“review in kcal”.
+					on Krea Exam, open My Mark List. click the extension, then “Read this page locally” and “review in kcal”.
 				</li>
 				<li>review your terms, grades and catalogue matches before saving. Canvas All Courses is also supported.</li>
 			</ol>
@@ -212,8 +203,8 @@
 	<section>
 		<h3>saved plans</h3>
 		<p class="note">
-			your board autosaves on its own. this keeps a named copy you can come back to, all in this
-			browser, nothing leaves it.
+			your board autosaves on its own. this keeps a named copy you can come back to, all in this browser, nothing leaves
+			it.
 		</p>
 
 		<div class="save-new">
@@ -242,11 +233,7 @@
 						<button class="s-act" class:confirming={confirmLoad === p.id} onclick={() => load(p.id)}>
 							{confirmLoad === p.id ? 'replace board?' : 'load'}
 						</button>
-						<button
-							class="s-act danger"
-							class:confirming={confirmDelete === p.id}
-							onclick={() => del(p.id)}
-						>
+						<button class="s-act danger" class:confirming={confirmDelete === p.id} onclick={() => del(p.id)}>
 							{confirmDelete === p.id ? 'delete?' : '×'}
 						</button>
 					</li>
@@ -260,8 +247,8 @@
 	<section>
 		<h3>your plan</h3>
 		<p class="note">
-			saved in this browser only. share a link, whoever opens it gets their own copy, without your grades, or
-			copy it as text.
+			saved in this browser only. share a link, whoever opens it gets their own copy, without your grades, or copy it as
+			text.
 		</p>
 		<div class="actions">
 			<button onclick={copyShareLink}>{linkCopied ? 'link copied ✓' : 'copy share link'}</button>

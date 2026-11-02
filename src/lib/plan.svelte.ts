@@ -102,7 +102,6 @@ export const BOARD_VIEWS = [
 export type BoardView = (typeof BOARD_VIEWS)[number]['id'];
 const isBoardView = (v: unknown): v is BoardView => BOARD_VIEWS.some((b) => b.id === v);
 
-
 /** A trimester not spent taking courses here. A term away (an exchange)
  *  brings credits back; they count toward the degree's total, not toward a
  *  programme, and carry no grade. */
@@ -261,13 +260,19 @@ export class Plan {
 		// a saved plan (below) replaces it
 		this.seedRecommended();
 		if (!browser) return;
-		try { restoreBoard(localStorage, (value) => this.applySave(value)); }
-		catch { /* Browser storage can be blocked; the current session still works. */ }
+		try {
+			restoreBoard(localStorage, (value) => this.applySave(value));
+		} catch {
+			/* Browser storage can be blocked; the current session still works. */
+		}
 
 		$effect(() => {
 			const json = JSON.stringify(this.snapshot());
-			try { this.storageError = saveBoard(localStorage, json) ? '' : 'Your browser could not save the latest changes.'; }
-			catch { this.storageError = 'Browser storage is unavailable. Save a cloud copy before closing.'; }
+			try {
+				this.storageError = saveBoard(localStorage, json) ? '' : 'Your browser could not save the latest changes.';
+			} catch {
+				this.storageError = 'Browser storage is unavailable. Save a cloud copy before closing.';
+			}
 			this.#recordHistory();
 		});
 	}
@@ -287,9 +292,36 @@ export class Plan {
 	canRedo = $state(false);
 
 	#planningState(): string {
-		const { placements, picks, structure, fourYear, yearCount, batchStartYear, grades, audited, waived, targetLoad, touched, breaks, now } =
-			this.snapshot();
-		return JSON.stringify({ placements, picks, structure, fourYear, yearCount, batchStartYear, grades, audited, waived, targetLoad, touched, breaks, now });
+		const {
+			placements,
+			picks,
+			structure,
+			fourYear,
+			yearCount,
+			batchStartYear,
+			grades,
+			audited,
+			waived,
+			targetLoad,
+			touched,
+			breaks,
+			now
+		} = this.snapshot();
+		return JSON.stringify({
+			placements,
+			picks,
+			structure,
+			fourYear,
+			yearCount,
+			batchStartYear,
+			grades,
+			audited,
+			waived,
+			targetLoad,
+			touched,
+			breaks,
+			now
+		});
 	}
 
 	/** after every change (the autosave effect): a new state pushes the last one */
@@ -419,7 +451,8 @@ export class Plan {
 		this.batchStartYear =
 			typeof parsed.batchStartYear === 'number' &&
 			Number.isInteger(parsed.batchStartYear) &&
-			parsed.batchStartYear >= 2022 && parsed.batchStartYear <= 2026
+			parsed.batchStartYear >= 2022 &&
+			parsed.batchStartYear <= 2026
 				? parsed.batchStartYear
 				: 2026;
 		if (
@@ -457,7 +490,13 @@ export class Plan {
 			this.breaks = out;
 		}
 		const rawNow = parsed.now as { year?: unknown; trim?: unknown } | null | undefined;
-		if (rawNow && typeof rawNow.year === 'number' && rawNow.year >= 1 && rawNow.year <= MAX_YEARS && (rawNow.trim === 1 || rawNow.trim === 2 || rawNow.trim === 3))
+		if (
+			rawNow &&
+			typeof rawNow.year === 'number' &&
+			rawNow.year >= 1 &&
+			rawNow.year <= MAX_YEARS &&
+			(rawNow.trim === 1 || rawNow.trim === 2 || rawNow.trim === 3)
+		)
 			this.now = { year: rawNow.year, trim: rawNow.trim };
 		const placements = this.#cleanPlacements(parsed.placements);
 		if (placements) this.placements = placements;
@@ -473,8 +512,7 @@ export class Plan {
 			this.audited = parsed.audited.filter((c: unknown): c is string => typeof c === 'string' && hasCode(c));
 		if (parsed.grades && typeof parsed.grades === 'object' && !Array.isArray(parsed.grades)) {
 			const g: Record<string, GradeMark> = {};
-			for (const [code, mark] of Object.entries(parsed.grades))
-				if (hasCode(code) && isGradeMark(mark)) g[code] = mark;
+			for (const [code, mark] of Object.entries(parsed.grades)) if (hasCode(code) && isGradeMark(mark)) g[code] = mark;
 			this.grades = g;
 		}
 		if (parsed.creditTargetMode === 'minimum' || parsed.creditTargetMode === 'maximum')
@@ -556,8 +594,10 @@ export class Plan {
 	// actually requires (from programme.json), not a flat university-wide number,
 	// plus the foundation core every student completes on top
 	degreeTotal = $derived(
-		this.programmes.reduce((sum, p) => sum + creditsFor(p.subject, p.role, this.fourYear, this.isDouble, this.batchStartYear), 0) +
-			CORE_CREDITS
+		this.programmes.reduce(
+			(sum, p) => sum + creditsFor(p.subject, p.role, this.fourYear, this.isDouble, this.batchStartYear),
+			0
+		) + CORE_CREDITS
 	);
 
 	creditCeiling = $derived(this.fourYear ? MAX_TOTAL_4YR : MAX_TOTAL_3YR);
@@ -681,7 +721,8 @@ export class Plan {
 				const code = queue.pop()!;
 				for (const pre of byCode(code).prereqs) {
 					if (!reachableIn(pre, fourYear) || requiredAll.has(pre)) continue;
-					if (batchRuleFor(p.subject, p.role, fourYear, double, batch)?.courses[byCode(pre).code] === 'elective') continue;
+					if (batchRuleFor(p.subject, p.role, fourYear, double, batch)?.courses[byCode(pre).code] === 'elective')
+						continue;
 					if (satisfiedBy(pre).some((s) => requiredAll.has(s))) continue;
 					if (cap !== undefined && sum + byCode(pre).credits > cap) continue;
 					requiredAll.add(pre);
@@ -735,7 +776,12 @@ export class Plan {
 	whatIfProgrammes = $derived(this.whatIf ? programmesFor(this.whatIf.structure, this.whatIf.picks) : []);
 	whatIfSets = $derived(
 		this.whatIf
-			? this.#setsFor(this.whatIfProgrammes, this.whatIf.structure === 'double-major', this.whatIf.fourYear, this.whatIf.batch)
+			? this.#setsFor(
+					this.whatIfProgrammes,
+					this.whatIf.structure === 'double-major',
+					this.whatIf.fourYear,
+					this.whatIf.batch
+				)
 			: []
 	);
 	/** what the degree tried would ask for in all, as degreeTotal is for yours */
@@ -743,7 +789,14 @@ export class Plan {
 		this.whatIf
 			? this.whatIfProgrammes.reduce(
 					(sum, p) =>
-						sum + creditsFor(p.subject, p.role, this.whatIf!.fourYear, this.whatIf!.structure === 'double-major', this.whatIf!.batch),
+						sum +
+						creditsFor(
+							p.subject,
+							p.role,
+							this.whatIf!.fourYear,
+							this.whatIf!.structure === 'double-major',
+							this.whatIf!.batch
+						),
 					0
 				) + CORE_CREDITS
 			: 0
@@ -753,14 +806,23 @@ export class Plan {
 		const out = new Set<string>();
 		for (const s of this.whatIfSets)
 			for (const code of s.required)
-				if (hasCode(code) && !this.placedCodes.has(byCode(code).code) && !satisfiedBy(code).some((x) => this.placedCodes.has(x)))
+				if (
+					hasCode(code) &&
+					!this.placedCodes.has(byCode(code).code) &&
+					!satisfiedBy(code).some((x) => this.placedCodes.has(x))
+				)
 					out.add(byCode(code).code);
 		return [...out];
 	});
 
 	/** start a what-if from the plan as it is */
 	startWhatIf() {
-		this.whatIf = { structure: this.structure, picks: { ...this.picks }, fourYear: this.fourYear, batch: this.batchStartYear };
+		this.whatIf = {
+			structure: this.structure,
+			picks: { ...this.picks },
+			fourYear: this.fourYear,
+			batch: this.batchStartYear
+		};
 	}
 
 	whatIfType(code: string): CourseType {
@@ -771,7 +833,10 @@ export class Plan {
 	whatIfHue(code: string): number | undefined {
 		const c = byCode(code);
 		for (const s of this.whatIfSets)
-			if (c.codes.some((x) => s.required.has(x) || s.pick.has(x) || s.elective.has(x)) || c.subjects.includes(s.subject))
+			if (
+				c.codes.some((x) => s.required.has(x) || s.pick.has(x) || s.elective.has(x)) ||
+				c.subjects.includes(s.subject)
+			)
 				return s.subject === 'open' ? undefined : subjectById(s.subject).hue;
 		return undefined;
 	}
@@ -870,7 +935,10 @@ export class Plan {
 		const key = slotKey(year, trim);
 		const b = this.breaks[key];
 		if (b?.kind !== 'away') return;
-		this.breaks = { ...this.breaks, [key]: { kind: 'away', credits: Math.max(0, Math.min(40, Math.round(credits) || 0)) } };
+		this.breaks = {
+			...this.breaks,
+			[key]: { kind: 'away', credits: Math.max(0, Math.min(40, Math.round(credits) || 0)) }
+		};
 	}
 
 	/** back to a normal trimester; courses moved for the break stay where they are */
@@ -979,9 +1047,7 @@ export class Plan {
 	toggleAudit(code: string) {
 		// marking an audit is a decision about YOUR plan, not the preview
 		this.#touch();
-		this.audited = this.audited.includes(code)
-			? this.audited.filter((c) => c !== code)
-			: [...this.audited, code];
+		this.audited = this.audited.includes(code) ? this.audited.filter((c) => c !== code) : [...this.audited, code];
 	}
 
 	gradeOf(code: string): GradeMark | undefined {
@@ -1096,25 +1162,39 @@ export class Plan {
 	heavyTrimesters = $derived(
 		this.years
 			.filter((y) => y !== 1)
-			.flatMap((year) => TRIMS.filter((t) => {
-				const c = this.slotCredits(year, t);
-				return c > TRIM_STANDARD_MAX && c <= TRIM_HARD_MAX;
-			}).length)
+			.flatMap(
+				(year) =>
+					TRIMS.filter((t) => {
+						const c = this.slotCredits(year, t);
+						return c > TRIM_STANDARD_MAX && c <= TRIM_HARD_MAX;
+					}).length
+			)
 			.reduce((a, b) => a + b, 0)
 	);
 
 	/** How a trimester's load stands. 'over' is what the corner shows red:
 	 *  past the hard cap, or heavy once more trimesters are heavy than the
 	 *  allowance covers. */
-	slotLoad(year: number, trim: TrimNum): { credits: number; status: 'exempt' | 'under' | 'ok' | 'heavy' | 'over'; note: string } {
+	slotLoad(
+		year: number,
+		trim: TrimNum
+	): { credits: number; status: 'exempt' | 'under' | 'ok' | 'heavy' | 'over'; note: string } {
 		const credits = this.slotCredits(year, trim);
 		if (this.breaks[slotKey(year, trim)]) return { credits, status: 'exempt', note: '' };
 		if (year === 1 || year > (this.fourYear ? 4 : 3)) return { credits, status: 'exempt', note: '' };
 		if (credits > TRIM_HARD_MAX) return { credits, status: 'over', note: `over the ${TRIM_HARD_MAX}-credit cap` };
 		if (credits > TRIM_STANDARD_MAX)
 			return this.heavyTrimesters > HEAVY_TRIMS_ALLOWED
-				? { credits, status: 'over', note: `over ${TRIM_STANDARD_MAX}, more than the ${HEAVY_TRIMS_ALLOWED} heavy trimesters allowed` }
-				: { credits, status: 'heavy', note: `heavy: over ${TRIM_STANDARD_MAX}, allowed ${HEAVY_TRIMS_ALLOWED} times in the degree` };
+				? {
+						credits,
+						status: 'over',
+						note: `over ${TRIM_STANDARD_MAX}, more than the ${HEAVY_TRIMS_ALLOWED} heavy trimesters allowed`
+					}
+				: {
+						credits,
+						status: 'heavy',
+						note: `heavy: over ${TRIM_STANDARD_MAX}, allowed ${HEAVY_TRIMS_ALLOWED} times in the degree`
+					};
 		if (credits < TRIM_MIN) return { credits, status: 'under', note: `under the ${TRIM_MIN}-credit minimum` };
 		return { credits, status: 'ok', note: '' };
 	}
@@ -1179,9 +1259,14 @@ export class Plan {
 		const added: { code: string; year: number; trim: TrimNum }[] = [];
 		for (const { codes, year, trim } of groups) {
 			if (!this.years.includes(year) || !TRIMS.includes(trim)) continue;
-			const accepted = codes.filter((code) => hasCode(code) &&
-				!(byCode(code).pendingCredits && byCode(code).credits === 0) &&
-				(!this.coreOnly(year, trim) || isCore(code))).map((code) => byCode(code).code);
+			const accepted = codes
+				.filter(
+					(code) =>
+						hasCode(code) &&
+						!(byCode(code).pendingCredits && byCode(code).credits === 0) &&
+						(!this.coreOnly(year, trim) || isCore(code))
+				)
+				.map((code) => byCode(code).code);
 			const result = mergeCanvasCourses(placements, accepted, slotKey(year, trim));
 			placements = result.placements;
 			for (const code of result.added) added.push({ code, year, trim });
@@ -1200,7 +1285,9 @@ export class Plan {
 		if (isAttemptId(code)) return; // a failed attempt is a record, not something to move
 		const off = this.breaks[slotKey(year, trim)];
 		if (off) {
-			this.#setFlash(`${trimesterName(year, trim)} is marked as ${BREAK_KINDS[off.kind].label === 'away' ? 'a term away' : `a ${BREAK_KINDS[off.kind].label}`}, open it to take that off first`);
+			this.#setFlash(
+				`${trimesterName(year, trim)} is marked as ${BREAK_KINDS[off.kind].label === 'away' ? 'a term away' : `a ${BREAK_KINDS[off.kind].label}`}, open it to take that off first`
+			);
 			return;
 		}
 		if (byCode(code).pendingCredits && byCode(code).credits === 0) {
@@ -1216,10 +1303,7 @@ export class Plan {
 		// a 5th foundation course IS taken (so t1⇄t2 shuffles and retake
 		// planning stay fluid even when both slots are full), the hints
 		// flag the over-max slot until it's resolved
-		if (
-			this.coreOnly(year, trim) &&
-			this.slotCourses(year, trim).filter((c) => c !== code).length >= Y1_CORE_MAX
-		) {
+		if (this.coreOnly(year, trim) && this.slotCourses(year, trim).filter((c) => c !== code).length >= Y1_CORE_MAX) {
 			this.#setFlash(`${trimesterName(1, trim)} is over the ${Y1_CORE_MAX}-course max now, move one out`);
 		}
 		// a slot the course isn't offered in (or open to) still takes the
@@ -1382,9 +1466,7 @@ export class Plan {
 	 */
 	seedRecommended() {
 		quietRedraw(); // every chip is about to change at once, fade, don't fly
-		this.placements = Object.fromEntries(
-			Object.entries(this.recommended).map(([key, codes]) => [key, [...codes]])
-		);
+		this.placements = Object.fromEntries(Object.entries(this.recommended).map(([key, codes]) => [key, [...codes]]));
 	}
 
 	/**
@@ -1478,7 +1560,9 @@ export class Plan {
 		// these, so the elective credits the table allows stay OPEN for the
 		// student to fill (maths: 52 required placed, 8 left, not pre-filled)
 		const requiredUnion = new Set(
-			this.programmes.flatMap((prog) => requiredSetFor(prog.subject, prog.role, this.fourYear, this.isDouble, this.batchStartYear))
+			this.programmes.flatMap((prog) =>
+				requiredSetFor(prog.subject, prog.role, this.fourYear, this.isDouble, this.batchStartYear)
+			)
 		);
 		// two programmes can ask for the same material under different codes.
 		// A maths + computer-science student is required to do maths' Linear
@@ -1494,7 +1578,13 @@ export class Plan {
 		// only for the courses that are actually required, so a pathway's
 		// recommended electives (maths Topology 1) aren't force-placed
 		for (const prog of this.programmes) {
-			for (const { year, trim, code } of recommendedFor(prog.subject, prog.role, this.fourYear, this.isDouble, this.batchStartYear)) {
+			for (const { year, trim, code } of recommendedFor(
+				prog.subject,
+				prog.role,
+				this.fourYear,
+				this.isDouble,
+				this.batchStartYear
+			)) {
 				if (pos.has(code) || !requiredUnion.has(code)) continue;
 				// the published grid itself is not always feasible (it lists
 				// MATH427 alongside its prerequisite MATH303), never place a
@@ -1558,9 +1648,7 @@ export class Plan {
 				const course = byCode(code);
 				// wait until every prereq we're also scheduling (or one of its
 				// substitutes) has been placed
-				const preReady = course.prereqs.every(
-					(p) => !(remaining.has(p) || subs(p).some((s) => remaining.has(s)))
-				);
+				const preReady = course.prereqs.every((p) => !(remaining.has(p) || subs(p).some((s) => remaining.has(s))));
 				if (!preReady) continue;
 				const after = Math.max(
 					0,
@@ -1632,9 +1720,7 @@ export class Plan {
 	});
 
 	/** how many elective placeholders the path carries */
-	recommendedElectiveCount = $derived(
-		Object.values(this.recommendedElectives).reduce((sum, n) => sum + n, 0)
-	);
+	recommendedElectiveCount = $derived(Object.values(this.recommendedElectives).reduce((sum, n) => sum + n, 0));
 
 	/** The elective credits the degree actually leaves open, quoted rather
 	 *  than the box count, because a remainder that isn't a whole number of
@@ -1665,8 +1751,7 @@ export class Plan {
 		for (const [key, codes] of Object.entries(this.recommended)) {
 			if (this.breaks[key]) continue; // nothing is suggested into a break
 			const open = codes.filter(
-				(code) =>
-					!this.placedCodes.has(code) && !satisfiedBy(code).some((sub) => this.placedCodes.has(sub))
+				(code) => !this.placedCodes.has(code) && !satisfiedBy(code).some((sub) => this.placedCodes.has(sub))
 			);
 			if (open.length) out[key] = open;
 		}
@@ -1713,9 +1798,7 @@ export class Plan {
 		this.seedRecommended();
 		this.zoomPos = {};
 		this.audited = this.audited.filter((c) => this.placedCodes.has(c));
-		this.grades = Object.fromEntries(
-			Object.entries(this.grades).filter(([code]) => this.placedCodes.has(code))
-		);
+		this.grades = Object.fromEntries(Object.entries(this.grades).filter(([code]) => this.placedCodes.has(code)));
 		this.selected = null;
 		this.zoom = null;
 		this.touched = true; // they chose this plan, so it is theirs now
@@ -1735,9 +1818,7 @@ export class Plan {
 		if (this.programmes[i].subject === 'open') return [];
 		return [...this.programmeSets[i].required].filter(
 			(code) =>
-				hasCode(code) &&
-				!this.placedCodes.has(code) &&
-				!satisfiedBy(code).some((sub) => this.placedCodes.has(sub))
+				hasCode(code) && !this.placedCodes.has(code) && !satisfiedBy(code).some((sub) => this.placedCodes.has(sub))
 		);
 	}
 
@@ -1810,9 +1891,7 @@ export class Plan {
 	// elective lists (the green 'other' chips). The foundation core is never
 	// one of these, every student takes it, and neither is anything in your
 	// own department, which counts as a subject elective.
-	otherPlacedCodes = $derived(
-		[...this.placedCodes].filter((code) => this.courseType(code) === 'other')
-	);
+	otherPlacedCodes = $derived([...this.placedCodes].filter((code) => this.courseType(code) === 'other'));
 
 	/** drop every placed course that counts toward no chosen programme */
 	removeOtherCourses() {
@@ -1838,8 +1917,7 @@ export class Plan {
 		// the foundation-core view is exclusive: checking kccs clears the
 		// subject filters, checking any subject clears kccs, you browse
 		// either the core or your programmes' departments, never a mix
-		this.filters =
-			subjectId === 'core' ? ['core'] : [...this.filters.filter((f) => f !== 'core'), subjectId];
+		this.filters = subjectId === 'core' ? ['core'] : [...this.filters.filter((f) => f !== 'core'), subjectId];
 	}
 
 	#setFlash(msg: string) {
@@ -2045,9 +2123,7 @@ export class Plan {
 			return byCode(applied).subjects.some((s) => this.selectedSubjects.includes(s));
 		});
 		if (covers.length) {
-			const pairs = covers.map(
-				({ maths, applied }) => `${code(maths)} covers ${code(applied)}`
-			);
+			const pairs = covers.map(({ maths, applied }) => `${code(maths)} covers ${code(applied)}`);
 			hints.push({
 				kind: 'info',
 				text: `you are doing maths alongside a department that teaches its own applied version, take the maths course and you do not need the applied one: ${pairs.join('; ')}. It does not work the other way round.`,
@@ -2319,7 +2395,9 @@ export class Plan {
 		// first that takes it, so a cross-listed elective doesn't vanish into
 		// a major that is already complete while the minor still needs it.
 		const claimedBy = new Map<string, number[]>();
-		const room = this.programmes.map((prog) => creditsFor(prog.subject, prog.role, this.fourYear, this.isDouble, this.batchStartYear));
+		const room = this.programmes.map((prog) =>
+			creditsFor(prog.subject, prog.role, this.fourYear, this.isDouble, this.batchStartYear)
+		);
 		const requires = (c: Course, i: number) => {
 			const sets = this.programmeSets[i];
 			return c.codes.some((x) => sets.requiredAll.has(x) || sets.pick.has(x));
@@ -2336,7 +2414,9 @@ export class Plan {
 		const takersOf = (c: Course) => this.programmes.filter((prog, i) => prog.subject !== 'open' && counts(c, i)).length;
 		const ordered = [
 			...courses.filter((c) => this.programmes.some((_, i) => requires(c, i))),
-			...courses.filter((c) => !this.programmes.some((_, i) => requires(c, i))).sort((a, b) => takersOf(a) - takersOf(b))
+			...courses
+				.filter((c) => !this.programmes.some((_, i) => requires(c, i)))
+				.sort((a, b) => takersOf(a) - takersOf(b))
 		];
 		for (const c of ordered) {
 			const takers = this.programmes.map((_, i) => i).filter((i) => counts(c, i));
@@ -2455,13 +2535,15 @@ export class Plan {
 
 	// ── catalogue (filtered + sorted) ──
 	catalogueSubject = $state('');
-	catalogue: Course[] = $derived(selectCatalogue({
-		search: this.search,
-		filters: this.filters,
-		selectedSubjects: this.selectedSubjects,
-		subject: this.catalogueSubject,
-		trim: this.zoom?.trim,
-		reveal: this.catalogueReveal?.code,
-		courseType: (code) => this.courseType(code)
-	}));
+	catalogue: Course[] = $derived(
+		selectCatalogue({
+			search: this.search,
+			filters: this.filters,
+			selectedSubjects: this.selectedSubjects,
+			subject: this.catalogueSubject,
+			trim: this.zoom?.trim,
+			reveal: this.catalogueReveal?.code,
+			courseType: (code) => this.courseType(code)
+		})
+	);
 }

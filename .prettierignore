@@ -1,0 +1,13 @@
+# dependencies and build output
+node_modules
+package-lock.json
+/.svelte-kit
+/build
+/.vercel
+/static
+
+# generated: rebuilt by scripts, or by `supabase gen types`
+/src/lib/data/**/*.json
+/src/lib/infrastructure/supabase/database.types.ts
+/misc
+/course-tree.html

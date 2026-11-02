@@ -22,7 +22,13 @@
 
 <header class="col-header">
 	<h2>kcal</h2>
-	<button class="gear" data-tour="settings" aria-label="settings" title="settings" onclick={() => (showSettings = true)}>
+	<button
+		class="gear"
+		data-tour="settings"
+		aria-label="settings"
+		title="settings"
+		onclick={() => (showSettings = true)}
+	>
 		<PixelIcon name="gear" size="1.6rem" snap />
 	</button>
 </header>

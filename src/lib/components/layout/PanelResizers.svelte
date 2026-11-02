@@ -19,10 +19,8 @@
 	];
 	const BOARD_MIN = 48; // rem
 
-	let {
-		widths = $bindable({}),
-		resizing = $bindable(null)
-	}: { widths?: PanelWidths; resizing?: Panel | null } = $props();
+	let { widths = $bindable({}), resizing = $bindable(null) }: { widths?: PanelWidths; resizing?: Panel | null } =
+		$props();
 
 	let from = { x: 0, width: 0, rootPx: 10 };
 

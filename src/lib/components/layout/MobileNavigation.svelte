@@ -43,8 +43,8 @@
 			align-items: center;
 			justify-content: space-between;
 			gap: 1rem;
-			padding: calc(1.4rem + env(safe-area-inset-top)) max(1.8rem, env(safe-area-inset-right))
-				1.4rem max(1.8rem, env(safe-area-inset-left));
+			padding: calc(1.4rem + env(safe-area-inset-top)) max(1.8rem, env(safe-area-inset-right)) 1.4rem
+				max(1.8rem, env(safe-area-inset-left));
 			background: var(--color-bg-sidebar);
 			border-bottom: 1px solid var(--color-border-warm);
 			a {
@@ -84,8 +84,8 @@
 			display: grid;
 			grid-template-columns: repeat(3, minmax(0, 1fr));
 			gap: 0.6rem;
-			padding: 0.8rem max(1.2rem, env(safe-area-inset-right))
-				calc(0.8rem + env(safe-area-inset-bottom)) max(1.2rem, env(safe-area-inset-left));
+			padding: 0.8rem max(1.2rem, env(safe-area-inset-right)) calc(0.8rem + env(safe-area-inset-bottom))
+				max(1.2rem, env(safe-area-inset-left));
 			background: var(--color-bg-sidebar);
 			border-top: 1px solid var(--color-border-warm);
 			button {

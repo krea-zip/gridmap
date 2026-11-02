@@ -49,7 +49,11 @@ export const academicYear = (batchStartYear: number, year: number): string => {
 /** The months each trimester is taken to run, the same assumption guessNow
  *  makes. Krea's published calendar isn't in kcal's data, so this (and the
  *  month test in guessNow) is the place to fix. */
-export const TERM_MONTHS: Record<TrimNum, [string, string]> = { 1: ['aug', 'oct'], 2: ['nov', 'jan'], 3: ['feb', 'apr'] };
+export const TERM_MONTHS: Record<TrimNum, [string, string]> = {
+	1: ['aug', 'oct'],
+	2: ['nov', 'jan'],
+	3: ['feb', 'apr']
+};
 
 /** a trimester's months, any year: "aug to oct" */
 export const termMonths = (trim: TrimNum): string => TERM_MONTHS[trim].join(' to ');

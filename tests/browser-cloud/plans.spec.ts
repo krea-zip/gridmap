@@ -2,25 +2,41 @@ import { test, expect } from '@playwright/test';
 
 const userId = '00000000-0000-4000-8000-000000000001';
 const initial = {
-	id: '00000000-0000-4000-8000-000000000010', user_id: userId, name: 'My cloud plan',
-	revision: 1, created_at: '2026-10-31T00:00:00Z', updated_at: '2026-10-31T00:00:00Z',
+	id: '00000000-0000-4000-8000-000000000010',
+	user_id: userId,
+	name: 'My cloud plan',
+	revision: 1,
+	created_at: '2026-10-31T00:00:00Z',
+	updated_at: '2026-10-31T00:00:00Z',
 	snapshot: { version: 1, placements: { '2-1': ['MATH201'] }, picks: {}, touched: true }
 };
 
 // The session lives in a cookie (@supabase/ssr), shared by the browser client
 // and server routes — encoded the way the library writes it.
 const session = {
-	access_token: 'test-token', refresh_token: 'test-refresh', token_type: 'bearer',
+	access_token: 'test-token',
+	refresh_token: 'test-refresh',
+	token_type: 'bearer',
 	expires_at: Math.floor(Date.now() / 1000) + 3600,
-	user: { id: userId, email: 'student@example.com', aud: 'authenticated', role: 'authenticated', app_metadata: {}, user_metadata: {}, created_at: '2026-10-31T00:00:00Z' }
+	user: {
+		id: userId,
+		email: 'student@example.com',
+		aud: 'authenticated',
+		role: 'authenticated',
+		app_metadata: {},
+		user_metadata: {},
+		created_at: '2026-10-31T00:00:00Z'
+	}
 };
 
 test.beforeEach(async ({ page, baseURL }) => {
-	await page.context().addCookies([{
-		name: 'sb-kcal-test-auth-token',
-		value: `base64-${Buffer.from(JSON.stringify(session)).toString('base64url')}`,
-		url: baseURL!
-	}]);
+	await page.context().addCookies([
+		{
+			name: 'sb-kcal-test-auth-token',
+			value: `base64-${Buffer.from(JSON.stringify(session)).toString('base64url')}`,
+			url: baseURL!
+		}
+	]);
 	await page.addInitScript(() => {
 		localStorage.setItem('kcal-intro-seen', '1');
 		localStorage.setItem('kcal-plan', JSON.stringify({ version: 1, placements: {}, picks: {}, touched: true }));
@@ -65,7 +81,9 @@ test('private cloud copies can be loaded, created, updated and deleted from phon
 	await panel.getByRole('button', { name: 'Load', exact: true }).click();
 	await panel.getByRole('button', { name: 'Confirm load' }).click();
 	await expect(panel.getByRole('status')).toContainText('Loaded onto your board');
-	await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('kcal-plan')!).placements)).toEqual({ '2-1': ['MATH201'] });
+	await expect
+		.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('kcal-plan')!).placements))
+		.toEqual({ '2-1': ['MATH201'] });
 	await panel.getByLabel('Plan name').fill('Another plan');
 	await panel.getByRole('button', { name: 'Save to account' }).click();
 	await expect(panel.getByText('Another plan', { exact: true })).toBeVisible();

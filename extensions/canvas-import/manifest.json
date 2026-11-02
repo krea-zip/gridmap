@@ -1,21 +1,17 @@
 {
-  "manifest_version": 3,
-  "name": "kcal \u00b7 Krea course & grade importer",
-  "version": "0.3.0",
-  "description": "Read your Krea Exam mark list or Canvas courses locally, then review what to add to kcal. No background uploads.",
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "storage"
-  ],
-  "action": {
-    "default_title": "Import Krea courses and grades into kcal",
-    "default_popup": "popup.html"
-  },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "canvas-import@kcal.local",
-      "strict_min_version": "109.0"
-    }
-  }
+	"manifest_version": 3,
+	"name": "kcal \u00b7 Krea course & grade importer",
+	"version": "0.3.0",
+	"description": "Read your Krea Exam mark list or Canvas courses locally, then review what to add to kcal. No background uploads.",
+	"permissions": ["activeTab", "scripting", "storage"],
+	"action": {
+		"default_title": "Import Krea courses and grades into kcal",
+		"default_popup": "popup.html"
+	},
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "canvas-import@kcal.local",
+			"strict_min_version": "109.0"
+		}
+	}
 }

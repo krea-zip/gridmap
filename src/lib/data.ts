@@ -250,7 +250,8 @@ export const satisfiedBy = (code: string): string[] => {
 
 const TRANSCRIPT_ONLY = new Set(snapshot.equivalences.transcriptOnly);
 /** on the transcript, toward no programme (matched on the canonical code) */
-export const isTranscriptOnly = (code: string): boolean => TRANSCRIPT_ONLY.has(index.get(baseCode(code))?.code ?? baseCode(code));
+export const isTranscriptOnly = (code: string): boolean =>
+	TRANSCRIPT_ONLY.has(index.get(baseCode(code))?.code ?? baseCode(code));
 
 // ── The KCCS foundation core: every student, years 1–2 (KCCS190 in year 3);
 //    year 1 t1/t2 hold only these, at most Y1_CORE_MAX per trimester ──
@@ -358,7 +359,9 @@ export function facultyCourses(prof: Professor): Course[] {
 const defaultSet = snapshot.requirementSets.find((s) => s.batches === null)!;
 const latestSet = snapshot.requirementSets.findLast((s) => s.batches !== null) ?? defaultSet;
 const programmes = new Map(
-	snapshot.requirementSets.flatMap((set) => set.programmes.map((p) => [programmeKey(set.id, p.subject, p.variant), p] as const))
+	snapshot.requirementSets.flatMap((set) =>
+		set.programmes.map((p) => [programmeKey(set.id, p.subject, p.variant), p] as const)
+	)
 );
 const programmeEdits: ProgrammeEdits = browser ? loadProgrammeEdits() : {};
 
@@ -420,18 +423,36 @@ const batchEdits: Record<string, BatchRule> = {
 	...(browser ? loadBatchEdits() : {})
 };
 
-export function batchRuleFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number) {
+export function batchRuleFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+) {
 	return batch === undefined ? undefined : batchEdits[batchKey(batch, subject, role, fourYear, isDouble)];
 }
 
-export function creditsFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number): number {
+export function creditsFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+): number {
 	if (subject === 'open') return role === 'minor' ? OPEN_MINOR_CREDITS : 0;
 	return programmeFor(subject, role, fourYear, isDouble, batch)?.credits.total ?? 0;
 }
 
 /** the required credits the programme states, the honest denominator when
  *  its required list is choice pools */
-export const requiredCreditsFor = (subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number) =>
+export const requiredCreditsFor = (
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+) =>
 	batchRuleFor(subject, role, fourYear, isDouble, batch)?.requiredCredits ??
 	programmeFor(subject, role, fourYear, isDouble, batch)?.credits.required ??
 	undefined;
@@ -439,8 +460,16 @@ export const requiredCreditsFor = (subject: string, role: ProgrammeRole, fourYea
 /** a batch rule's verdict on a course, by its canonical code */
 const batchVerdict = (edits: BatchRule['courses'], code: string) => edits[byCode(code).code];
 
-export function requiredSetFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number): string[] {
-	const base = (programmeFor(subject, role, fourYear, isDouble, batch)?.required ?? []).filter((code) => index.has(code));
+export function requiredSetFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+): string[] {
+	const base = (programmeFor(subject, role, fourYear, isDouble, batch)?.required ?? []).filter((code) =>
+		index.has(code)
+	);
 	const rule = batchRuleFor(subject, role, fourYear, isDouble, batch);
 	if (!rule) return base;
 	const result = new Set(base.map((code) => byCode(code).code));
@@ -453,8 +482,16 @@ export function requiredSetFor(subject: string, role: ProgrammeRole, fourYear: b
 	return [...result];
 }
 
-export function electiveSetFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number): string[] {
-	const result = new Set((programmeFor(subject, role, fourYear, isDouble, batch)?.electives ?? []).filter((code) => index.has(code)));
+export function electiveSetFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+): string[] {
+	const result = new Set(
+		(programmeFor(subject, role, fourYear, isDouble, batch)?.electives ?? []).filter((code) => index.has(code))
+	);
 	for (const [alias, type] of Object.entries(batchRuleFor(subject, role, fourYear, isDouble, batch)?.courses ?? {})) {
 		if (!hasCode(alias)) continue;
 		const code = byCode(alias).code;
@@ -465,7 +502,13 @@ export function electiveSetFor(subject: string, role: ProgrammeRole, fourYear: b
 }
 
 /** 'choose N from' pools, they count toward the required credits */
-export function pickSetFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number): string[] {
+export function pickSetFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+): string[] {
 	const edits = batchRuleFor(subject, role, fourYear, isDouble, batch)?.courses ?? {};
 	return (programmeFor(subject, role, fourYear, isDouble, batch)?.picks ?? []).filter(
 		(code) => index.has(code) && !batchVerdict(edits, code)
@@ -473,7 +516,13 @@ export function pickSetFor(subject: string, role: ProgrammeRole, fourYear: boole
 }
 
 /** the 'choose N from …' groups the student still has to decide */
-export function choiceGroupsFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number): ChoiceGroup[] {
+export function choiceGroupsFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+): ChoiceGroup[] {
 	const edits = batchRuleFor(subject, role, fourYear, isDouble, batch)?.courses ?? {};
 	const verdict = (code: string | null) => (code && hasCode(code) ? batchVerdict(edits, code) : undefined);
 	return (programmeFor(subject, role, fourYear, isDouble, batch)?.choices ?? [])

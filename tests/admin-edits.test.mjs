@@ -35,8 +35,14 @@ test('lecturer edits drop bad fields one by one, never the whole file', () => {
 
 test('a new lecturer id comes from the name and never collides', () => {
 	const taken = new Set(['ada-lovelace']);
-	assert.equal(lecturerIdFor('Ada Lovelace', (id) => taken.has(id)), 'ada-lovelace-2');
-	assert.equal(lecturerIdFor('  ', () => false), 'lecturer');
+	assert.equal(
+		lecturerIdFor('Ada Lovelace', (id) => taken.has(id)),
+		'ada-lovelace-2'
+	);
+	assert.equal(
+		lecturerIdFor('  ', () => false),
+		'lecturer'
+	);
 });
 
 test('department edits clamp the hue and need a label and tag to be added', () => {

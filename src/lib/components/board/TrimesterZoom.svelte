@@ -2,7 +2,7 @@
 	import { usePlan } from '$lib/planner/context';
 	import { BREAK_KINDS, type BreakKind } from '$lib/plan.svelte';
 	import { TRIM_HARD_MAX, TRIM_MIN, byCode, isAttemptId } from '$lib/data';
-		import { flip } from 'svelte/animate';
+	import { flip } from 'svelte/animate';
 	import { courseIn, courseOut, courseShift } from '$lib/transitions';
 	import { academicYear, degreeTrim } from '$lib/calendar';
 
@@ -55,14 +55,8 @@
 		if (!canvasEl || !plan.placedCodes.has(code)) return;
 		const r = canvasEl.getBoundingClientRect();
 		const span = spans(byCode(code).credits);
-		const col = Math.min(
-			COLS - span.col,
-			Math.max(0, Math.floor(((e.clientX - r.left) / r.width) * COLS))
-		);
-		const row = Math.min(
-			ROWS - span.row,
-			Math.max(0, Math.floor(((e.clientY - r.top) / r.height) * ROWS))
-		);
+		const col = Math.min(COLS - span.col, Math.max(0, Math.floor(((e.clientX - r.left) / r.width) * COLS)));
+		const row = Math.min(ROWS - span.row, Math.max(0, Math.floor(((e.clientY - r.top) / r.height) * ROWS)));
 		plan.zoomPos[code] = row * COLS + col;
 	}
 
@@ -83,7 +77,12 @@
 	// why it couldn't be marked, said here rather than only in the passing flash
 	let offError = $state('');
 	function markOff(shift: 0 | 1 | 3) {
-		const ok = plan.setBreak(year, trim, offKind === 'away' ? { kind: 'away', credits: awayCredits } : { kind: offKind }, shift);
+		const ok = plan.setBreak(
+			year,
+			trim,
+			offKind === 'away' ? { kind: 'away', credits: awayCredits } : { kind: offKind },
+			shift
+		);
 		offError = ok ? '' : (plan.flash ?? "couldn't mark it");
 	}
 
@@ -91,7 +90,8 @@
 	// opening a red cell answers "why is it red?"
 	let slotHints = $derived(
 		plan.hints.filter(
-			(h) => (h.kind === 'warn' || h.kind === 'caution') && h.codes.some((c) => plan.slotCourses(year, trim).includes(c))
+			(h) =>
+				(h.kind === 'warn' || h.kind === 'caution') && h.codes.some((c) => plan.slotCourses(year, trim).includes(c))
 		)
 	);
 </script>
@@ -101,15 +101,21 @@
 	<h1>year {year} · trimester {trim}</h1>
 	<span class="term">t{degreeTrim(year, trim)} · {academicYear(plan.batchStartYear, year)}</span>
 	<span class="load">
-		{#if off}{off.kind === 'away' ? `away · ${off.credits ?? 0} credits from elsewhere` : off.kind === 'suspension' ? 'suspended' : 'on a break'}{:else}{plan.slotCredits(year, trim)}{exempt ? '' : ` / ${TRIM_HARD_MAX}`} credits{/if}
+		{#if off}{off.kind === 'away'
+				? `away · ${off.credits ?? 0} credits from elsewhere`
+				: off.kind === 'suspension'
+					? 'suspended'
+					: 'on a break'}{:else}{plan.slotCredits(year, trim)}{exempt ? '' : ` / ${TRIM_HARD_MAX}`} credits{/if}
 	</span>
 </header>
 
 {#if !off}
-<p class="how">
-	each square is one credit{exempt ? '' : `, the shaded blocks are the ${TRIM_MIN}-credit minimum, three 4-credit courses`}.
-	arrange the courses however helps you think; where they sit here doesn't change your plan.
-</p>
+	<p class="how">
+		each square is one credit{exempt
+			? ''
+			: `, the shaded blocks are the ${TRIM_MIN}-credit minimum, three 4-credit courses`}. arrange the courses however
+		helps you think; where they sit here doesn't change your plan.
+	</p>
 {/if}
 
 {#if slotHints.length}
@@ -122,7 +128,13 @@
 
 {#if off}
 	<section class="off" aria-label="this trimester is off">
-		<b>{off.kind === 'away' ? 'a term away' : off.kind === 'suspension' ? 'suspended this trimester' : 'on a break this trimester'}</b>
+		<b
+			>{off.kind === 'away'
+				? 'a term away'
+				: off.kind === 'suspension'
+					? 'suspended this trimester'
+					: 'on a break this trimester'}</b
+		>
 		<p>{BREAK_KINDS[off.kind].note}. No course goes here, and no credit rule applies to it.</p>
 		{#if off.kind === 'away'}
 			<label class="off-credits">
@@ -147,114 +159,146 @@
 		</div>
 	</section>
 {:else}
-<div class="canvas" role="list" bind:this={canvasEl} ondragover={(e) => e.preventDefault()} ondrop={drop}>
-	<div class="layer zones">
-		{#if exempt}
-			{#each FREE_CELLS as i (i)}
-				<div class="zone-cell"></div>
-			{/each}
-		{:else}
-			{#each MIN_BOXES as i (i)}
-				<div class="zone-box"></div>
-			{/each}
-			{#each REST_CELLS as i (i)}
-				<div class="zone-cell"></div>
-			{/each}
-			{#each OVER_CELLS as i (i)}
-				<div class="zone-cell over"></div>
-			{/each}
-		{/if}
-	</div>
+	<div class="canvas" role="list" bind:this={canvasEl} ondragover={(e) => e.preventDefault()} ondrop={drop}>
+		<div class="layer zones">
+			{#if exempt}
+				{#each FREE_CELLS as i (i)}
+					<div class="zone-cell"></div>
+				{/each}
+			{:else}
+				{#each MIN_BOXES as i (i)}
+					<div class="zone-box"></div>
+				{/each}
+				{#each REST_CELLS as i (i)}
+					<div class="zone-cell"></div>
+				{/each}
+				{#each OVER_CELLS as i (i)}
+					<div class="zone-cell over"></div>
+				{/each}
+			{/if}
+		</div>
 
-	<div class="layer courses">
-		{#each plan.slotCourses(year, trim) as code (code)}
-			{@const course = byCode(code)}
-			{@const span = spans(course.credits)}
-			{@const cell = plan.zoomPos[code]}
-			{@const type = plan.courseType(code)}
-			<div
-				class="placed"
-				data-type={type}
-				class:flagged={plan.flaggedCodes.has(code)}
-				class:is-audit={plan.isAudit(code)}
-				class:is-attempt={isAttemptId(code)}
-				class:dragging={plan.dragging === code}
-				style:--hue={plan.hueOf(code)}
-				style={cell !== undefined
-					? `grid-column: ${(cell % COLS) + 1} / span ${span.col}; grid-row: ${Math.floor(cell / COLS) + 1} / span ${span.row};`
-					: `grid-column: span ${span.col}; grid-row: span ${span.row};`}
-				draggable={!touchLayout && !isAttemptId(code)}
-				role="listitem"
-				animate:flip={courseShift}
-				in:courseIn={{ key: code }}
-				out:courseOut={{ key: code }}
-				ondragstart={(e) => dragstart(e, code)}
-				ondragend={() => (plan.dragging = null)}
-			>
-				<button class="x" aria-label="remove {plan.courseLabel(code)}" onclick={(e) => { e.stopPropagation(); plan.remove(code); }}>×</button>
-				<button class="course-open" onclick={() => plan.select(code)} aria-label="view {plan.courseLabel(code)}{isAttemptId(code) ? ' (failed attempt)' : ''}">
-				{#if plan.showCodes}<span class="code">{#if plan.flagKinds.has(code)}<span class="flag" data-kind={plan.flagKinds.get(code)} role="img" aria-label="named in a hint" title="named in a hint, see hints"></span>{/if}{#if type === 'required'}<span class="req-dot" role="img" aria-label="required"></span>{/if}{plan.shownCode(code)}</span>{/if}
-				<span class="title">{#if !plan.showCodes && plan.flagKinds.has(code)}<span class="flag" data-kind={plan.flagKinds.get(code)} role="img" aria-label="named in a hint" title="named in a hint, see hints"></span>{/if}{#if type === 'required' && !plan.showCodes}<span class="req-dot" role="img" aria-label="required"></span>{/if}{course.title}</span>
-				<span class="credits">{course.credits} cr</span>
-				</button>
-			</div>
-		{/each}
-	</div>
-</div>
-
-<!-- what the recommended path puts in THIS trimester and isn't on the grid,
-     the same suggestions the overview shows, in the view you'd be arranging
-     the trimester from -->
-{#if !plan.gradeMode && plan.suggestionsFor(year, trim).length}
-	<div class="suggested">
-		<span class="s-lead">suggested here</span>
-		{#each plan.suggestionsFor(year, trim) as code (code)}
-			{@const c = byCode(code)}
-			<button class="s-chip" title="add {plan.courseLabel(code)}" onclick={() => plan.acceptSuggestion(code)}>
-				{#if plan.showCodes}<span class="s-code">{plan.shownCode(code)}</span>{/if}
-				<span class="s-title">{c.title}</span>
-				<span class="s-plus" aria-hidden="true">+</span>
-			</button>
-		{/each}
-	</div>
-{/if}
-
-<!-- for the few who need it: a leave, a suspension, or a term away -->
-<details class="off-fold">
-	<summary>not taking courses this trimester?</summary>
-	<div class="off-body">
-		<div class="off-kinds" role="radiogroup" aria-label="what this trimester is">
-			{#each Object.entries(BREAK_KINDS) as [kind, k] (kind)}
-				<label>
-					<input type="radio" name="off-kind" value={kind} bind:group={offKind} />
-					<span><b>{k.label}</b> {k.note}</span>
-				</label>
+		<div class="layer courses">
+			{#each plan.slotCourses(year, trim) as code (code)}
+				{@const course = byCode(code)}
+				{@const span = spans(course.credits)}
+				{@const cell = plan.zoomPos[code]}
+				{@const type = plan.courseType(code)}
+				<div
+					class="placed"
+					data-type={type}
+					class:flagged={plan.flaggedCodes.has(code)}
+					class:is-audit={plan.isAudit(code)}
+					class:is-attempt={isAttemptId(code)}
+					class:dragging={plan.dragging === code}
+					style:--hue={plan.hueOf(code)}
+					style={cell !== undefined
+						? `grid-column: ${(cell % COLS) + 1} / span ${span.col}; grid-row: ${Math.floor(cell / COLS) + 1} / span ${span.row};`
+						: `grid-column: span ${span.col}; grid-row: span ${span.row};`}
+					draggable={!touchLayout && !isAttemptId(code)}
+					role="listitem"
+					animate:flip={courseShift}
+					in:courseIn={{ key: code }}
+					out:courseOut={{ key: code }}
+					ondragstart={(e) => dragstart(e, code)}
+					ondragend={() => (plan.dragging = null)}
+				>
+					<button
+						class="x"
+						aria-label="remove {plan.courseLabel(code)}"
+						onclick={(e) => {
+							e.stopPropagation();
+							plan.remove(code);
+						}}>×</button
+					>
+					<button
+						class="course-open"
+						onclick={() => plan.select(code)}
+						aria-label="view {plan.courseLabel(code)}{isAttemptId(code) ? ' (failed attempt)' : ''}"
+					>
+						{#if plan.showCodes}<span class="code"
+								>{#if plan.flagKinds.has(code)}<span
+										class="flag"
+										data-kind={plan.flagKinds.get(code)}
+										role="img"
+										aria-label="named in a hint"
+										title="named in a hint, see hints"
+									></span>{/if}{#if type === 'required'}<span class="req-dot" role="img" aria-label="required"
+									></span>{/if}{plan.shownCode(code)}</span
+							>{/if}
+						<span class="title"
+							>{#if !plan.showCodes && plan.flagKinds.has(code)}<span
+									class="flag"
+									data-kind={plan.flagKinds.get(code)}
+									role="img"
+									aria-label="named in a hint"
+									title="named in a hint, see hints"
+								></span>{/if}{#if type === 'required' && !plan.showCodes}<span
+									class="req-dot"
+									role="img"
+									aria-label="required"
+								></span>{/if}{course.title}</span
+						>
+						<span class="credits">{course.credits} cr</span>
+					</button>
+				</div>
 			{/each}
 		</div>
-		{#if offKind === 'away'}
-			<label class="off-credits">
-				credits you expect to bring back
-				<input type="number" min="0" max="40" bind:value={awayCredits} />
-			</label>
-		{/if}
-		{#if offError}<p class="off-error" role="alert">{offError}</p>{/if}
-		{#if hasCourses}
-			<p>Its courses, and every course after it, move later with it:</p>
-			<div class="off-acts">
-				<button onclick={() => markOff(3)}>move them back a year</button>
-				<button onclick={() => markOff(1)}>move them back a trimester</button>
-			</div>
-			<p class="off-note">
-				A year keeps every course in a trimester it runs. A trimester is quicker, but some may land where
-				they don't run: the <b>will it run?</b> view shows which.
-			</p>
-		{:else}
-			<div class="off-acts">
-				<button onclick={() => markOff(0)}>mark it</button>
-			</div>
-		{/if}
 	</div>
-</details>
+
+	<!-- what the recommended path puts in THIS trimester and isn't on the grid,
+     the same suggestions the overview shows, in the view you'd be arranging
+     the trimester from -->
+	{#if !plan.gradeMode && plan.suggestionsFor(year, trim).length}
+		<div class="suggested">
+			<span class="s-lead">suggested here</span>
+			{#each plan.suggestionsFor(year, trim) as code (code)}
+				{@const c = byCode(code)}
+				<button class="s-chip" title="add {plan.courseLabel(code)}" onclick={() => plan.acceptSuggestion(code)}>
+					{#if plan.showCodes}<span class="s-code">{plan.shownCode(code)}</span>{/if}
+					<span class="s-title">{c.title}</span>
+					<span class="s-plus" aria-hidden="true">+</span>
+				</button>
+			{/each}
+		</div>
+	{/if}
+
+	<!-- for the few who need it: a leave, a suspension, or a term away -->
+	<details class="off-fold">
+		<summary>not taking courses this trimester?</summary>
+		<div class="off-body">
+			<div class="off-kinds" role="radiogroup" aria-label="what this trimester is">
+				{#each Object.entries(BREAK_KINDS) as [kind, k] (kind)}
+					<label>
+						<input type="radio" name="off-kind" value={kind} bind:group={offKind} />
+						<span><b>{k.label}</b> {k.note}</span>
+					</label>
+				{/each}
+			</div>
+			{#if offKind === 'away'}
+				<label class="off-credits">
+					credits you expect to bring back
+					<input type="number" min="0" max="40" bind:value={awayCredits} />
+				</label>
+			{/if}
+			{#if offError}<p class="off-error" role="alert">{offError}</p>{/if}
+			{#if hasCourses}
+				<p>Its courses, and every course after it, move later with it:</p>
+				<div class="off-acts">
+					<button onclick={() => markOff(3)}>move them back a year</button>
+					<button onclick={() => markOff(1)}>move them back a trimester</button>
+				</div>
+				<p class="off-note">
+					A year keeps every course in a trimester it runs. A trimester is quicker, but some may land where they don't
+					run: the <b>will it run?</b> view shows which.
+				</p>
+			{:else}
+				<div class="off-acts">
+					<button onclick={() => markOff(0)}>mark it</button>
+				</div>
+			{/if}
+		</div>
+	</details>
 {/if}
 
 <style lang="scss">

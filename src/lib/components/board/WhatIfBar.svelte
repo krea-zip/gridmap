@@ -35,7 +35,12 @@
 		'major-conc': ['major1', 'conc'],
 		'major-minor-conc': ['major1', 'minor', 'conc']
 	};
-	const ROLE_LABEL: Record<Role, string> = { major1: 'major', major2: 'second major', minor: 'minor', conc: 'concentration' };
+	const ROLE_LABEL: Record<Role, string> = {
+		major1: 'major',
+		major2: 'second major',
+		minor: 'minor',
+		conc: 'concentration'
+	};
 	// which degree a set of roles is; null for one Krea doesn't offer
 	// (a double major with a minor)
 	function structureOf(roles: Set<Role>): StructureKind | null {
@@ -115,17 +120,25 @@
 </script>
 
 <p class="vs-lead">
-	<b>what-if</b> try a change to your degree from where you are. The grid reads as if it were yours;
-	nothing on your plan changes unless you press <b>use this</b>.
+	<b>what-if</b> try a change to your degree from where you are. The grid reads as if it were yours; nothing on your
+	plan changes unless you press <b>use this</b>.
 </p>
 
 <div class="wi-rows">
 	<div class="wi-here">
 		<span class="wi-k">you are here</span>
-		<select aria-label="year you're in" value={plan.here.year} onchange={(e) => setHere(Number(e.currentTarget.value), plan.here.trim)}>
+		<select
+			aria-label="year you're in"
+			value={plan.here.year}
+			onchange={(e) => setHere(Number(e.currentTarget.value), plan.here.trim)}
+		>
 			{#each plan.years as y (y)}<option value={y}>year {y}</option>{/each}
 		</select>
-		<select aria-label="trimester you're in" value={plan.here.trim} onchange={(e) => setHere(plan.here.year, Number(e.currentTarget.value))}>
+		<select
+			aria-label="trimester you're in"
+			value={plan.here.trim}
+			onchange={(e) => setHere(plan.here.year, Number(e.currentTarget.value))}
+		>
 			{#each [1, 2, 3] as t (t)}<option value={t}>T{t}</option>{/each}
 		</select>
 		<b class="wi-term">t{degreeTrim(plan.here.year, plan.here.trim)}</b>
@@ -151,7 +164,12 @@
 						<span class="wi-was">new</span>
 					{/if}
 					{#if r !== 'major1'}
-						<button class="wi-x" aria-label="drop the {ROLE_LABEL[r]}" title="drop the {ROLE_LABEL[r]}" onclick={() => drop(r)}>×</button>
+						<button
+							class="wi-x"
+							aria-label="drop the {ROLE_LABEL[r]}"
+							title="drop the {ROLE_LABEL[r]}"
+							onclick={() => drop(r)}>×</button
+						>
 					{/if}
 				</li>
 			{/each}
@@ -195,16 +213,17 @@
 			{#if v.onTime}
 				✓ fits by the end of year {years}
 			{:else if !unplaced.length && v.finish}
-				needs until year {v.finish.year} T{v.finish.trim}{#if v.finish.year <= v.limitYears}: allowed, a {years}-year degree
-					has up to {v.limitYears} years{/if}
+				needs until year {v.finish.year} T{v.finish.trim}{#if v.finish.year <= v.limitYears}: allowed, a {years}-year
+					degree has up to {v.limitYears} years{/if}
 			{:else}
 				doesn't fit on the grid: {unplaced.length} course{unplaced.length === 1 ? ' has' : 's have'} no trimester left
 			{/if}
 		</p>
 		{#if v.ifDropped?.onTime}
 			<p class="wi-tip" onmouseenter={() => light(v.ahead.stops)} onmouseleave={unlight}>
-				it fits by year {years} if you drop the {v.ahead.stops.length} planned course{v.ahead.stops.length === 1 ? '' : 's'} that
-				would stop counting
+				it fits by year {years} if you drop the {v.ahead.stops.length} planned course{v.ahead.stops.length === 1
+					? ''
+					: 's'} that would stop counting
 			</p>
 		{/if}
 
@@ -215,8 +234,8 @@
 					<b>{v.taken.counts.length}</b> still count ({cr(v.taken.counts)} cr)
 				</p>
 				<p onmouseenter={() => light(v.taken.stops)} onmouseleave={unlight} class:bad={v.taken.stops.length}>
-					<b>{v.taken.stops.length}</b> no longer count ({cr(v.taken.stops)} cr){#if v.taken.stops.length}, they
-						still count toward your total{/if}
+					<b>{v.taken.stops.length}</b> no longer count ({cr(v.taken.stops)} cr){#if v.taken.stops.length}, they still
+						count toward your total{/if}
 				</p>
 			</section>
 			<section>

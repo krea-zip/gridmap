@@ -48,30 +48,43 @@ export class CloudPlans {
 	}
 
 	save(name: string, snapshot: unknown) {
-		return this.#run((user) => repository.createPlan(user, name, snapshot), (plan) => {
-			this.items = [plan, ...this.items];
-			this.notice = 'Saved to your account.';
-		});
+		return this.#run(
+			(user) => repository.createPlan(user, name, snapshot),
+			(plan) => {
+				this.items = [plan, ...this.items];
+				this.notice = 'Saved to your account.';
+			}
+		);
 	}
 
 	update(plan: CloudPlan, snapshot: unknown) {
-		return this.#run((user) => repository.updatePlan(user, plan, snapshot), (updated) => {
-			this.items = this.items.map((item) => item.id === updated.id ? updated : item);
-			this.notice = 'Cloud copy updated.';
-		});
+		return this.#run(
+			(user) => repository.updatePlan(user, plan, snapshot),
+			(updated) => {
+				this.items = this.items.map((item) => (item.id === updated.id ? updated : item));
+				this.notice = 'Cloud copy updated.';
+			}
+		);
 	}
 
 	load(plan: CloudPlan, restore: (snapshot: unknown) => void) {
-		return this.#run((user) => repository.readPlan(user, plan.id), (snapshot) => {
-			restore(snapshot);
-			this.notice = 'Loaded onto your board. Further edits autosave in this browser; update the cloud copy when ready.';
-		});
+		return this.#run(
+			(user) => repository.readPlan(user, plan.id),
+			(snapshot) => {
+				restore(snapshot);
+				this.notice =
+					'Loaded onto your board. Further edits autosave in this browser; update the cloud copy when ready.';
+			}
+		);
 	}
 
 	remove(plan: CloudPlan) {
-		return this.#run((user) => repository.deletePlan(user, plan), () => {
-			this.items = this.items.filter((item) => item.id !== plan.id);
-			this.notice = 'Cloud copy deleted.';
-		});
+		return this.#run(
+			(user) => repository.deletePlan(user, plan),
+			() => {
+				this.items = this.items.filter((item) => item.id !== plan.id);
+				this.notice = 'Cloud copy deleted.';
+			}
+		);
 	}
 }

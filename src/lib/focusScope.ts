@@ -4,14 +4,8 @@ export function focusScope(node: HTMLElement, enabled = true) {
 	let previous: HTMLElement | null = null;
 	let frame = 0;
 	const focusable = () =>
-		[
-			...node.querySelectorAll<HTMLElement>('button, a[href], input, select, textarea, [tabindex]')
-		].filter(
-			(el) =>
-				el.tabIndex >= 0 &&
-				!el.matches(':disabled') &&
-				!el.closest('[inert]') &&
-				el.getClientRects().length
+		[...node.querySelectorAll<HTMLElement>('button, a[href], input, select, textarea, [tabindex]')].filter(
+			(el) => el.tabIndex >= 0 && !el.matches(':disabled') && !el.closest('[inert]') && el.getClientRects().length
 		);
 	function onKey(event: KeyboardEvent) {
 		if (event.key !== 'Tab' || !active) return;

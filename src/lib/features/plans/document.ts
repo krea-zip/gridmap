@@ -18,9 +18,12 @@ export function planDocument(value: unknown): Json {
 	if (!object(value) || value.version !== 1 || !object(value.placements) || !object(value.picks)) {
 		throw new Error('This plan format is not supported by this version of kcal.');
 	}
-	if (!Object.values(value.placements).every((codes) =>
-		Array.isArray(codes) && codes.every((code) => typeof code === 'string')
-	)) throw new Error('This plan contains invalid course placements.');
+	if (
+		!Object.values(value.placements).every(
+			(codes) => Array.isArray(codes) && codes.every((code) => typeof code === 'string')
+		)
+	)
+		throw new Error('This plan contains invalid course placements.');
 	const json = JSON.stringify(value);
 	if (new TextEncoder().encode(json).length > PLAN_BYTES_LIMIT) {
 		throw new Error('This plan is too large to save.');

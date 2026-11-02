@@ -54,9 +54,9 @@
 {#if plan.view === 'runs'}
 	<section class="view-strip" aria-label="will it run? view">
 		<p class="vs-lead">
-			<b>will it run?</b> each course is marked by how often it actually ran in its trimester, from the
-			timetables on record: T1 {years(RECORDED_TERMS[1])} · T2 {years(RECORDED_TERMS[2])} · T3 {years(RECORDED_TERMS[3])}.
-			Hover a mark for the terms.
+			<b>will it run?</b> each course is marked by how often it actually ran in its trimester, from the timetables on
+			record: T1 {years(RECORDED_TERMS[1])} · T2 {years(RECORDED_TERMS[2])} · T3 {years(RECORDED_TERMS[3])}. Hover a
+			mark for the terms.
 		</p>
 		<ul class="vs-key">
 			<li><i class="run-mark" data-kind="always"></i>ran every time</li>
@@ -66,7 +66,9 @@
 		</ul>
 		{#if neverRan.length}
 			<p class="vs-warn" onmouseenter={() => light(neverRan)} onmouseleave={unlight}>
-				{neverRan.length} course{neverRan.length === 1 ? '' : 's'} on your plan never ran in {neverRan.length === 1 ? 'its' : 'their'}
+				{neverRan.length} course{neverRan.length === 1 ? '' : 's'} on your plan never ran in {neverRan.length === 1
+					? 'its'
+					: 'their'}
 				trimester: {neverRan.map((c) => plan.courseLabel(c)).join(', ')}
 			</p>
 		{/if}
@@ -74,8 +76,8 @@
 {:else if plan.view === 'prereqs'}
 	<section class="view-strip" aria-label="prerequisites view">
 		<p class="vs-lead">
-			<b>prerequisites</b> click a course on the grid: arrows run from what you take first to what needs
-			it, all the way back and all the way on. Click anywhere else to clear.
+			<b>prerequisites</b> click a course on the grid: arrows run from what you take first to what needs it, all the way back
+			and all the way on. Click anywhere else to clear.
 		</p>
 		<ul class="vs-key">
 			<li><i class="line-mark"></i>in order</li>
@@ -84,13 +86,14 @@
 		{#if chain}
 			{@const late = chain.edges.filter((e) => e.late).length}
 			<p class="vs-now">
-				<b>{plan.courseLabel(chain.root)}</b>: needs {chain.before.length} on your plan · leads to {chain.after.length}{#if late}{' · '}<span
-						class="vs-bad">{late} in the wrong order</span
-					>{/if}
+				<b>{plan.courseLabel(chain.root)}</b>: needs {chain.before.length} on your plan · leads to {chain.after
+					.length}{#if late}{' · '}<span class="vs-bad">{late} in the wrong order</span>{/if}
 			</p>
 			{#if chain.missing.length}
 				<p class="vs-warn">
-					not on your plan: {chain.missing.map((m) => `${plan.courseLabel(m.code)} (for ${plan.courseLabel(m.neededBy)})`).join(', ')}
+					not on your plan: {chain.missing
+						.map((m) => `${plan.courseLabel(m.code)} (for ${plan.courseLabel(m.neededBy)})`)
+						.join(', ')}
 				</p>
 			{/if}
 		{:else}
@@ -104,8 +107,8 @@
 {:else if plan.view === 'faculty'}
 	<section class="view-strip" aria-label="faculty view">
 		<p class="vs-lead">
-			<b>faculty</b> each course shows who taught it most recently. Lecturers rotate, so it's a guide, not
-			a promise. Click a name to light their courses; click anywhere else to clear.
+			<b>faculty</b> each course shows who taught it most recently. Lecturers rotate, so it's a guide, not a promise. Click
+			a name to light their courses; click anywhere else to clear.
 		</p>
 		{#if people.length}
 			<div class="vs-people">
@@ -122,9 +125,9 @@
 {:else if plan.view === 'milestones'}
 	<section class="view-strip" aria-label="milestones view">
 		<p class="vs-lead">
-			<b>milestones</b> where your plan leaves you at the end of each year, by the credits placed so far.
-			The exit lines are UGC's ({EXIT_AWARDS.map((e) => e.credits).join(' / ')} credits); Krea's own exit
-			rules aren't in kcal's data, so check them with the Academic Office.
+			<b>milestones</b> where your plan leaves you at the end of each year, by the credits placed so far. The exit lines
+			are UGC's ({EXIT_AWARDS.map((e) => e.credits).join(' / ')} credits); Krea's own exit rules aren't in kcal's data, so
+			check them with the Academic Office.
 		</p>
 		{#if ends.end}
 			<p class="vs-now" class:vs-bad={ends.end.year > ends.limitYears}>

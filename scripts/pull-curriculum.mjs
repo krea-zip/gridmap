@@ -14,7 +14,11 @@ if (!url || !key) {
 const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 const out = (name) => new URL(`../src/lib/data/${name}`, import.meta.url);
 
-const { data: release, error } = await db.from('curriculum_releases').select('id, snapshot').eq('is_current', true).maybeSingle();
+const { data: release, error } = await db
+	.from('curriculum_releases')
+	.select('id, snapshot')
+	.eq('is_current', true)
+	.maybeSingle();
 if (error) throw new Error(`Could not read the current curriculum release: ${error.message}`);
 if (!release) {
 	console.log('curriculum: the database has no release yet, building with the committed snapshot');
@@ -23,8 +27,12 @@ if (!release) {
 
 const descriptions = {};
 for (let from = 0; ; from += 1000) {
-	const { data, error } = await db.from('courses').select('code, description').not('description', 'is', null)
-		.order('code').range(from, from + 999);
+	const { data, error } = await db
+		.from('courses')
+		.select('code, description')
+		.not('description', 'is', null)
+		.order('code')
+		.range(from, from + 999);
 	if (error) throw new Error(`Could not read course descriptions: ${error.message}`);
 	for (const { code, description } of data) descriptions[code] = description;
 	if (data.length < 1000) break;

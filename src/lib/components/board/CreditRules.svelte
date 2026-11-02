@@ -242,35 +242,35 @@
 					<span class="chev" aria-hidden="true">›</span>
 				</button>
 				{#if open}
-				<div class="r-body" transition:slide={unfold()}>
-					{#if rule.meter}
-						<div
-							class="meter"
-							role="progressbar"
-							aria-label={rule.title}
-							aria-valuemin={0}
-							aria-valuemax={rule.meter.max}
-							aria-valuenow={rule.meter.value}
-						>
-							<i style="width: {Math.min(100, (rule.meter.value / Math.max(1, rule.meter.max)) * 100)}%"></i>
-						</div>
-					{/if}
-					<p>{rule.text}</p>
-					{#if rule.slots?.length || rule.codes?.length}
-						<div class="slots">
-							{#each rule.slots ?? [] as s (`${s.y}-${s.t}`)}
-								<button title="open year {s.y} trimester {s.t}" onclick={() => jump(s.y, s.t)}>
-									Y{s.y} T{s.t} · {s.credits} cr
-								</button>
-							{/each}
-							{#each rule.codes ?? [] as code (code)}
-								<button title="show {plan.courseLabel(code)}" onclick={() => show(code)}>
-									{plan.courseLabel(code)}
-								</button>
-							{/each}
-						</div>
-					{/if}
-				</div>
+					<div class="r-body" transition:slide={unfold()}>
+						{#if rule.meter}
+							<div
+								class="meter"
+								role="progressbar"
+								aria-label={rule.title}
+								aria-valuemin={0}
+								aria-valuemax={rule.meter.max}
+								aria-valuenow={rule.meter.value}
+							>
+								<i style="width: {Math.min(100, (rule.meter.value / Math.max(1, rule.meter.max)) * 100)}%"></i>
+							</div>
+						{/if}
+						<p>{rule.text}</p>
+						{#if rule.slots?.length || rule.codes?.length}
+							<div class="slots">
+								{#each rule.slots ?? [] as s (`${s.y}-${s.t}`)}
+									<button title="open year {s.y} trimester {s.t}" onclick={() => jump(s.y, s.t)}>
+										Y{s.y} T{s.t} · {s.credits} cr
+									</button>
+								{/each}
+								{#each rule.codes ?? [] as code (code)}
+									<button title="show {plan.courseLabel(code)}" onclick={() => show(code)}>
+										{plan.courseLabel(code)}
+									</button>
+								{/each}
+							</div>
+						{/if}
+					</div>
 				{/if}
 			</li>
 		{/each}
@@ -353,8 +353,8 @@
 			{/each}
 		</div>
 		<p class="note">
-			The dashed line above. The grid turns a trimester's credit count red past it. {TRIM_NORMAL_MAX} is
-			the registration the drop form recommends; {TRIM_MIN}–{TRIM_HARD_MAX} is what it will accept.
+			The dashed line above. The grid turns a trimester's credit count red past it. {TRIM_NORMAL_MAX} is the registration
+			the drop form recommends; {TRIM_MIN}–{TRIM_HARD_MAX} is what it will accept.
 		</p>
 	</section>
 
@@ -396,24 +396,24 @@
 			<span class="chev" aria-hidden="true">›</span>
 		</button>
 		{#if notesOpen}
-		<div transition:slide={unfold()}>
-		<h4>the drop form</h4>
-		<ul class="notes">
-			{#each FORM_NOTES as note (note)}
-				<li>{note}</li>
-			{/each}
-		</ul>
-		<h4>exams & grades</h4>
-		<ul class="notes">
-			{#each MANUAL_NOTES as note (note)}
-				<li>{note}</li>
-			{/each}
-		</ul>
-		<p class="source">
-			Standing, progression and exam rules are from the SIAS Exams & Assessments Manual (2020–25
-			batches). Questions go to sias.examoffice@krea.edu.in.
-		</p>
-		</div>
+			<div transition:slide={unfold()}>
+				<h4>the drop form</h4>
+				<ul class="notes">
+					{#each FORM_NOTES as note (note)}
+						<li>{note}</li>
+					{/each}
+				</ul>
+				<h4>exams & grades</h4>
+				<ul class="notes">
+					{#each MANUAL_NOTES as note (note)}
+						<li>{note}</li>
+					{/each}
+				</ul>
+				<p class="source">
+					Standing, progression and exam rules are from the SIAS Exams & Assessments Manual (2020–25 batches). Questions
+					go to sias.examoffice@krea.edu.in.
+				</p>
+			</div>
 		{/if}
 	</section>
 </Modal>

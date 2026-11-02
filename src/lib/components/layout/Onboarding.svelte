@@ -71,16 +71,15 @@
 		<Modal title="a quick tour" onclose={dismissTour}>
 			<div class="note">
 				<p>
-					<b>Catalogue</b>: search courses or lecturers, filter by department, and tap any course for
-					its description, prerequisites and lecturers.
+					<b>Catalogue</b>: search courses or lecturers, filter by department, and tap any course for its description,
+					prerequisites and lecturers.
 				</p>
 				<p>
-					<b>Your plan</b>: tap a course to add, move, remove or grade it. Tap a trimester for a closer
-					look.
+					<b>Your plan</b>: tap a course to add, move, remove or grade it. Tap a trimester for a closer look.
 				</p>
 				<p>
-					<b>Your degree</b>: choose your programme, check progress and hints, import courses and grades, and
-					open settings to save copies or change the theme.
+					<b>Your degree</b>: choose your programme, check progress and hints, import courses and grades, and open
+					settings to save copies or change the theme.
 				</p>
 				<p>Your plan saves automatically in this browser.</p>
 			</div>

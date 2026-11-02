@@ -44,22 +44,49 @@
 			<p>{account.user.email || 'Signed in'}</p>
 			<button disabled={account.busy || cloud.busy} onclick={() => account.signOut()}>Sign out</button>
 		</div>
-		<p>Your board autosaves in this browser. Save or update a cloud copy when you want it available on other devices. Cloud copies include grades and are visible only to you.</p>
-		<form onsubmit={(event) => { event.preventDefault(); void cloud.save(name.trim() || suggestedName, plan.snapshot()); }}>
+		<p>
+			Your board autosaves in this browser. Save or update a cloud copy when you want it available on other devices.
+			Cloud copies include grades and are visible only to you.
+		</p>
+		<form
+			onsubmit={(event) => {
+				event.preventDefault();
+				void cloud.save(name.trim() || suggestedName, plan.snapshot());
+			}}
+		>
 			<label for="cloud-plan-name">Plan name</label>
 			<div class="actions">
 				<input id="cloud-plan-name" bind:value={name} placeholder={suggestedName} maxlength={PLAN_NAME_LIMIT} />
 				<button disabled={cloud.busy || account.busy}>Save to account</button>
 			</div>
 		</form>
-		<div class="actions"><h4>your cloud copies</h4><button disabled={cloud.busy} onclick={() => { confirmation = null; void cloud.refresh(); }}>Refresh</button></div>
+		<div class="actions">
+			<h4>your cloud copies</h4>
+			<button
+				disabled={cloud.busy}
+				onclick={() => {
+					confirmation = null;
+					void cloud.refresh();
+				}}>Refresh</button
+			>
+		</div>
 		{#if cloud.busy}<p role="status">Working…</p>{/if}
 		{#if cloud.error}<p role="alert">{cloud.error}</p>{/if}
 		{#if cloud.notice}<p role="status">{cloud.notice}</p>{/if}
 		{#if confirmation}
 			<div class="confirmation">
-				<p>{confirmation.action === 'load' ? 'Replace your current board with' : confirmation.action === 'update' ? 'Replace this cloud copy with your current board:' : 'Permanently delete'} “{confirmation.plan.name}”?</p>
-				<div class="actions"><button disabled={cloud.busy} onclick={confirm}>Confirm {confirmation.action}</button><button onclick={() => confirmation = null}>Cancel</button></div>
+				<p>
+					{confirmation.action === 'load'
+						? 'Replace your current board with'
+						: confirmation.action === 'update'
+							? 'Replace this cloud copy with your current board:'
+							: 'Permanently delete'} “{confirmation.plan.name}”?
+				</p>
+				<div class="actions">
+					<button disabled={cloud.busy} onclick={confirm}>Confirm {confirmation.action}</button><button
+						onclick={() => (confirmation = null)}>Cancel</button
+					>
+				</div>
 			</div>
 		{/if}
 		<ul>
@@ -68,9 +95,13 @@
 					<strong>{saved.name}</strong>
 					<small>Updated {new Date(saved.updated_at).toLocaleString()}</small>
 					<div class="actions">
-						<button disabled={cloud.busy} onclick={() => confirmation = { action: 'load', plan: saved }}>Load</button>
-						<button disabled={cloud.busy} onclick={() => confirmation = { action: 'update', plan: saved }}>Update from board</button>
-						<button disabled={cloud.busy} onclick={() => confirmation = { action: 'delete', plan: saved }}>Delete</button>
+						<button disabled={cloud.busy} onclick={() => (confirmation = { action: 'load', plan: saved })}>Load</button>
+						<button disabled={cloud.busy} onclick={() => (confirmation = { action: 'update', plan: saved })}
+							>Update from board</button
+						>
+						<button disabled={cloud.busy} onclick={() => (confirmation = { action: 'delete', plan: saved })}
+							>Delete</button
+						>
 					</div>
 				</li>
 			{/each}
@@ -82,17 +113,72 @@
 </section>
 
 <style lang="scss">
-	section { display: grid; gap: 1rem; padding-bottom: 1.6rem; margin-bottom: 1.6rem; border-bottom: 1px dotted var(--color-border-card); font-size: 1.35rem; line-height: 1.5; }
-	h3 { font-size: 1.5rem; }
-	p, small { color: var(--color-text-muted); overflow-wrap: anywhere; }
-	.actions { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; }
-	form, li { display: grid; gap: .6rem; }
-	input { flex: 1; min-width: 0; width: 100%; }
-	input, button { padding: .8rem 1rem; font: inherit; color: var(--color-text); background: var(--color-bg-board-page); border: 1px solid var(--color-border-card); border-radius: 4px; }
-	button { cursor: pointer; }
-	button:disabled { opacity: .5; cursor: default; }
-	ul { display: grid; gap: 1.2rem; list-style: none; padding: 0; }
-	li { border-top: 1px solid var(--color-border-card); padding-top: 1rem; overflow-wrap: anywhere; }
-	.confirmation { padding: 1rem; border: 1px solid var(--color-accent); border-radius: 4px; }
-	[role='alert'] { color: var(--color-text); }
+	section {
+		display: grid;
+		gap: 1rem;
+		padding-bottom: 1.6rem;
+		margin-bottom: 1.6rem;
+		border-bottom: 1px dotted var(--color-border-card);
+		font-size: 1.35rem;
+		line-height: 1.5;
+	}
+	h3 {
+		font-size: 1.5rem;
+	}
+	p,
+	small {
+		color: var(--color-text-muted);
+		overflow-wrap: anywhere;
+	}
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.8rem;
+	}
+	form,
+	li {
+		display: grid;
+		gap: 0.6rem;
+	}
+	input {
+		flex: 1;
+		min-width: 0;
+		width: 100%;
+	}
+	input,
+	button {
+		padding: 0.8rem 1rem;
+		font: inherit;
+		color: var(--color-text);
+		background: var(--color-bg-board-page);
+		border: 1px solid var(--color-border-card);
+		border-radius: 4px;
+	}
+	button {
+		cursor: pointer;
+	}
+	button:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+	ul {
+		display: grid;
+		gap: 1.2rem;
+		list-style: none;
+		padding: 0;
+	}
+	li {
+		border-top: 1px solid var(--color-border-card);
+		padding-top: 1rem;
+		overflow-wrap: anywhere;
+	}
+	.confirmation {
+		padding: 1rem;
+		border: 1px solid var(--color-accent);
+		border-radius: 4px;
+	}
+	[role='alert'] {
+		color: var(--color-text);
+	}
 </style>

@@ -11,8 +11,16 @@ export function parseBatchEdits(raw: unknown): BatchEdits {
 	for (const [key, value] of Object.entries(raw)) {
 		try {
 			const [year, subject, role, fourYear, double] = JSON.parse(key);
-			if (!Number.isInteger(year) || year < 2022 || year > 2026 || typeof subject !== 'string' ||
-				!['major', 'minor', 'concentration'].includes(role) || typeof fourYear !== 'boolean' || typeof double !== 'boolean') continue;
+			if (
+				!Number.isInteger(year) ||
+				year < 2022 ||
+				year > 2026 ||
+				typeof subject !== 'string' ||
+				!['major', 'minor', 'concentration'].includes(role) ||
+				typeof fourYear !== 'boolean' ||
+				typeof double !== 'boolean'
+			)
+				continue;
 			if (!value || typeof value !== 'object') continue;
 			const rule = value as BatchRule;
 			const courses: BatchRule['courses'] = {};
@@ -20,15 +28,21 @@ export function parseBatchEdits(raw: unknown): BatchEdits {
 				if (/^[A-Z]{3,5}\d{3}[A-Z]?$/.test(code) && (type === 'required' || type === 'elective')) courses[code] = type;
 			}
 			const next: BatchRule = { courses };
-			if (Number.isInteger(rule.requiredCredits) && rule.requiredCredits! >= 0 && rule.requiredCredits! <= 176) next.requiredCredits = rule.requiredCredits;
+			if (Number.isInteger(rule.requiredCredits) && rule.requiredCredits! >= 0 && rule.requiredCredits! <= 176)
+				next.requiredCredits = rule.requiredCredits;
 			if (Object.keys(courses).length || next.requiredCredits !== undefined) out[key] = next;
-		} catch { /* Ignore malformed entries without losing other batches. */ }
+		} catch {
+			/* Ignore malformed entries without losing other batches. */
+		}
 	}
 	return out;
 }
 export function loadBatchEdits(): BatchEdits {
-	try { return parseBatchEdits(JSON.parse(localStorage.getItem(BATCH_EDITS_KEY) ?? '{}')); }
-	catch { return {}; }
+	try {
+		return parseBatchEdits(JSON.parse(localStorage.getItem(BATCH_EDITS_KEY) ?? '{}'));
+	} catch {
+		return {};
+	}
 }
 export function saveBatchEdits(edits: BatchEdits) {
 	const clean = parseBatchEdits(edits);

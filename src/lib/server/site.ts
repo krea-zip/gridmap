@@ -77,7 +77,9 @@ export type ProgrammeView = {
 function programmeView(subject: Subject, v: Variant): ProgrammeView | null {
 	const args = [subject.id, v.role, v.fourYear, v.double, batch()] as const;
 	const total = creditsFor(...args);
-	const required = requiredSetFor(...args).map(courseLink).sort(byTitle);
+	const required = requiredSetFor(...args)
+		.map(courseLink)
+		.sort(byTitle);
 	const choices = choiceGroupsFor(...args).map((g) => ({
 		rule: g.rule,
 		pick: g.pick,
@@ -139,7 +141,13 @@ export function courseIndex() {
 function programmesNaming(course: Course) {
 	const out: { subject: string; slug: string; required: string[]; choice: string[]; elective: string[] }[] = [];
 	for (const s of PROGRAMME_SUBJECTS) {
-		const row = { subject: s.label, slug: subjectSlug(s.id), required: [] as string[], choice: [] as string[], elective: [] as string[] };
+		const row = {
+			subject: s.label,
+			slug: subjectSlug(s.id),
+			required: [] as string[],
+			choice: [] as string[],
+			elective: [] as string[]
+		};
 		for (const v of variantsOf(s)) {
 			const args = [s.id, v.role, v.fourYear, v.double, batch()] as const;
 			if (requiredSetFor(...args).includes(course.code)) row.required.push(v.label);
@@ -164,7 +172,9 @@ export function coursePage(code: string) {
 		// none, so its courses link to their place in the catalogue
 		listings: c.subjects.map((id) => ({
 			subject: subjectById(id).label,
-			href: PROGRAMME_SUBJECTS.some((s) => s.id === id) ? `/programmes/${subjectSlug(id)}` : `/courses#${subjectSlug(id)}`,
+			href: PROGRAMME_SUBJECTS.some((s) => s.id === id)
+				? `/programmes/${subjectSlug(id)}`
+				: `/courses#${subjectSlug(id)}`,
 			code: c.codesBySubject[id] ?? c.code
 		})),
 		offered: c.offered,
@@ -186,8 +196,9 @@ export const courseCodes = () => COURSES.flatMap((c) => c.codes);
 // ── lecturers ──
 
 export function lecturerIndex() {
-	return LECTURERS.map((p) => ({ ...lecturerLink(p), courses: facultyCourses(p).length }))
-		.sort((a, b) => a.name.localeCompare(b.name));
+	return LECTURERS.map((p) => ({ ...lecturerLink(p), courses: facultyCourses(p).length })).sort((a, b) =>
+		a.name.localeCompare(b.name)
+	);
 }
 
 export function lecturerPage(id: string) {

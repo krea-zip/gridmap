@@ -3,7 +3,9 @@
 	import { onMount, type Snippet } from 'svelte';
 	import { account } from '$lib/features/auth/account.svelte';
 
-	onMount(() => { void account.init(); });
+	onMount(() => {
+		void account.init();
+	});
 
 	let { children }: { children: Snippet } = $props();
 </script>

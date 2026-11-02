@@ -2,11 +2,20 @@ import { test, expect } from '@playwright/test';
 
 // a 3-year CS major with a maths minor, the major already complete
 const plan = {
-	version: 1, touched: true, fourYear: false, yearCount: 3, batchStartYear: 2024,
-	structure: 'major-minor', picks: { major1: 'computer science', major2: 'history', minor: 'mathematics', conc: 'physics' },
+	version: 1,
+	touched: true,
+	fourYear: false,
+	yearCount: 3,
+	batchStartYear: 2024,
+	structure: 'major-minor',
+	picks: { major1: 'computer science', major2: 'history', minor: 'mathematics', conc: 'physics' },
 	placements: {
-		'2-1': ['COMP201', 'COMP204', 'MATH201'], '2-2': ['COMP205', 'COMP208', 'MATH230'], '2-3': ['COMP210', 'COMP217', 'MATH203'],
-		'3-1': ['COMP305', 'COMP350', 'MATH342'], '3-2': ['COMP312', 'COMP313', 'COMP340'], '3-3': ['COMP308', 'COMP321', 'COMP347']
+		'2-1': ['COMP201', 'COMP204', 'MATH201'],
+		'2-2': ['COMP205', 'COMP208', 'MATH230'],
+		'2-3': ['COMP210', 'COMP217', 'MATH203'],
+		'3-1': ['COMP305', 'COMP350', 'MATH342'],
+		'3-2': ['COMP312', 'COMP313', 'COMP340'],
+		'3-3': ['COMP308', 'COMP321', 'COMP347']
 	}
 };
 

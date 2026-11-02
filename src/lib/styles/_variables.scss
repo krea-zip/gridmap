@@ -106,12 +106,10 @@
 	// face, and a soft shade along the bottom — a gently domed surface, kept
 	// faint enough to read as a sheen rather than a gel button
 	--shadow-inset:
-		inset 0 1px 0 rgba(255, 255, 255, 0.95),
-		inset 0 6px 9px -6px rgba(255, 255, 255, 0.75),
+		inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 6px 9px -6px rgba(255, 255, 255, 0.75),
 		inset 0 -5px 8px -7px rgba(150, 106, 120, 0.22);
 	--shadow-inset-hover:
-		inset 0 1px 0 rgba(255, 255, 255, 0.95),
-		inset 0 7px 10px -6px rgba(255, 255, 255, 0.8),
+		inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 7px 10px -6px rgba(255, 255, 255, 0.8),
 		inset 0 -6px 9px -7px rgba(150, 106, 120, 0.22);
 
 	// ── Gloss ──
@@ -275,12 +273,10 @@
 	// same domed surface, lit by a much weaker highlight — a bright white top
 	// edge on a dark fill reads as a scratch, not a sheen
 	--shadow-inset:
-		inset 0 1px 0 rgba(255, 255, 255, 0.11),
-		inset 0 5px 8px -6px rgba(255, 255, 255, 0.10),
+		inset 0 1px 0 rgba(255, 255, 255, 0.11), inset 0 5px 8px -6px rgba(255, 255, 255, 0.1),
 		inset 0 -5px 8px -7px rgba(0, 0, 0, 0.5);
 	--shadow-inset-hover:
-		inset 0 1px 0 rgba(255, 255, 255, 0.16),
-		inset 0 7px 10px -6px rgba(255, 255, 255, 0.13),
+		inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 7px 10px -6px rgba(255, 255, 255, 0.13),
 		inset 0 -6px 9px -7px rgba(0, 0, 0, 0.55);
 
 	--gloss-face: linear-gradient(
@@ -330,7 +326,6 @@
 	--color-zone-min: #2c3139;
 	--color-zone-rest: #23262c;
 	--color-zone-border: #555d6b;
-
 
 	--color-drop-ok: #26443d;
 	--color-drop-ok-edge: #4a7d6d;

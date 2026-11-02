@@ -69,8 +69,8 @@
 			<div>
 				<h1>university rules</h1>
 				<p>
-					The numbers from the drop-form guidelines. Every hint students see, the credit panel and the
-					grid's colours all follow these.
+					The numbers from the drop-form guidelines. Every hint students see, the credit panel and the grid's colours
+					all follow these.
 				</p>
 			</div>
 			<div class="head-acts">
@@ -161,8 +161,7 @@
 		</section>
 
 		<p class="foot">
-			Saved in this browser. Use <b>export</b> on the courses page to publish rule changes together with
-			course edits.
+			Saved in this browser. Use <b>export</b> on the courses page to publish rule changes together with course edits.
 		</p>
 	</div>
 </div>

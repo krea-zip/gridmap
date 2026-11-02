@@ -29,7 +29,7 @@ the app working; tick a phase off when its checks pass.
    requirement sets → programmes → courses / choices / pathways, batch rules),
    public read, admin write (`app_metadata.role = 'admin'`); `import_curriculum`
    and `publish_curriculum` assemble an immutable release. `npm run
-   curriculum:build` compiles the scrape and `src/lib/data/requirement-sets/**`;
+curriculum:build` compiles the scrape and `src/lib/data/requirement-sets/**`;
    `curriculum:push` imports it (secret key); tests prove an exact round trip.
 3. **Curriculum runtime** — done. `src/lib/curriculum/compiler.ts` holds every
    source correction; `src/lib/data.ts` only indexes the snapshot. Builds pull

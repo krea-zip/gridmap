@@ -192,8 +192,7 @@ export function parseRuleEdits(raw: unknown): RuleEdits {
 	for (const key of Object.keys(RULE_DEFAULTS) as RuleKey[]) {
 		const v = (raw as Record<string, unknown>)[key];
 		const { min, max } = RULE_INFO[key];
-		if (typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max && v !== RULE_DEFAULTS[key])
-			out[key] = v;
+		if (typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max && v !== RULE_DEFAULTS[key]) out[key] = v;
 	}
 	return out;
 }

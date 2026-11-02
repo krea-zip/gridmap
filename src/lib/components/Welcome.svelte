@@ -16,8 +16,7 @@
 
 <Modal title="welcome to kcal" width="54rem" onclose={ondone}>
 	<p class="lede">
-		plan your whole Krea degree, trimester by trimester, what's required, what's left, and where each
-		course fits.
+		plan your whole Krea degree, trimester by trimester, what's required, what's left, and where each course fits.
 	</p>
 
 	<ol class="steps">
@@ -101,8 +100,8 @@
 	</ol>
 
 	<p class="note">
-		I'll lay out your department's suggested path to start from, move, add or drop anything. your plan
-		saves in this browser, and you can change all of this later in the sidebar.
+		I'll lay out your department's suggested path to start from, move, add or drop anything. your plan saves in this
+		browser, and you can change all of this later in the sidebar.
 	</p>
 
 	<div class="actions">

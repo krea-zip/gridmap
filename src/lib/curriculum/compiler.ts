@@ -27,13 +27,27 @@ const batchEdits: Record<string, BatchRule> = Object.fromEntries(
 			Object.entries(variants).flatMap(([variant, courses]) => {
 				const [role, length] = variant.split('_') as [ProgrammeRole, string];
 				const doubles = role === 'major' ? [false, true] : [false];
-				return doubles.map((double) => [JSON.stringify([Number(year), subject, role, length === '4yr', role === 'major' && double]), { courses }] as const);
+				return doubles.map(
+					(double) =>
+						[
+							JSON.stringify([Number(year), subject, role, length === '4yr', role === 'major' && double]),
+							{ courses }
+						] as const
+				);
 			})
 		)
 	)
 );
-export function batchRuleFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number) {
-	return batch === undefined ? undefined : batchEdits[JSON.stringify([batch, subject, role, fourYear, role === 'major' && isDouble])];
+export function batchRuleFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+) {
+	return batch === undefined
+		? undefined
+		: batchEdits[JSON.stringify([batch, subject, role, fourYear, role === 'major' && isDouble])];
 }
 
 type RawCourse = {
@@ -137,9 +151,20 @@ for (const entry of manualOfferings.courses) {
 		if (typeof alias === 'string') codesBySubject[subject] ??= alias;
 	}
 	rawCourses[entry.code] = {
-		...(existing ?? { code: entry.code, title: entry.title, subject: entry.subject,
-			credits: 0, pendingCredits: true, type: 'Elective', eligible_years: [1,2,3,4], prereqs: [], unlocks: [] }),
-		codes, subjects, codes_by_subject: codesBySubject,
+		...(existing ?? {
+			code: entry.code,
+			title: entry.title,
+			subject: entry.subject,
+			credits: 0,
+			pendingCredits: true,
+			type: 'Elective',
+			eligible_years: [1, 2, 3, 4],
+			prereqs: [],
+			unlocks: []
+		}),
+		codes,
+		subjects,
+		codes_by_subject: codesBySubject,
 		terms: [...new Set([...(existing?.terms ?? []), 'manual_T2'])],
 		faculty: entry.faculty
 	};
@@ -425,9 +450,18 @@ for (const list of Object.values(departmentData as Record<string, Professor[]>))
 }
 
 // a URL-safe id like the directory's own ("ruchir-joshi"), never one taken
-const takenSlugs = new Set(Object.values(departmentData as Record<string, Professor[]>).flat().map((p) => p.id));
+const takenSlugs = new Set(
+	Object.values(departmentData as Record<string, Professor[]>)
+		.flat()
+		.map((p) => p.id)
+);
 function lecturerSlug(name: string): string {
-	const base = name.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'lecturer';
+	const base =
+		name
+			.toLowerCase()
+			.normalize('NFKD')
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-|-$/g, '') || 'lecturer';
 	let slug = base;
 	for (let n = 2; takenSlugs.has(slug); n++) slug = `${base}-${n}`;
 	takenSlugs.add(slug);
@@ -452,9 +486,22 @@ const resolveFaculty = (f: RawCourse['faculty'][number]): Professor => {
 	if (!p) {
 		// the timetable names some only by email: "debankur.saha@…" → "Debankur Saha"
 		const shown = name.includes('@')
-			? name.split('@')[0].split(/[._-]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ')
+			? name
+					.split('@')[0]
+					.split(/[._-]+/)
+					.filter(Boolean)
+					.map((w) => w[0].toUpperCase() + w.slice(1))
+					.join(' ')
 			: name;
-		p = { id: lecturerSlug(shown), name: shown, email: f.email || (name.includes('@') ? name : ''), position: '', office_hours: '', image_url: '', url: '' };
+		p = {
+			id: lecturerSlug(shown),
+			name: shown,
+			email: f.email || (name.includes('@') ? name : ''),
+			position: '',
+			office_hours: '',
+			image_url: '',
+			url: ''
+		};
 		strangers.set(key, p);
 	}
 	p.email ||= f.email;
@@ -608,7 +655,10 @@ type Requirements = {
 /** "single_major_4yr" → its cell in the credit table */
 const creditCells = (variant: string): [string, '3yr' | '4yr'][] =>
 	variant === 'concentration'
-		? [['concentration', '3yr'], ['concentration', '4yr']]
+		? [
+				['concentration', '3yr'],
+				['concentration', '4yr']
+			]
 		: [[variant.replace(/_[34]yr$/, ''), variant.endsWith('4yr') ? '4yr' : '3yr']];
 
 function applyStated(web: ReqSubject, stated: StatedSubject): ReqSubject {
@@ -633,7 +683,11 @@ function applyStated(web: ReqSubject, stated: StatedSubject): ReqSubject {
 		if (p.choices || uncatalogued.length) {
 			const groups = (p.choices ?? []).map((c) => ({ rule: c.label, pick: c.pick, courses: c.from.map(courseOf) }));
 			if (uncatalogued.length)
-				groups.push({ rule: 'Also required, not in the catalogue yet', pick: uncatalogued.length, courses: uncatalogued.map(courseOf) });
+				groups.push({
+					rule: 'Also required, not in the catalogue yet',
+					pick: uncatalogued.length,
+					courses: uncatalogued.map(courseOf)
+				});
 			out.choice_groups![variant] = groups;
 			out.pick_codes![variant] = codesOf((p.choices ?? []).flatMap((c) => c.from));
 		}
@@ -646,15 +700,20 @@ function applyStated(web: ReqSubject, stated: StatedSubject): ReqSubject {
 		}
 		if (p.pathway)
 			out.pathways![variant] = Object.entries(p.pathway).flatMap(([year, trims]) =>
-				Object.entries(trims).flatMap(([trim, codes]) => codes.map((code) => ({ year: Number(year), trim: Number(trim) as TrimNum, code })))
+				Object.entries(trims).flatMap(([trim, codes]) =>
+					codes.map((code) => ({ year: Number(year), trim: Number(trim) as TrimNum, code }))
+				)
 			);
 	}
 	return out;
 }
 
 function compileRequirements(set: RequirementSet | undefined): Requirements {
-	const subjects: Record<string, ReqSubject> = { ...(websiteRequirements as { subjects: Record<string, ReqSubject> }).subjects };
-	for (const [subject, stated] of Object.entries(set?.subjects ?? {})) subjects[subject] = applyStated(subjects[subject] ?? {}, stated);
+	const subjects: Record<string, ReqSubject> = {
+		...(websiteRequirements as { subjects: Record<string, ReqSubject> }).subjects
+	};
+	for (const [subject, stated] of Object.entries(set?.subjects ?? {}))
+		subjects[subject] = applyStated(subjects[subject] ?? {}, stated);
 	// union across programme types, only a fallback for variants with no
 	// list of their own (e.g. chemistry's 4-year single major)
 	const union = (lists: Record<string, string[]> | undefined) => new Set(Object.values(lists ?? {}).flat());
@@ -698,8 +757,15 @@ function webCreditsFor(
 /** how many credits of required courses the degree demands, per the site's
  *  own table, the honest denominator when the required list is choice
  *  pools (history: "any three of the methodology courses" = 40 required) */
-export const requiredCreditsFor = (subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number) =>
-	batchRuleFor(subject, role, fourYear, isDouble, batch)?.requiredCredits ?? webCreditsFor(subject, role, fourYear, isDouble, batch, 'required');
+export const requiredCreditsFor = (
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+) =>
+	batchRuleFor(subject, role, fourYear, isDouble, batch)?.requiredCredits ??
+	webCreditsFor(subject, role, fourYear, isDouble, batch, 'required');
 
 /** the requirements.json key for the exact programme variant on the plan:
  *  single_major_3yr, double_major_4yr, minor_3yr, …, concentration */
@@ -723,7 +789,12 @@ const stripSpace = (code: string) => code.replace(/\s+/g, '').toUpperCase();
 
 const programmesBySubject = programmeData as Record<string, RawProgramme[]>;
 
-function findProgramme(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean): RawProgramme | undefined {
+function findProgramme(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean
+): RawProgramme | undefined {
 	const list = programmesBySubject[subject] ?? [];
 	if (role === 'concentration') return list.find((p) => p.name === 'Concentration');
 	if (role === 'minor') return list.find((p) => p.name === `Minor (${fourYear ? '4' : '3'} Year)`);
@@ -756,7 +827,13 @@ export const reachableIn = (code: string, fourYear: boolean): boolean => {
  * resolves; for majors the last resort is the university's own
  * required/elective flag on each course of the subject.
  */
-function defaultRequiredSetFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch: number | undefined): string[] {
+function defaultRequiredSetFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch: number | undefined
+): string[] {
 	const rules = rulesFor(batch);
 	const pick = (): string[] => {
 		const key = reqKey(role, fourYear, isDouble);
@@ -797,11 +874,17 @@ function defaultRequiredSetFor(subject: string, role: ProgrammeRole, fourYear: b
 
 /** required courses the credit-table cap pushed out of requiredSetFor,
  *  they still count for the subject, just as electives you choose */
-function requiredOverflowFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch: number | undefined): string[] {
+function requiredOverflowFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch: number | undefined
+): string[] {
 	if (webCreditsFor(subject, role, fourYear, isDouble, batch, 'required') === undefined) return [];
 	const kept = new Set(defaultRequiredSetFor(subject, role, fourYear, isDouble, batch));
-	const exact = (rulesFor(batch).subjects[subject]?.required_codes?.[reqKey(role, fourYear, isDouble)] ?? []).filter((code) =>
-		index.has(code)
+	const exact = (rulesFor(batch).subjects[subject]?.required_codes?.[reqKey(role, fourYear, isDouble)] ?? []).filter(
+		(code) => index.has(code)
 	);
 	return exact.filter((code) => !kept.has(code) && reachableIn(code, fourYear));
 }
@@ -809,18 +892,25 @@ function requiredOverflowFor(subject: string, role: ProgrammeRole, fourYear: boo
 /** the 'choose N from' pools for the exact programme variant, these
  *  count toward the degree's *required* credits (history's methodology /
  *  world-history groups), they are not free electives */
-function defaultPickSetFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch: number | undefined): string[] {
+function defaultPickSetFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch: number | undefined
+): string[] {
 	const picks = rulesFor(batch).subjects[subject]?.pick_codes;
-	const exact = (picks?.[reqKey(role, fourYear, isDouble)] ?? []).filter((code) =>
-		index.has(code)
-	);
+	const exact = (picks?.[reqKey(role, fourYear, isDouble)] ?? []).filter((code) => index.has(code));
 	// a variant with no list of its own borrows only from its own kind, a
 	// 3-year maths minor must not inherit the majors' pools and turn
 	// Topology 1, Algebra 3, … into requirements
 	const sameRole = Object.entries(picks ?? {})
 		.filter(([key]) => (role === 'major' ? key.includes('_major_') : key.startsWith(role)))
 		.flatMap(([, codes]) => codes);
-	const list = picks && Object.hasOwn(picks, reqKey(role, fourYear, isDouble)) ? exact : [...new Set(sameRole)].filter((code) => index.has(code));
+	const list =
+		picks && Object.hasOwn(picks, reqKey(role, fourYear, isDouble))
+			? exact
+			: [...new Set(sameRole)].filter((code) => index.has(code));
 	return list.filter((code) => reachableIn(code, fourYear));
 }
 
@@ -830,7 +920,13 @@ export type ChoiceGroup = { rule: string; pick: number; courses: ChoiceCourse[] 
 /** the website track ("4 Year Single Major", "3-Year Minor", …) whose lists
  *  apply to a given programme variant, matched by kind + duration, tolerating
  *  the page's inconsistent "4 Year" / "3-Year" / "3/4 -Year" spellings */
-function trackGroupsFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch: number | undefined): RawTrack['groups'] {
+function trackGroupsFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch: number | undefined
+): RawTrack['groups'] {
 	const own = rulesFor(batch).subjects[subject];
 	const stated = own?.choice_groups?.[reqKey(role, fourYear, isDouble)];
 	if (stated) return stated;
@@ -855,7 +951,13 @@ function trackGroupsFor(subject: string, role: ProgrammeRole, fourYear: boolean,
  *  with the courses in each, so the sidebar can spell out the choices the
  *  seeded required core doesn't make for the student (history's methodology /
  *  world-history pools, literature's elective allowance) */
-function defaultChoiceGroupsFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch: number | undefined): ChoiceGroup[] {
+function defaultChoiceGroupsFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch: number | undefined
+): ChoiceGroup[] {
 	const out: ChoiceGroup[] = [];
 	for (const g of trackGroupsFor(subject, role, fourYear, isDouble, batch)) {
 		// only a group that lists SPECIFIC courses to choose among (history's
@@ -873,7 +975,13 @@ function defaultChoiceGroupsFor(subject: string, role: ProgrammeRole, fourYear: 
 
 /** the elective pool for the exact programme variant, same sourcing as
  *  requiredSetFor, the all-variants union when the page has no exact list */
-function defaultElectiveSetFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch: number | undefined): string[] {
+function defaultElectiveSetFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch: number | undefined
+): string[] {
 	const rules = rulesFor(batch);
 	// the required courses the cap moved out (maths Topology 1) join the pool
 	const overflow = requiredOverflowFor(subject, role, fourYear, isDouble, batch);
@@ -881,7 +989,9 @@ function defaultElectiveSetFor(subject: string, role: ProgrammeRole, fourYear: b
 		index.has(code)
 	);
 	if (exact.length) return [...new Set([...overflow, ...exact])];
-	return [...new Set([...overflow, ...[...(rules.electiveBySubject.get(subject) ?? [])].filter((code) => index.has(code))])];
+	return [
+		...new Set([...overflow, ...[...(rules.electiveBySubject.get(subject) ?? [])].filter((code) => index.has(code))])
+	];
 }
 
 /**
@@ -919,7 +1029,13 @@ export function recommendedFor(
 export const creditsOfCodes = (codes: string[]): number =>
 	codes.reduce((sum, code) => sum + (index.get(code)?.credits ?? 0), 0);
 
-export function creditsFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number): number {
+export function creditsFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+): number {
 	// the open minor has no subject page, it's a fixed-size basket of free courses
 	if (subject === 'open') return role === 'minor' ? OPEN_MINOR_CREDITS : 0;
 	// prefer the subject's real total from the scraped credit table
@@ -937,7 +1053,13 @@ export function creditsFor(subject: string, role: ProgrammeRole, fourYear: boole
 }
 
 // Missing batch entries inherit the shared curriculum exactly.
-export function requiredSetFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number): string[] {
+export function requiredSetFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+): string[] {
 	const base = defaultRequiredSetFor(subject, role, fourYear, isDouble, batch);
 	if (!batchRuleFor(subject, role, fourYear, isDouble, batch)) return base;
 	const edits = batchRuleFor(subject, role, fourYear, isDouble, batch)?.courses ?? {};
@@ -950,26 +1072,47 @@ export function requiredSetFor(subject: string, role: ProgrammeRole, fourYear: b
 	}
 	return [...result];
 }
-export function electiveSetFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number): string[] {
+export function electiveSetFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+): string[] {
 	const result = new Set(defaultElectiveSetFor(subject, role, fourYear, isDouble, batch));
 	for (const [alias, type] of Object.entries(batchRuleFor(subject, role, fourYear, isDouble, batch)?.courses ?? {})) {
 		if (!hasCode(alias)) continue;
 		const code = byCode(alias).code;
-		if (type === 'elective') result.add(code); else result.delete(code);
+		if (type === 'elective') result.add(code);
+		else result.delete(code);
 	}
 	return [...result];
 }
-export function pickSetFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number): string[] {
+export function pickSetFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+): string[] {
 	const edits = batchRuleFor(subject, role, fourYear, isDouble, batch)?.courses ?? {};
 	return defaultPickSetFor(subject, role, fourYear, isDouble, batch).filter((code) => !edits[byCode(code).code]);
 }
-export function choiceGroupsFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number): ChoiceGroup[] {
+export function choiceGroupsFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+): ChoiceGroup[] {
 	const edits = batchRuleFor(subject, role, fourYear, isDouble, batch)?.courses ?? {};
-	return defaultChoiceGroupsFor(subject, role, fourYear, isDouble, batch).map((group) => {
-		const type = (c: ChoiceCourse) => c.code && hasCode(c.code) ? edits[byCode(c.code).code] : undefined;
-		const pick = Math.max(0, group.pick - group.courses.filter((c) => type(c) === 'required').length);
-		return { ...group, pick, courses: group.courses.filter((c) => !type(c)) };
-	}).filter((g) => g.pick > 0);
+	return defaultChoiceGroupsFor(subject, role, fourYear, isDouble, batch)
+		.map((group) => {
+			const type = (c: ChoiceCourse) => (c.code && hasCode(c.code) ? edits[byCode(c.code).code] : undefined);
+			const pick = Math.max(0, group.pick - group.courses.filter((c) => type(c) === 'required').length);
+			return { ...group, pick, courses: group.courses.filter((c) => !type(c)) };
+		})
+		.filter((g) => g.pick > 0);
 }
 
 // ── The snapshot ──
@@ -1025,15 +1168,18 @@ export function compileCurriculum(): Omit<CurriculumSnapshot, 'release'> {
 	});
 	// the directory, plus anyone the term sheets name that it doesn't list
 	const lecturers = new Map<string, Professor>();
-	for (const p of [...Object.values(departmentFaculty).flat(), ...strangers.values()]) if (!lecturers.has(p.id)) lecturers.set(p.id, p);
+	for (const p of [...Object.values(departmentFaculty).flat(), ...strangers.values()])
+		if (!lecturers.has(p.id)) lecturers.set(p.id, p);
 
 	const variantsOf = (key: string): Variant[] => {
 		const [role, length] = key.split('_');
-		return role === 'major' ? [`single_major_${length}`, `double_major_${length}`] as Variant[] : [key as Variant];
+		return role === 'major' ? ([`single_major_${length}`, `double_major_${length}`] as Variant[]) : [key as Variant];
 	};
 	const batchRules = Object.entries((batchRulesData as BatchRuleFile).batches).flatMap(([batch, subjects]) =>
 		Object.entries(subjects).flatMap(([subject, variants]) =>
-			Object.entries(variants).flatMap(([key, courses]) => variantsOf(key).map((variant) => ({ batch: Number(batch), subject, variant, courses })))
+			Object.entries(variants).flatMap(([key, courses]) =>
+				variantsOf(key).map((variant) => ({ batch: Number(batch), subject, variant, courses }))
+			)
 		)
 	);
 	// one canonical order, the same the database assembles in
@@ -1043,7 +1189,12 @@ export function compileCurriculum(): Omit<CurriculumSnapshot, 'release'> {
 	const requirementSets: SnapshotSet[] = [
 		// no batch number any set claims → the website's rules
 		{ id: 'website', name: 'University website', batches: null, programmes: programmesFor(0) },
-		...REQUIREMENT_SETS.map((set) => ({ id: set.id, name: set.name, batches: set.batches, programmes: programmesFor(set.batches[0]) }))
+		...REQUIREMENT_SETS.map((set) => ({
+			id: set.id,
+			name: set.name,
+			batches: set.batches,
+			programmes: programmesFor(set.batches[0])
+		}))
 	];
 
 	return {
@@ -1052,12 +1203,22 @@ export function compileCurriculum(): Omit<CurriculumSnapshot, 'release'> {
 		subjects: SUBJECTS,
 		rules: { ...RULES },
 		courses,
-		lecturers: [...lecturers.values()].map(({ id, name, email, position, office_hours, image_url, url, date_of_joining }) => ({
-			id, name, email: email ?? '', position: position ?? '', office_hours: office_hours ?? '', image_url: image_url ?? '', url: url ?? '',
-			...(date_of_joining ? { date_of_joining } : {})
-		})),
+		lecturers: [...lecturers.values()].map(
+			({ id, name, email, position, office_hours, image_url, url, date_of_joining }) => ({
+				id,
+				name,
+				email: email ?? '',
+				position: position ?? '',
+				office_hours: office_hours ?? '',
+				image_url: image_url ?? '',
+				url: url ?? '',
+				...(date_of_joining ? { date_of_joining } : {})
+			})
+		),
 		equivalences: {
-			substitutes: SUBSTITUTE_GROUPS.map((group) => group.filter((code) => index.has(code))).filter((group) => group.length > 1),
+			substitutes: SUBSTITUTE_GROUPS.map((group) => group.filter((code) => index.has(code))).filter(
+				(group) => group.length > 1
+			),
 			covers: MATHS_COVERS.filter(({ maths, applied }) => index.has(maths) && index.has(applied)),
 			transcriptOnly: [...TRANSCRIPT_ONLY]
 		},

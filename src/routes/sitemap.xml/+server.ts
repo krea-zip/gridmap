@@ -12,7 +12,9 @@ export const GET: RequestHandler = ({ url }) => {
 		'/courses',
 		'/programmes',
 		'/lecturers',
-		...courseCodes().filter((code) => canonical.has(code)).map((code) => `/courses/${code}`),
+		...courseCodes()
+			.filter((code) => canonical.has(code))
+			.map((code) => `/courses/${code}`),
 		...programmeIndex().map(({ slug }) => `/programmes/${slug}`),
 		...lecturerIds().map((id) => `/lecturers/${id}`)
 	];

@@ -4,13 +4,16 @@
 
 <svelte:head>
 	<title>Programmes · kcal</title>
-	<meta name="description" content="Majors, minors and concentrations at Krea's SIAS: credits, required courses and choices for each." />
+	<meta
+		name="description"
+		content="Majors, minors and concentrations at Krea's SIAS: credits, required courses and choices for each."
+	/>
 </svelte:head>
 
 <h1>Programmes</h1>
 <p class="lede">
-	What each major, minor and concentration asks for: credits, required courses and the choices you make. These are
-	the rules for the {data.batches} batches.
+	What each major, minor and concentration asks for: credits, required courses and the choices you make. These are the
+	rules for the {data.batches} batches.
 </p>
 
 <ul class="subjects">
@@ -59,7 +62,9 @@
 		border-left-width: 4px;
 		border-radius: 6px;
 		box-shadow: var(--shadow-card);
-		transition: transform 0.15s var(--spring), box-shadow 0.15s ease;
+		transition:
+			transform 0.15s var(--spring),
+			box-shadow 0.15s ease;
 
 		&:hover {
 			transform: translateY(-2px);

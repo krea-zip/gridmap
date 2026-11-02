@@ -53,7 +53,8 @@
 		// what-if starts from the plan as it is, every time
 		if (view === 'whatif') plan.startWhatIf();
 		// prerequisites starts on the course already open, if it's on the grid
-		chainRoot = view === 'prereqs' && plan.selected && plan.placedCodes.has(plan.selected.code) ? plan.selected.code : null;
+		chainRoot =
+			view === 'prereqs' && plan.selected && plan.placedCodes.has(plan.selected.code) ? plan.selected.code : null;
 		// grades changes what the whole board means, so the first visit says so
 		if (view === 'grades' && !localStorage.getItem(GRADE_HINT_KEY)) showGradeHint = true;
 		else showGradeHint = false;
@@ -213,7 +214,8 @@
 		if (!code) return;
 		const slot = nearestSlot(e.clientX, e.clientY, code);
 		if (!slot) return;
-		const at = shown && shownIn === `${slot.year}-${slot.trim}` ? shown.index : aimAt(slot, e.clientX, e.clientY, code)?.index;
+		const at =
+			shown && shownIn === `${slot.year}-${slot.trim}` ? shown.index : aimAt(slot, e.clientX, e.clientY, code)?.index;
 		plan.place(code, slot.year, slot.trim, at);
 	}
 
@@ -304,7 +306,6 @@
 		plan.addYear();
 		freshYear = plan.years.length;
 	}
-
 </script>
 
 <svelte:window
@@ -327,7 +328,8 @@
 	<!-- undo / redo a whole planning step (also ⌘Z / ⇧⌘Z) -->
 	<div class="keys history" role="group" aria-label="history">
 		<button disabled={!plan.canUndo} title="undo (Ctrl+Z)" aria-label="undo" onclick={() => plan.undo()}>↶</button>
-		<button disabled={!plan.canRedo} title="redo (Ctrl+Shift+Z)" aria-label="redo" onclick={() => plan.redo()}>↷</button>
+		<button disabled={!plan.canRedo} title="redo (Ctrl+Shift+Z)" aria-label="redo" onclick={() => plan.redo()}>↷</button
+		>
 	</div>
 
 	<span class="bar-rule" aria-hidden="true"></span>
@@ -360,9 +362,17 @@
 	<!-- how the chips are drawn: what they're labelled with, and what their
 	     colours mean -->
 	<div class="keys" role="group" aria-label="course labels">
-		<button class:active={plan.showCodes} aria-pressed={plan.showCodes} onclick={() => plan.toggleLabel('code')}><PixelIcon name="code" />codes</button>
-		<button class:active={plan.showTitles} aria-pressed={plan.showTitles} onclick={() => plan.toggleLabel('title')}><PixelIcon name="title" />titles</button>
-		{#if plan.gradeMode}<button class:active={plan.showGradeLabels} aria-pressed={plan.showGradeLabels} onclick={() => (plan.showGradeLabels = !plan.showGradeLabels)}><PixelIcon name="grade" />grades</button>{/if}
+		<button class:active={plan.showCodes} aria-pressed={plan.showCodes} onclick={() => plan.toggleLabel('code')}
+			><PixelIcon name="code" />codes</button
+		>
+		<button class:active={plan.showTitles} aria-pressed={plan.showTitles} onclick={() => plan.toggleLabel('title')}
+			><PixelIcon name="title" />titles</button
+		>
+		{#if plan.gradeMode}<button
+				class:active={plan.showGradeLabels}
+				aria-pressed={plan.showGradeLabels}
+				onclick={() => (plan.showGradeLabels = !plan.showGradeLabels)}><PixelIcon name="grade" />grades</button
+			>{/if}
 	</div>
 
 	<span class="bar-rule" aria-hidden="true"></span>
@@ -371,9 +381,18 @@
 	     bar it read as a row of checkboxes and pushed the credit count onto
 	     a line of its own. Hovering a row lights its chips on the board, the
 	     way hovering a hint does. -->
-	<div class="colour-key" bind:this={keyEl} style:--hue={plan.programmes[0] && subjectById(plan.programmes[0].subject).hue}>
+	<div
+		class="colour-key"
+		bind:this={keyEl}
+		style:--hue={plan.programmes[0] && subjectById(plan.programmes[0].subject).hue}
+	>
 		<div class="keys">
-			<button class:active={keyOpen} aria-expanded={keyOpen} aria-controls="colour-key" onclick={() => setKeyOpen(!keyOpen)}>
+			<button
+				class:active={keyOpen}
+				aria-expanded={keyOpen}
+				aria-controls="colour-key"
+				onclick={() => setKeyOpen(!keyOpen)}
+			>
 				<!-- just the essentials: a square per subject in the hue its courses
 				     wear, then required and elective, kccs and other dept. wait
 				     in the dropdown -->
@@ -389,12 +408,24 @@
 			</button>
 		</div>
 		{#if keyOpen}
-			<div id="colour-key" class="key-pop" in:scale={{ start: 0.94, duration: reducedMotion() ? 0 : 260, easing: backOut }} out:fade={{ duration: reducedMotion() ? 0 : 100 }}>
+			<div
+				id="colour-key"
+				class="key-pop"
+				in:scale={{ start: 0.94, duration: reducedMotion() ? 0 : 260, easing: backOut }}
+				out:fade={{ duration: reducedMotion() ? 0 : 100 }}
+			>
 				<!-- the type rows wear the major's hue, the colour you'll see most -->
 				<ul class="legend" aria-label="course colour legend">
 					{#each TYPE_KEYS as k (k.type)}
-						<li class="key" title={k.note} onmouseenter={() => (plan.highlight = [...plan.placedCodes].filter((c) => plan.courseType(c) === k.type))} onmouseleave={() => (plan.highlight = [])}>
-							<i data-type={k.type}>{#if k.type === 'required'}<b class="req-dot"></b>{/if}</i>{k.label}
+						<li
+							class="key"
+							title={k.note}
+							onmouseenter={() => (plan.highlight = [...plan.placedCodes].filter((c) => plan.courseType(c) === k.type))}
+							onmouseleave={() => (plan.highlight = [])}
+						>
+							<i data-type={k.type}
+								>{#if k.type === 'required'}<b class="req-dot"></b>{/if}</i
+							>{k.label}
 						</li>
 					{/each}
 				</ul>
@@ -403,8 +434,13 @@
 					<ul class="legend" aria-label="subject colour legend">
 						{#each plan.programmes as prog, i (prog.role + prog.subject)}
 							{#if prog.subject !== 'open'}
-								<li class="key" onmouseenter={() => (plan.highlight = [...plan.placedCodes].filter((c) => plan.programmeOf(c) === i))} onmouseleave={() => (plan.highlight = [])}>
-									<i data-type="required" style:--hue={subjectById(prog.subject).hue}></i>{subjectById(prog.subject).label}<em>{prog.role === 'concentration' ? 'concentration' : prog.role}</em>
+								<li
+									class="key"
+									onmouseenter={() => (plan.highlight = [...plan.placedCodes].filter((c) => plan.programmeOf(c) === i))}
+									onmouseleave={() => (plan.highlight = [])}
+								>
+									<i data-type="required" style:--hue={subjectById(prog.subject).hue}></i>{subjectById(prog.subject)
+										.label}<em>{prog.role === 'concentration' ? 'concentration' : prog.role}</em>
 								</li>
 							{/if}
 						{/each}
@@ -451,8 +487,7 @@
 					? `counting against the credits you need to graduate (${plan.creditMinimum}), click for the maximum`
 					: `counting against the most you may register over your tenure (${plan.creditCeiling}), click for the minimum`}
 				aria-label="count credits against the {plan.creditTargetMode}, click to switch"
-				onclick={() =>
-					(plan.creditTargetMode = plan.creditTargetMode === 'minimum' ? 'maximum' : 'minimum')}
+				onclick={() => (plan.creditTargetMode = plan.creditTargetMode === 'minimum' ? 'maximum' : 'minimum')}
 			>
 				<span class:active={plan.creditTargetMode === 'minimum'}>min</span>
 				<span class:active={plan.creditTargetMode === 'maximum'}>max</span>
@@ -481,15 +516,14 @@
 	<CreditRules onclose={() => (showCredits = false)} />
 {/if}
 
-
 {#if showGrades && plan.gradeMode}
 	<GradesPanel year={gradesYear} onclose={() => (showGrades = false)} />
 {/if}
 
 {#if !plan.touched && plan.view === 'plan'}
 	<p class="example-note">
-		<b>this is the suggested path for your degree, filled in to start you off.</b> change anything and it's
-		yours, until then, picking a different degree on the left lays it out again.
+		<b>this is the suggested path for your degree, filled in to start you off.</b> change anything and it's yours, until then,
+		picking a different degree on the left lays it out again.
 	</p>
 {/if}
 
@@ -547,7 +581,9 @@
 					class="yh-gpa"
 					class:empty={yg === null}
 					class:low={yg !== null && yg < GRAD_MIN_CGPA}
-					title={yg === null ? `no grades in year ${y} yet, grade its courses` : `year ${y} GPA ${shown}, grade its courses`}
+					title={yg === null
+						? `no grades in year ${y} yet, grade its courses`
+						: `year ${y} GPA ${shown}, grade its courses`}
 					onclick={() => {
 						gradesYear = y;
 						showGrades = true;
@@ -595,11 +631,19 @@
 				onclick={() => !pressOnItem && open(y, t)}
 				onkeydown={(e) => {
 					if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-						e.preventDefault(); open(y, t);
+						e.preventDefault();
+						open(y, t);
 					}
 				}}
 			>
-				<button class="mobile-term" aria-label="view {trimesterName(y, t)}" onclick={(e) => { e.stopPropagation(); open(y, t); }}>t{degreeTrim(y, t)} · trimester {t}<span>view trimester →</span></button>
+				<button
+					class="mobile-term"
+					aria-label="view {trimesterName(y, t)}"
+					onclick={(e) => {
+						e.stopPropagation();
+						open(y, t);
+					}}>t{degreeTrim(y, t)} · trimester {t}<span>view trimester →</span></button
+				>
 				<!-- the core-only rule, named only while there's nothing in the
 				     cell at all, not over the suggestions waiting in it -->
 				<!-- a trimester off: a break, a suspension or a term away; set and
@@ -612,7 +656,11 @@
 				{/if}
 				<!-- where you are: "now" on the trimester you're in, whichever way
 				     the trimesters are numbered -->
-				{#if isNow || (plan.view === 'whatif' && slotOrder(y, t) === hereAt)}<span class="here-tag" title="the trimester you're in now, from your batch and today's date (you can change it in what-if)">now</span>{/if}
+				{#if isNow || (plan.view === 'whatif' && slotOrder(y, t) === hereAt)}<span
+						class="here-tag"
+						title="the trimester you're in now, from your batch and today's date (you can change it in what-if)"
+						>now</span
+					>{/if}
 				{#if coreSlot && plan.slotCourses(y, t).length === 0 && (plan.view !== 'plan' || plan.suggestionsFor(y, t).length === 0)}
 					<span class="core-note">kccs courses</span>
 				{/if}
@@ -645,24 +693,57 @@
 						out:courseOut={{ key: code }}
 						ondragstart={(e) => chipDragstart(e, code)}
 						ondragend={() => (plan.dragging = null)}
-
 					>
-						<button class="chip-open" onclick={(e) => { e.stopPropagation(); plan.select(code); if (plan.view === 'prereqs' && !isAttemptId(code)) chainRoot = code; }} aria-label="view {plan.courseLabel(code)}" title="{plan.courseLabel(code)}{isAttemptId(code) ? ' (failed attempt)' : plan.attemptsOf(code).length ? ' (retake)' : ''}, {plan.roleLabel(code)}">
-						<!-- a failed attempt wears its U always, grade view or not -->
-						{#if (isAttemptId(code) || (plan.gradeMode && plan.showGradeLabels)) && plan.gradeOf(code)}
-							<span class="chip-grade" class:fail={plan.gradeOf(code) === 'U'}>{plan.gradeOf(code)}</span>
-						{/if}
-						<!-- a course named in a hint leads with that hint's severity
-						     mark, the way a required one leads with its dot -->
-						{#if plan.flagKinds.has(code)}<span class="flag" data-kind={plan.flagKinds.get(code)} role="img" aria-label="named in a hint" title="named in a hint, see hints"></span>{/if}
-						{#if type === 'required'}<span class="req-dot" role="img" aria-label="required"></span>{/if}
-						<span class="label"
-							>{#if plan.showCodes}<b class="chip-code">{plan.shownCode(code)}</b>{/if}{#if plan.showCodes && plan.showTitles}{' · '}{/if}{#if plan.showTitles}{byCode(code).title}{/if}{#if !plan.showTitles}<span class="mobile-title">{byCode(code).title}</span>{/if}</span
+						<button
+							class="chip-open"
+							onclick={(e) => {
+								e.stopPropagation();
+								plan.select(code);
+								if (plan.view === 'prereqs' && !isAttemptId(code)) chainRoot = code;
+							}}
+							aria-label="view {plan.courseLabel(code)}"
+							title="{plan.courseLabel(code)}{isAttemptId(code)
+								? ' (failed attempt)'
+								: plan.attemptsOf(code).length
+									? ' (retake)'
+									: ''}, {plan.roleLabel(code)}"
 						>
-						<!-- each view's mark: how often it ran, whether it'd still count, who teaches it -->
-						{#if run}<span class="run-mark" data-kind={run.kind} role="img" aria-label={runText(code, t)} title={runText(code, t)}></span>{/if}
-						{#if change}<span class="wi-mark" data-change={change} role="img" aria-label={change === 'stops' ? 'would stop counting' : 'would start counting'} title={change === 'stops' ? 'would stop counting' : 'would start counting'}>{change === 'stops' ? '−' : '+'}</span>{/if}
-						{#if who}<span class="chip-who" title={who}>{who}</span>{/if}
+							<!-- a failed attempt wears its U always, grade view or not -->
+							{#if (isAttemptId(code) || (plan.gradeMode && plan.showGradeLabels)) && plan.gradeOf(code)}
+								<span class="chip-grade" class:fail={plan.gradeOf(code) === 'U'}>{plan.gradeOf(code)}</span>
+							{/if}
+							<!-- a course named in a hint leads with that hint's severity
+						     mark, the way a required one leads with its dot -->
+							{#if plan.flagKinds.has(code)}<span
+									class="flag"
+									data-kind={plan.flagKinds.get(code)}
+									role="img"
+									aria-label="named in a hint"
+									title="named in a hint, see hints"
+								></span>{/if}
+							{#if type === 'required'}<span class="req-dot" role="img" aria-label="required"></span>{/if}
+							<span class="label"
+								>{#if plan.showCodes}<b class="chip-code">{plan.shownCode(code)}</b
+									>{/if}{#if plan.showCodes && plan.showTitles}{' · '}{/if}{#if plan.showTitles}{byCode(code)
+										.title}{/if}{#if !plan.showTitles}<span class="mobile-title">{byCode(code).title}</span>{/if}</span
+							>
+							<!-- each view's mark: how often it ran, whether it'd still count, who teaches it -->
+							{#if run}<span
+									class="run-mark"
+									data-kind={run.kind}
+									role="img"
+									aria-label={runText(code, t)}
+									title={runText(code, t)}
+								></span>{/if}
+							{#if change}<span
+									class="wi-mark"
+									data-change={change}
+									role="img"
+									aria-label={change === 'stops' ? 'would stop counting' : 'would start counting'}
+									title={change === 'stops' ? 'would stop counting' : 'would start counting'}
+									>{change === 'stops' ? '−' : '+'}</span
+								>{/if}
+							{#if who}<span class="chip-who" title={who}>{who}</span>{/if}
 						</button>
 						<button
 							class="x"
@@ -698,7 +779,9 @@
 						class:showing-title={plan.showTitles}
 						data-type={plan.whatIfType(n.code)}
 						style:--hue={plan.whatIfHue(n.code)}
-						title="still needed{n.why === 'prerequisite' && n.for ? `, first, for ${plan.courseLabel(n.for)}` : ''}: {plan.courseLabel(n.code)}"
+						title="still needed{n.why === 'prerequisite' && n.for
+							? `, first, for ${plan.courseLabel(n.for)}`
+							: ''}: {plan.courseLabel(n.code)}"
 						onclick={(e) => {
 							e.stopPropagation();
 							plan.select(n.code);
@@ -737,50 +820,54 @@
 				     the left (year 4 T1 is t10; the one you're in, in the accent);
 				     its load and credits on the right -->
 				{#if plan.trimNumbers === 'each' || slotCredits > 0}
-				<div class="cell-foot">
-				{#if plan.trimNumbers === 'each'}
-					{@const current = plan.view !== 'whatif' && slotOrder(y, t) === hereAt}
-					<span
-						class="cell-term"
-						class:now={current}
-						title="trimester {degreeTrim(y, t)} of your degree: year {y}, T{t} of {academicYear(plan.batchStartYear, y)}{current ? ', the one you’re in now' : ''}"
-						>t{degreeTrim(y, t)}</span
-					>
-				{/if}
-				{#if slotCredits > 0}
-					{@const load = plan.slotLoad(y, t)}
-					<span class="cell-credits" data-status={plan.gradeMode ? undefined : load.status}>
-						<!-- a small capsule of 4-credit segments up to the cap; the last
+					<div class="cell-foot">
+						{#if plan.trimNumbers === 'each'}
+							{@const current = plan.view !== 'whatif' && slotOrder(y, t) === hereAt}
+							<span
+								class="cell-term"
+								class:now={current}
+								title="trimester {degreeTrim(y, t)} of your degree: year {y}, T{t} of {academicYear(
+									plan.batchStartYear,
+									y
+								)}{current ? ', the one you’re in now' : ''}">t{degreeTrim(y, t)}</span
+							>
+						{/if}
+						{#if slotCredits > 0}
+							{@const load = plan.slotLoad(y, t)}
+							<span class="cell-credits" data-status={plan.gradeMode ? undefined : load.status}>
+								<!-- a small capsule of 4-credit segments up to the cap; the last
 						     one, past the normal load, is the faintly striped extra load -->
-						{#if !plan.gradeMode && load.status !== 'exempt'}
-							<span class="load-meter" aria-hidden="true">
-								{#each LOAD_SEGMENTS as from, i (i)}
-									<i class:extra={from >= TRIM_NORMAL_MAX}>
-										<b style:width="{Math.max(0, Math.min(1, (load.credits - from) / LOAD_STEP)) * 100}%"></b>
-									</i>
-								{/each}
+								{#if !plan.gradeMode && load.status !== 'exempt'}
+									<span class="load-meter" aria-hidden="true">
+										{#each LOAD_SEGMENTS as from, i (i)}
+											<i class:extra={from >= TRIM_NORMAL_MAX}>
+												<b style:width="{Math.max(0, Math.min(1, (load.credits - from) / LOAD_STEP)) * 100}%"></b>
+											</i>
+										{/each}
+									</span>
+								{/if}
+								{#if plan.gradeMode}
+									{@const tg = plan.slotTgpa(y, t)}
+									<span class="cell-tgpa" title="term GPA, this trimester's grade average"
+										>TGPA {tg === null ? '–' : tg.toFixed(2)}</span
+									>
+								{:else}
+									<!-- just the credits; red past the hard cap, or when more trimesters
+							     are heavy than allowed, hover says how the load stands -->
+									<span class="credits-text" title={load.note || undefined}>{slotCredits} cr</span>
+								{/if}
+								<button
+									class="clear"
+									title="clear this trimester"
+									aria-label="clear {trimesterName(y, t)}"
+									onclick={(e) => {
+										e.stopPropagation();
+										plan.clearSlot(y, t);
+									}}>×</button
+								>
 							</span>
 						{/if}
-						{#if plan.gradeMode}
-							{@const tg = plan.slotTgpa(y, t)}
-							<span class="cell-tgpa" title="term GPA, this trimester's grade average">TGPA {tg === null ? '–' : tg.toFixed(2)}</span>
-						{:else}
-							<!-- just the credits; red past the hard cap, or when more trimesters
-							     are heavy than allowed, hover says how the load stands -->
-							<span class="credits-text" title={load.note || undefined}>{slotCredits} cr</span>
-						{/if}
-						<button
-							class="clear"
-							title="clear this trimester"
-							aria-label="clear {trimesterName(y, t)}"
-							onclick={(e) => {
-								e.stopPropagation();
-								plan.clearSlot(y, t);
-							}}>×</button
-						>
-					</span>
-				{/if}
-				</div>
+					</div>
 				{/if}
 			</div>
 		{/each}
@@ -791,11 +878,15 @@
 					<span class="ms-when">end of year {y}</span>
 					<span><b>{m.credits}</b> cr placed · {m.inYear} this year</span>
 					{#each m.off as o (o.trim)}
-						<span class="ms-off">T{o.trim} {o.kind === 'away' ? 'away' : o.kind === 'suspension' ? 'suspended' : 'on a break'}</span>
+						<span class="ms-off"
+							>T{o.trim} {o.kind === 'away' ? 'away' : o.kind === 'suspension' ? 'suspended' : 'on a break'}</span
+						>
 					{/each}
 					{#if m.exit && y !== gradYear}
 						<span class="ms-exit">
-							{m.met ? `✓ enough to leave with a ${m.exit.award}` : `${m.short} cr short of a ${m.exit.award} (${m.exit.credits} cr)`}
+							{m.met
+								? `✓ enough to leave with a ${m.exit.award}`
+								: `${m.short} cr short of a ${m.exit.award} (${m.exit.credits} cr)`}
 						</span>
 					{/if}
 					{#if y === gradYear}
@@ -858,7 +949,8 @@
 				title="place each required course of your programmes in its usual trimester"
 				onclick={() => plan.addRequiredCourses()}
 				transition:fade={{ duration: reducedMotion() ? 0 : 150 }}
-			>+ add {count(plan.missingRequiredCodes.length, 'required course')}</button>
+				>+ add {count(plan.missingRequiredCodes.length, 'required course')}</button
+			>
 		{/if}
 
 		{#if plan.suggestionCount}
@@ -867,7 +959,8 @@
 				title="take every dotted suggestion on the grid"
 				onclick={() => plan.acceptAllSuggestions()}
 				transition:fade={{ duration: reducedMotion() ? 0 : 150 }}
-			>+ accept {count(plan.suggestionCount, 'suggestion')}</button>
+				>+ accept {count(plan.suggestionCount, 'suggestion')}</button
+			>
 		{/if}
 
 		{#if plan.otherPlacedCodes.length}
@@ -876,7 +969,8 @@
 				title="take off every course that counts toward none of your major, minor or concentration"
 				onclick={() => plan.removeOtherCourses()}
 				transition:fade={{ duration: reducedMotion() ? 0 : 150 }}
-			>− drop {plan.otherPlacedCodes.length} that {plan.otherPlacedCodes.length === 1 ? 'doesn’t' : 'don’t'} count</button>
+				>− drop {plan.otherPlacedCodes.length} that {plan.otherPlacedCodes.length === 1 ? 'doesn’t' : 'don’t'} count</button
+			>
 		{/if}
 
 		{#if plan.placed.length}
@@ -886,7 +980,8 @@
 				title="take every course off the grid"
 				onclick={clearGrid}
 				transition:fade={{ duration: reducedMotion() ? 0 : 150 }}
-			>{clearing ? 'sure? click again' : 'empty the grid'}</button>
+				>{clearing ? 'sure? click again' : 'empty the grid'}</button
+			>
 		{/if}
 	</div>
 {/if}
@@ -912,7 +1007,6 @@
 			--head: 6rem;
 		}
 	}
-
 
 	// a trimester heading, and the switch for how trimesters are numbered:
 	// it looks like a heading until pointed at
@@ -1078,7 +1172,9 @@
 		// hovering darkens whatever the cell already is, its course colours,
 		// the KCCS blush, by laying 10% black over it
 		&:hover {
-			box-shadow: var(--shadow-inset), inset 0 0 0 100vmax rgba(0, 0, 0, 0.1);
+			box-shadow:
+				var(--shadow-inset),
+				inset 0 0 0 100vmax rgba(0, 0, 0, 0.1);
 		}
 
 		// the trimester you're in (counting across the degree): ringed like
@@ -1152,7 +1248,6 @@
 			flex: none;
 			white-space: nowrap;
 		}
-
 
 		.clear {
 			background: none;
@@ -1301,7 +1396,9 @@
 		opacity: 0.3;
 	}
 	.chip.chain-root {
-		box-shadow: 0 0 0 2px var(--color-accent), var(--shadow-card);
+		box-shadow:
+			0 0 0 2px var(--color-accent),
+			var(--shadow-card);
 	}
 
 	// a trimester off: the cell holds one quiet card instead of courses
@@ -1500,7 +1597,9 @@
 		// a course a hint is about, while that hint is pointed at
 		&.lit {
 			transform: translateY(-1px);
-			box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 80%, transparent), var(--shadow-card);
+			box-shadow:
+				0 0 0 2px color-mix(in srgb, var(--color-accent) 80%, transparent),
+				var(--shadow-card);
 		}
 	}
 
@@ -2040,7 +2139,6 @@
 		}
 	}
 
-
 	// undo / redo: glyphs, a touch larger than the bar's labels
 	.history button {
 		min-width: 3.2rem;
@@ -2124,7 +2222,9 @@
 		background: var(--bar-well);
 		border: 0; // the recess alone frames it, no ring around the rings
 		border-radius: 999px;
-		box-shadow: inset 0 1px 2px rgba(20, 30, 50, 0.14), 0 1px 0 var(--bar-hi);
+		box-shadow:
+			inset 0 1px 2px rgba(20, 30, 50, 0.14),
+			0 1px 0 var(--bar-hi);
 	}
 
 	.goal-seg {
@@ -2148,9 +2248,15 @@
 			transform: translateX(var(--knob-x)) scale(calc(2 - var(--knob-s)), var(--knob-s));
 			transition: transform 320ms var(--spring);
 		}
-		&.maximum { --knob-x: 100%; }
-		&:active { --knob-s: 0.88; }
-		&:active::before { transition-duration: 90ms; }
+		&.maximum {
+			--knob-x: 100%;
+		}
+		&:active {
+			--knob-s: 0.88;
+		}
+		&:active::before {
+			transition-duration: 90ms;
+		}
 		padding: 2px;
 		font: inherit;
 		background: var(--color-bg-light);
@@ -2339,8 +2445,12 @@
 			padding: 1.2rem 0 0.2rem;
 			font-weight: 600;
 		}
-		.year-short { display: none; }
-		.year-long { display: inline; }
+		.year-short {
+			display: none;
+		}
+		.year-long {
+			display: inline;
+		}
 
 		.cell {
 			min-height: 13rem;
@@ -2425,10 +2535,21 @@
 	}
 	@include mobile {
 		@container plan (min-width: 720px) {
-			.overview, .overview.graded { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-			.cell { grid-column: auto; }
-			.year-head, .year-acts { grid-column: 1 / -1; }
-			.mobile-term { flex-wrap: wrap; gap: 0.5rem; }
+			.overview,
+			.overview.graded {
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+			}
+			.cell {
+				grid-column: auto;
+			}
+			.year-head,
+			.year-acts {
+				grid-column: 1 / -1;
+			}
+			.mobile-term {
+				flex-wrap: wrap;
+				gap: 0.5rem;
+			}
 		}
 	}
 </style>

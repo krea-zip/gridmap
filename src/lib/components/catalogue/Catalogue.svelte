@@ -33,19 +33,14 @@
 	// filter chips: one per distinct selected subject, plus the foundation
 	// core, always on offer, whatever the programmes are. The open minor
 	// has no courses of its own, so it gets no chip.
-	let filterSubjects = $derived([
-		...new Set([...plan.selectedSubjects.filter((s) => s !== 'open'), 'core'])
-	]);
+	let filterSubjects = $derived([...new Set([...plan.selectedSubjects.filter((s) => s !== 'open'), 'core'])]);
 
 	// which subject's code a cross-listed course should be shown under: the
 	// active filter if it pins one down, else the single programme subject it
 	// belongs to, otherwise leave it on its canonical code
 	function contextFor(subjects: string[]): string | undefined {
-		if (plan.catalogueSubject && subjects.includes(plan.catalogueSubject))
-			return plan.catalogueSubject;
-		const checked = plan.filters.filter(
-			(f) => plan.selectedSubjects.includes(f) && subjects.includes(f)
-		);
+		if (plan.catalogueSubject && subjects.includes(plan.catalogueSubject)) return plan.catalogueSubject;
+		const checked = plan.filters.filter((f) => plan.selectedSubjects.includes(f) && subjects.includes(f));
 		if (checked.length === 1) return checked[0];
 		const inProgramme = plan.selectedSubjects.filter((s) => subjects.includes(s));
 		return inProgramme.length === 1 ? inProgramme[0] : undefined;
@@ -104,18 +99,14 @@
 				bind:value={plan.search}
 			/>
 			{#if plan.search}
-				<button class="clear-search" aria-label="clear search" onclick={() => (plan.search = '')}>
-					×
-				</button>
+				<button class="clear-search" aria-label="clear search" onclick={() => (plan.search = '')}> × </button>
 			{/if}
 		</div>
 
 		<label class="department-filter">
 			<span>browse</span>
 			<select aria-label="browse department" bind:value={plan.catalogueSubject}>
-				<option value=""
-					>{plan.filters.length ? 'your programme filters' : 'all departments'}</option
-				>
+				<option value="">{plan.filters.length ? 'your programme filters' : 'all departments'}</option>
 				{#each SUBJECTS.filter((s) => s.id !== 'open') as subject (subject.id)}
 					<option value={subject.id}>{subject.label}</option>
 				{/each}
@@ -149,9 +140,7 @@
 	{#if plan.catalogueReveal}
 		<div class="reveal-note" role="status">
 			<span>showing {plan.catalogueReveal.code}</span>
-			<button onclick={() => (plan.catalogueReveal = null)} aria-label="return to catalogue filters"
-				>done ×</button
-			>
+			<button onclick={() => (plan.catalogueReveal = null)} aria-label="return to catalogue filters">done ×</button>
 		</div>
 	{/if}
 	<div class="scroll">
@@ -166,8 +155,7 @@
 					class="cell"
 					class:revealed={plan.catalogueReveal?.code === course.code}
 					data-course={course.code}
-					style="grid-column: span {(course.pendingCredits && course.credits === 0) ||
-					course.credits >= 3
+					style="grid-column: span {(course.pendingCredits && course.credits === 0) || course.credits >= 3
 						? 4
 						: Math.max(1, course.credits)};"
 				>
@@ -519,11 +507,18 @@
 	}
 	@include mobile {
 		@container catalogue (min-width: 600px) {
-			.cards { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
-			.cell { grid-column: auto !important; }
+			.cards {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				align-items: start;
+			}
+			.cell {
+				grid-column: auto !important;
+			}
 		}
 		@container catalogue (min-width: 1000px) {
-			.cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+			.cards {
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+			}
 		}
 	}
 </style>

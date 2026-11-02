@@ -17,5 +17,8 @@ export function validateReview(displayName: string, difficulty: number, comment:
 }
 
 export function summarizeReviews(reviews: Pick<CourseReview, 'difficulty'>[]) {
-	return { count: reviews.length, average: reviews.length ? reviews.reduce((sum, review) => sum + review.difficulty, 0) / reviews.length : null };
+	return {
+		count: reviews.length,
+		average: reviews.length ? reviews.reduce((sum, review) => sum + review.difficulty, 0) / reviews.length : null
+	};
 }

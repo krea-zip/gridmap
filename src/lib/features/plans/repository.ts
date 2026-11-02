@@ -10,8 +10,13 @@ export async function listPlans(userId: string): Promise<CloudPlan[]> {
 	const client = await getSupabase();
 	const plans: CloudPlan[] = [];
 	for (let offset = 0; ; offset += 100) {
-		const { data, error } = await client.from('plans').select(fields).eq('user_id', userId)
-			.order('created_at', { ascending: false }).order('id').range(offset, offset + 99);
+		const { data, error } = await client
+			.from('plans')
+			.select(fields)
+			.eq('user_id', userId)
+			.order('created_at', { ascending: false })
+			.order('id')
+			.range(offset, offset + 99);
 		if (error) throw error;
 		plans.push(...data);
 		if (data.length < 100) return plans;
@@ -20,8 +25,7 @@ export async function listPlans(userId: string): Promise<CloudPlan[]> {
 
 export async function readPlan(userId: string, id: string) {
 	const client = await getSupabase();
-	const { data, error } = await client.from('plans').select('snapshot')
-		.eq('user_id', userId).eq('id', id).single();
+	const { data, error } = await client.from('plans').select('snapshot').eq('user_id', userId).eq('id', id).single();
 	if (error) throw error;
 	return planDocument(data.snapshot);
 }
@@ -37,8 +41,14 @@ export async function createPlan(userId: string, name: string, snapshot: unknown
 export async function updatePlan(userId: string, plan: CloudPlan, snapshot: unknown) {
 	const document = planDocument(snapshot);
 	const client = await getSupabase();
-	const { data, error } = await client.from('plans').update({ snapshot: document })
-		.eq('user_id', userId).eq('id', plan.id).eq('revision', plan.revision).select(fields).maybeSingle();
+	const { data, error } = await client
+		.from('plans')
+		.update({ snapshot: document })
+		.eq('user_id', userId)
+		.eq('id', plan.id)
+		.eq('revision', plan.revision)
+		.select(fields)
+		.maybeSingle();
 	if (error) throw error;
 	if (!data) throw new Error(changed);
 	return data;
@@ -46,8 +56,14 @@ export async function updatePlan(userId: string, plan: CloudPlan, snapshot: unkn
 
 export async function deletePlan(userId: string, plan: CloudPlan) {
 	const client = await getSupabase();
-	const { data, error } = await client.from('plans').delete()
-		.eq('user_id', userId).eq('id', plan.id).eq('revision', plan.revision).select('id').maybeSingle();
+	const { data, error } = await client
+		.from('plans')
+		.delete()
+		.eq('user_id', userId)
+		.eq('id', plan.id)
+		.eq('revision', plan.revision)
+		.select('id')
+		.maybeSingle();
 	if (error) throw error;
 	if (!data) throw new Error(changed);
 }

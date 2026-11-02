@@ -128,12 +128,14 @@
 	type IssueKind = 'warn' | 'caution';
 	let showKind = $state<Record<IssueKind, boolean>>({ warn: true, caution: true });
 	let tally = $derived(
-		([{ kind: 'warn', n: warns, what: 'problem' }, { kind: 'caution', n: cautions, what: 'warning' }] as const).filter(
-			(t) => t.n > 0
-		)
+		(
+			[
+				{ kind: 'warn', n: warns, what: 'problem' },
+				{ kind: 'caution', n: cautions, what: 'warning' }
+			] as const
+		).filter((t) => t.n > 0)
 	);
-	const shown = (group: Group) =>
-		(group.kind !== 'warn' && group.kind !== 'caution') || showKind[group.kind];
+	const shown = (group: Group) => (group.kind !== 'warn' && group.kind !== 'caution') || showKind[group.kind];
 
 	// picking a course a hint names (the ▲ on its chip) unfolds its first,
 	// worst, group and brings it into view, only on the pick itself, so a
@@ -154,7 +156,6 @@
 			);
 		});
 	});
-
 </script>
 
 <svelte:window onpointerdown={clickAway} />
@@ -162,7 +163,12 @@
 {#snippet hintGroup(group: Group, gi: number)}
 	{@const open = openKey === group.key}
 	<div class="chip" class:open role="group">
-		<button class="hint-heading" aria-expanded={open} aria-controls={`hint-detail-${gi}`} onclick={() => toggle(group.key)}>
+		<button
+			class="hint-heading"
+			aria-expanded={open}
+			aria-controls={`hint-detail-${gi}`}
+			onclick={() => toggle(group.key)}
+		>
 			<span class="hint-main">
 				<span class="hint-title">
 					<i class="tone-dot" data-kind={group.kind} aria-hidden="true"></i>{group.title}
@@ -171,16 +177,23 @@
 				{#if group.courses.length}
 					<span class="tags">
 						{#each group.courses.slice(0, TAGS_SHOWN) as code (code)}
-							<span class="tag" data-type={plan.courseType(code)} style:--hue={plan.hueOf(code)}>{plan.shownCode(code)}</span>
+							<span class="tag" data-type={plan.courseType(code)} style:--hue={plan.hueOf(code)}
+								>{plan.shownCode(code)}</span
+							>
 						{/each}
-						{#if group.courses.length > TAGS_SHOWN}<span class="tag-more">+{group.courses.length - TAGS_SHOWN}</span>{/if}
+						{#if group.courses.length > TAGS_SHOWN}<span class="tag-more">+{group.courses.length - TAGS_SHOWN}</span
+							>{/if}
 					</span>
 				{/if}
 			</span>
 			<span class="chev" aria-hidden="true"></span>
 		</button>
 		{#if open}
-			<ul class="hint-detail" id={`hint-detail-${gi}`} transition:slide={{ duration: reducedMotion() ? 0 : 210, easing: cubicOut }}>
+			<ul
+				class="hint-detail"
+				id={`hint-detail-${gi}`}
+				transition:slide={{ duration: reducedMotion() ? 0 : 210, easing: cubicOut }}
+			>
 				{#each group.hints as hint, i (hint.id ?? hint.text + i)}
 					{@const lineKey = hint.id ?? `${group.key}:${i}`}
 					<!-- the line about the course open on the right stands out; the
@@ -236,7 +249,9 @@
 			class="readiness"
 			class:clear={!problems}
 			onclick={() =>
-				document.querySelector('[data-tour="hints"]')?.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' })}
+				document
+					.querySelector('[data-tour="hints"]')
+					?.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' })}
 		>
 			{problems ? `${problems} planning issue${problems === 1 ? '' : 's'} to sort out ↓` : '✓ no planning issues'}
 		</button>
@@ -248,7 +263,10 @@
 				<!-- a click opens what's left: required courses by name, and the
 				     credits still owed to each part -->
 				<button class="prog-toggle" aria-expanded={open} onclick={() => (openProg = open ? null : key)}>
-					<span class="prog-name"><span>{s.label}</span><span class="muted">{s.role}<span class="chev" aria-hidden="true"></span></span></span>
+					<span class="prog-name"
+						><span>{s.label}</span><span class="muted">{s.role}<span class="chev" aria-hidden="true"></span></span
+						></span
+					>
 					<!-- required and elective credits on one bar, split where one
 					     hands over to the other -->
 					<Progress
@@ -265,13 +283,23 @@
 							{#if s.requiredLeft.length}
 								<div class="pd-tags">
 									{#each s.requiredLeft as code (code)}
-										<button class="tag" data-type={plan.courseType(code)} style:--hue={plan.hueOf(code)} title="show {plan.courseLabel(code)}" onclick={() => plan.revealCourse(code)}>{plan.shownCode(code)}</button>
+										<button
+											class="tag"
+											data-type={plan.courseType(code)}
+											style:--hue={plan.hueOf(code)}
+											title="show {plan.courseLabel(code)}"
+											onclick={() => plan.revealCourse(code)}>{plan.shownCode(code)}</button
+										>
 									{/each}
 								</div>
 							{/if}
 						{/if}
 						{#if s.electiveNeeded > 0}
-							<div class="pd-row"><span>{s.subject === 'open' ? 'free courses' : 'electives'}</span><b>{left(s.electiveDone, s.electiveNeeded)}</b></div>
+							<div class="pd-row">
+								<span>{s.subject === 'open' ? 'free courses' : 'electives'}</span><b
+									>{left(s.electiveDone, s.electiveNeeded)}</b
+								>
+							</div>
 						{/if}
 					</div>
 				{/if}
@@ -316,7 +344,9 @@
 											{#if course.code}
 												{@const code = course.code}
 												<button class="choice-course" onclick={() => plan.revealCourse(code)}>
-													{#if plan.showCodes}<b>{plan.shownCode(code)}</b>{/if}{plan.showCodes && plan.showTitles ? ' ' : ''}{#if plan.showTitles}{course.title}{/if}
+													{#if plan.showCodes}<b>{plan.shownCode(code)}</b>{/if}{plan.showCodes && plan.showTitles
+														? ' '
+														: ''}{#if plan.showTitles}{course.title}{/if}
 												</button>
 											{:else}{course.title} <em>· not offered yet</em>{/if}
 										</li>
@@ -347,7 +377,8 @@
 						aria-label="show {t.n} {t.what}{t.n === 1 ? '' : 's'}"
 						title="{showKind[t.kind] ? 'hide' : 'show'} {t.what}s"
 						onclick={() => (showKind[t.kind] = !showKind[t.kind])}
-					><i class="tally-mark" data-kind={t.kind}></i>{t.n}</button>
+						><i class="tally-mark" data-kind={t.kind}></i>{t.n}</button
+					>
 				{/each}
 			</span>
 		{/if}
@@ -433,7 +464,9 @@
 			border-radius: var(--rail-radius, 4px);
 			box-shadow: var(--shadow-inset);
 			cursor: pointer;
-			transition: opacity 0.15s ease, filter 0.15s ease;
+			transition:
+				opacity 0.15s ease,
+				filter 0.15s ease;
 
 			&:hover {
 				filter: brightness(0.97);
@@ -638,7 +671,6 @@
 		font-size: var(--text-body);
 		font-weight: 700;
 		color: var(--color-text);
-
 	}
 
 	// one line per course, long titles ellipsize (full title on hover) so a

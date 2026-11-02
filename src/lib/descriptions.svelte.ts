@@ -18,9 +18,7 @@ const edited = browser ? loadDescriptionEdits() : {};
 export function loadDescriptions() {
 	if (started || !browser) return;
 	started = true;
-	import('./data/course-descriptions.json')
-		.then((m) => (descriptions = m.default))
-		.catch(() => (started = false)); // offline / chunk 404 → try again next time
+	import('./data/course-descriptions.json').then((m) => (descriptions = m.default)).catch(() => (started = false)); // offline / chunk 404 → try again next time
 }
 
 export const descriptionOf = (code: string): string | undefined =>

@@ -44,10 +44,9 @@
 
 <Modal title="suggested path" width="62rem" {onclose}>
 	<p class="lead">
-		{degree}, {total} courses in the order the department suggests, ticked where they're already on
-		your plan.{#if plan.recommendedElectiveCredits}
-			The dashed boxes are the <b>{plan.recommendedElectiveCredits} elective credits</b> the degree leaves
-			you to choose for yourself.{/if}
+		{degree}, {total} courses in the order the department suggests, ticked where they're already on your plan.{#if plan.recommendedElectiveCredits}
+			The dashed boxes are the <b>{plan.recommendedElectiveCredits} elective credits</b> the degree leaves you to choose for
+			yourself.{/if}
 	</p>
 
 	<div class="path" style="--cols: {plan.trims.length}">
@@ -111,13 +110,12 @@
 		<!-- the other way to take it: throw your plan away and start from this
 		     one. The only destructive action in the app that isn't "start over",
 		     so it asks twice and says plainly what goes. -->
-		<button class="replace" class:confirming={confirming} onclick={useInstead}>
+		<button class="replace" class:confirming onclick={useInstead}>
 			{confirming ? 'yes, delete my plan and use this' : 'use this instead of my plan'}
 		</button>
 		{#if confirming}
 			<p class="note danger">
-				this deletes the {plan.placedCodes.size} courses on your board and replaces them with the path
-				above.
+				this deletes the {plan.placedCodes.size} courses on your board and replaces them with the path above.
 			</p>
 		{/if}
 	</div>

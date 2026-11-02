@@ -12,9 +12,12 @@ export async function listReviews(code: string): Promise<CourseReview[]> {
 	const client = await getSupabase();
 	const reviews: CourseReview[] = [];
 	for (let offset = 0; ; offset += 500) {
-		const { data, error } = await client.from('course_reviews')
+		const { data, error } = await client
+			.from('course_reviews')
 			.select('course_code,user_id,display_name,difficulty,comment,updated_at')
-			.eq('course_code', code).order('user_id').range(offset, offset + 499);
+			.eq('course_code', code)
+			.order('user_id')
+			.range(offset, offset + 499);
 		if (error) throw error;
 		reviews.push(...data);
 		if (data.length < 500) break;
@@ -26,9 +29,14 @@ export async function saveReview(review: Omit<CourseReview, 'updated_at'>) {
 	const problem = validateReview(review.display_name, review.difficulty, review.comment);
 	if (problem) throw new Error(problem);
 	const client = await getSupabase();
-	const { error } = await client.from('course_reviews').upsert({
-		...review, display_name: review.display_name.trim(), comment: review.comment.trim()
-	}, { onConflict: 'course_code,user_id' });
+	const { error } = await client.from('course_reviews').upsert(
+		{
+			...review,
+			display_name: review.display_name.trim(),
+			comment: review.comment.trim()
+		},
+		{ onConflict: 'course_code,user_id' }
+	);
 	if (error) throw error;
 }
 

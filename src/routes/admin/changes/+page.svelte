@@ -41,7 +41,13 @@
 		const file = (e.target as HTMLInputElement).files?.[0];
 		if (!file) return;
 		try {
-			if (total && !confirm(`Importing replaces the ${total} change${total === 1 ? '' : 's'} on this browser with what the file holds. Continue?`)) return;
+			if (
+				total &&
+				!confirm(
+					`Importing replaces the ${total} change${total === 1 ? '' : 's'} on this browser with what the file holds. Continue?`
+				)
+			)
+				return;
 			if (!importBundle(JSON.parse(await file.text()))) throw new Error('not ours');
 			location.reload(); // added courses and departments join the catalogue on a fresh load
 		} catch {
@@ -80,12 +86,14 @@
 <div class="doc">
 	<h1>Changes</h1>
 	<p class="lede">
-		Everything you change is saved on this browser and shows in the planner here. To make it live for students,
-		export the file and send it to whoever deploys the site.
+		Everything you change is saved on this browser and shows in the planner here. To make it live for students, export
+		the file and send it to whoever deploys the site.
 	</p>
 
 	<div class="actions">
-		<button class="btn primary" onclick={exportAll} disabled={!total}>Export {total || ''} change{total === 1 ? '' : 's'}</button>
+		<button class="btn primary" onclick={exportAll} disabled={!total}
+			>Export {total || ''} change{total === 1 ? '' : 's'}</button
+		>
 		<button class="btn" onclick={() => importEl.click()}>Import a file</button>
 		<a class="btn" href="/" data-sveltekit-reload>Open planner ↗</a>
 		<input bind:this={importEl} type="file" accept="application/json" onchange={importFile} hidden />
@@ -126,7 +134,10 @@
 	<ol class="steps">
 		<li><b>Check</b> your work in the planner (“Open planner”).</li>
 		<li><b>Export</b> the file above.</li>
-		<li><b>Send it</b> to whoever deploys the site. They fold it into the data and redeploy; until then only this browser sees your changes.</li>
+		<li>
+			<b>Send it</b> to whoever deploys the site. They fold it into the data and redeploy; until then only this browser sees
+			your changes.
+		</li>
 	</ol>
 </div>
 

@@ -176,7 +176,12 @@
 				const x2 = b.x;
 				const y2 = b.y + NODE_H / 2;
 				const bend = Math.max(28, (x2 - x1) / 2);
-				return { key: `${pre}>${code}`, pre, code, d: `M${x1},${y1} C${x1 + bend},${y1} ${x2 - bend},${y2} ${x2},${y2}` };
+				return {
+					key: `${pre}>${code}`,
+					pre,
+					code,
+					d: `M${x1},${y1} C${x1 + bend},${y1} ${x2 - bend},${y2} ${x2},${y2}`
+				};
 			})
 		)
 	);
@@ -201,8 +206,7 @@
 		return set;
 	});
 
-	const kindOf = (code: string) =>
-		core.has(code) ? 'core' : electives.has(code) ? 'elective' : 'external';
+	const kindOf = (code: string) => (core.has(code) ? 'core' : electives.has(code) ? 'elective' : 'external');
 
 	// the longest chain on the board, the number that decides whether a
 	// programme actually fits in its trimesters
@@ -273,9 +277,9 @@
 			     letting a flat row read as a bug. -->
 			{#if mode === 'prereq' && !edges.length}
 				<p class="flat-note">
-					{subjectById(subject).label} states no prerequisites anywhere in the term CSVs, nothing
-					here gates anything. Switch <b>columns</b> to <b>course level</b> to see the degree's
-					progression.
+					{subjectById(subject).label} states no prerequisites anywhere in the term CSVs, nothing here gates anything. Switch
+					<b>columns</b>
+					to <b>course level</b> to see the degree's progression.
 				</p>
 			{/if}
 
@@ -288,11 +292,7 @@
 				{/each}
 			</div>
 
-			<div
-				class="canvas"
-				class:dimmed={lit !== null}
-				style="width:{placed.width}px; height:{placed.height}px"
-			>
+			<div class="canvas" class:dimmed={lit !== null} style="width:{placed.width}px; height:{placed.height}px">
 				<svg width={placed.width} height={placed.height} aria-hidden="true">
 					{#each edges as e (e.key)}
 						<path d={e.d} class:lit={lit?.has(e.pre) && lit?.has(e.code)} />
@@ -457,7 +457,9 @@
 			fill: none;
 			stroke: var(--color-border-card);
 			stroke-width: 1.5;
-			transition: stroke 0.12s ease, opacity 0.12s ease;
+			transition:
+				stroke 0.12s ease,
+				opacity 0.12s ease;
 		}
 	}
 
@@ -491,7 +493,9 @@
 		border: 1px solid var(--color-border-card);
 		border-radius: 6px;
 		cursor: default;
-		transition: opacity 0.12s ease, box-shadow 0.12s ease;
+		transition:
+			opacity 0.12s ease,
+			box-shadow 0.12s ease;
 		@include card-shine;
 
 		.n-code {

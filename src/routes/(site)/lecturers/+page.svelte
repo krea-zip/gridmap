@@ -6,11 +6,16 @@
 
 <svelte:head>
 	<title>Lecturers · kcal</title>
-	<meta name="description" content="Who teaches at Krea's SIAS: positions, office hours and the courses each lecturer has taught." />
+	<meta
+		name="description"
+		content="Who teaches at Krea's SIAS: positions, office hours and the courses each lecturer has taught."
+	/>
 </svelte:head>
 
 <h1>Lecturers</h1>
-<p class="lede">{teaching.length} people who have taught undergraduate courses recently, and the rest of the directory.</p>
+<p class="lede">
+	{teaching.length} people who have taught undergraduate courses recently, and the rest of the directory.
+</p>
 
 <ul class="people">
 	{#each teaching as l (l.id)}
@@ -25,7 +30,9 @@
 	<h2>Also in the directory</h2>
 	<ul class="people">
 		{#each directory as l (l.id)}
-			<li><a href="/lecturers/{l.id}">{l.name}</a>{#if l.title}<span>{l.title}</span>{/if}</li>
+			<li>
+				<a href="/lecturers/{l.id}">{l.name}</a>{#if l.title}<span>{l.title}</span>{/if}
+			</li>
 		{/each}
 	</ul>
 {/if}

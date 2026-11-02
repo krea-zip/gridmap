@@ -7,7 +7,10 @@
 
 <svelte:head>
 	<title>Courses · kcal</title>
-	<meta name="description" content="Every undergraduate course at Krea's SIAS, by subject: credits, when it runs and who teaches it." />
+	<meta
+		name="description"
+		content="Every undergraduate course at Krea's SIAS, by subject: credits, when it runs and who teaches it."
+	/>
 </svelte:head>
 
 <h1>Courses</h1>

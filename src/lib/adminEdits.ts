@@ -128,7 +128,8 @@ export function parseLecturerEdits(raw: unknown): LecturerEdits {
 				...(f.date_of_joining ? { date_of_joining: f.date_of_joining } : {})
 			};
 		}
-	if (Array.isArray(raw.removed)) out.removed = [...new Set(raw.removed.filter((v): v is string => typeof v === 'string'))];
+	if (Array.isArray(raw.removed))
+		out.removed = [...new Set(raw.removed.filter((v): v is string => typeof v === 'string'))];
 	if (isObject(raw.teaches))
 		for (const [code, ids] of Object.entries(raw.teaches))
 			if (CODE.test(code) && Array.isArray(ids))
@@ -140,7 +141,11 @@ export const saveLecturerEdits = (e: LecturerEdits) => save(LECTURER_EDITS_KEY, 
 
 /** a stable id for a lecturer /admin adds: their name, lower-cased and dashed */
 export const lecturerIdFor = (name: string, taken: (id: string) => boolean): string => {
-	const base = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'lecturer';
+	const base =
+		name
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-+|-+$/g, '') || 'lecturer';
 	let id = base;
 	for (let n = 2; taken(id); n++) id = `${base}-${n}`;
 	return id;
@@ -165,7 +170,8 @@ function subjectFields(raw: Record<string, unknown>): Partial<SubjectFields> {
 	const short = text(raw.short, 12);
 	if (short) out.short = short;
 	if (typeof raw.majorable === 'boolean') out.majorable = raw.majorable;
-	if (typeof raw.hue === 'number' && Number.isFinite(raw.hue)) out.hue = Math.max(0, Math.min(360, Math.round(raw.hue)));
+	if (typeof raw.hue === 'number' && Number.isFinite(raw.hue))
+		out.hue = Math.max(0, Math.min(360, Math.round(raw.hue)));
 	return out;
 }
 

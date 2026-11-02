@@ -38,12 +38,22 @@ export function touchDrag(root: HTMLElement) {
 	let data: ReturnType<typeof transfer> | null = null;
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	let frame = 0;
-	let startX = 0, startY = 0, x = 0, y = 0;
+	let startX = 0,
+		startY = 0,
+		x = 0,
+		y = 0;
 	let over: Element | null = null;
 	let dragging = false;
 
 	function fire(type: string, target: EventTarget, related: Element | null = null) {
-		const e = new MouseEvent(type, { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, relatedTarget: related });
+		const e = new MouseEvent(type, {
+			bubbles: true,
+			cancelable: true,
+			composed: true,
+			clientX: x,
+			clientY: y,
+			relatedTarget: related
+		});
 		Object.defineProperty(e, 'dataTransfer', { value: data });
 		target.dispatchEvent(e);
 		return e;

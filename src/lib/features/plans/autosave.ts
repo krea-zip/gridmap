@@ -11,7 +11,9 @@ export function restoreBoard(storage: Pick<Storage, 'getItem'>, apply: (value: R
 			if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
 			apply(value as Record<string, unknown>);
 			return;
-		} catch { /* Keep unreadable data; attempt the backup. */ }
+		} catch {
+			/* Keep unreadable data; attempt the backup. */
+		}
 	}
 }
 
@@ -24,9 +26,13 @@ export function saveBoard(storage: Pick<Storage, 'getItem' | 'setItem'>, json: s
 			try {
 				const parsed: unknown = JSON.parse(previous);
 				if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) storage.setItem(BACKUP_KEY, previous);
-			} catch { /* The primary is unreadable or the backup write failed. */ }
+			} catch {
+				/* The primary is unreadable or the backup write failed. */
+			}
 		}
 		storage.setItem(STORAGE_KEY, json);
 		return true;
-	} catch { return false; }
+	} catch {
+		return false;
+	}
 }

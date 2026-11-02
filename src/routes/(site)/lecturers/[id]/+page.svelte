@@ -14,7 +14,10 @@
 
 <svelte:head>
 	<title>{data.name} · kcal</title>
-	<meta name="description" content="{data.name}{data.title ? `, ${data.title}` : ''} at Krea: office hours and courses taught." />
+	<meta
+		name="description"
+		content="{data.name}{data.title ? `, ${data.title}` : ''} at Krea: office hours and courses taught."
+	/>
 	<link rel="canonical" href="{page.url.origin}/lecturers/{data.id}" />
 </svelte:head>
 

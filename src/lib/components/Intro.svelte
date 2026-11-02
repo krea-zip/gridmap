@@ -59,8 +59,7 @@
 	let observer: ResizeObserver;
 	let frame = 0;
 	const scrollPositions = new Map<HTMLElement, { left: number; top: number }>();
-	const clamp = (value: number, min: number, max: number) =>
-		Math.max(min, Math.min(value, Math.max(min, max)));
+	const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, Math.max(min, max)));
 
 	function position() {
 		if (!target || !card) return;
@@ -98,8 +97,7 @@
 		};
 		const sides: Side[] = ['right', 'left', 'bottom', 'top'];
 		const side =
-			sides.find((side) => space[side] >= 0) ??
-			sides.reduce((best, side) => (space[side] > space[best] ? side : best));
+			sides.find((side) => space[side] >= 0) ?? sides.reduce((best, side) => (space[side] > space[best] ? side : best));
 		const centerX = (left + right) / 2;
 		const centerY = (top + bottom) / 2;
 		const x = clamp(
@@ -117,9 +115,7 @@
 			top: y,
 			side,
 			arrow:
-				side === 'left' || side === 'right'
-					? clamp(centerY - y, 24, height - 24)
-					: clamp(centerX - x, 24, width - 24)
+				side === 'left' || side === 'right' ? clamp(centerY - y, 24, height - 24) : clamp(centerX - x, 24, width - 24)
 		};
 		ready = true;
 	}
@@ -187,9 +183,7 @@
 	function onkeydown(event: KeyboardEvent) {
 		if (event.altKey || event.ctrlKey || event.metaKey) return;
 		if (event.key === 'Tab') {
-			const buttons = Array.from(
-				dialog.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')
-			);
+			const buttons = Array.from(dialog.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'));
 			const first = buttons[0];
 			const last = buttons[buttons.length - 1];
 			if (event.shiftKey && document.activeElement === first) {
@@ -269,8 +263,7 @@
 				</div>
 				<footer>
 					<div class="progress" aria-hidden="true">
-						{#each steps as _, i}<span class:current={i === index} class:done={i < index}
-							></span>{/each}
+						{#each steps as _, i}<span class:current={i === index} class:done={i < index}></span>{/each}
 					</div>
 					<div class="actions">
 						<button class="back" onclick={() => move(-1)} disabled={index === 0}>back</button>

@@ -51,7 +51,9 @@
 <div class="progress" style:--hue={hue}>
 	<div class="p-head" class:complete>
 		<span class="p-label">credits done</span>
-		<span class="p-num">{#if total === 0}none needed{:else if complete}✓ {total} cr{:else}{done}<em>/</em>{total} cr{/if}</span>
+		<span class="p-num"
+			>{#if total === 0}none needed{:else if complete}✓ {total} cr{:else}{done}<em>/</em>{total} cr{/if}</span
+		>
 	</div>
 	{#if total > 0}
 		<div class="p-bar" role="img" aria-label={summary} title={summary}>

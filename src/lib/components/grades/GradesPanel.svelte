@@ -97,54 +97,66 @@
 			{/if}
 		</div>
 	{:else}
-	<div class="hero">
-		{#if plan.cgpa === null}
-			<div class="cgpa-empty">no grades yet, open a trimester below and fill them in</div>
-		{:else}
-			<div class="cgpa"><span class="num">{fmt(plan.cgpa)}</span><span class="den">/10</span></div>
-			<div class="cgpa-sub">
-				{cgpaToPercent(plan.cgpa).toFixed(1)}% · {plan.gradedCredits} of {plan.gradableCredits} planned credits graded
-			</div>
-		{/if}
-	</div>
-
-	<section class="gates">
-		<div class="gate" class:bad={plan.gradableCredits < minCredits}>
-			<span class="g-label">credits</span>
-			<span class="g-val">{plan.gradableCredits}<em>/{minCredits}</em></span>
-			<span class="g-note">{plan.gradableCredits >= minCredits ? 'meets the minimum' : `${minCredits - plan.gradableCredits} short`}</span>
-		</div>
-		<div class="gate" class:bad={plan.cgpa !== null && plan.cgpa < GRAD_MIN_CGPA}>
-			<span class="g-label">cgpa ≥ {GRAD_MIN_CGPA}</span>
-			<span class="g-val">{plan.cgpa === null ? '–' : fmt(plan.cgpa)}</span>
-			<span class="g-note">{plan.cgpa === null ? 'no grades yet' : plan.cgpa >= GRAD_MIN_CGPA ? 'above the floor' : 'below the floor'}</span>
-		</div>
-		<div class="gate" class:bad={uCount > 0}>
-			<span class="g-label">no U grades</span>
-			<span class="g-val">{uCount}</span>
-			<span class="g-note">{uCount === 0 ? 'all passed' : `${uCount} to clear`}</span>
-		</div>
-	</section>
-
-	<section class="recover">
-		<div class="recover-head">
-			<span>reach a CGPA of</span>
-			<input type="number" min="0" max="10" step="0.1" bind:value={target} />
-		</div>
-		<p class="recover-msg" class:warn={rec.kind === 'impossible'} class:good={rec.kind === 'secured'}>
-			{#if rec.kind === 'no-grades'}
-				set a few grades and I'll tell you what the rest of your plan needs to average.
-			{:else if rec.kind === 'complete'}
-				every planned credit is graded, your CGPA is final at <b>{fmt(rec.cgpa)}</b>.
-			{:else if rec.kind === 'secured'}
-				already locked in, you stay at or above <b>{target.toFixed(1)}</b> even scoring U on every remaining credit.
-			{:else if rec.kind === 'reachable'}
-				average at least <b>{fmt(rec.needed)}</b>{#if rec.letter} (a <b>{rec.letter.letter}</b>){/if} across your remaining <b>{remaining}</b> credits.
-			{:else if rec.kind === 'impossible'}
-				out of reach for this plan, even all A+ on the remaining {remaining} credits tops out at <b>{fmt(rec.max)}</b>.
+		<div class="hero">
+			{#if plan.cgpa === null}
+				<div class="cgpa-empty">no grades yet, open a trimester below and fill them in</div>
+			{:else}
+				<div class="cgpa"><span class="num">{fmt(plan.cgpa)}</span><span class="den">/10</span></div>
+				<div class="cgpa-sub">
+					{cgpaToPercent(plan.cgpa).toFixed(1)}% · {plan.gradedCredits} of {plan.gradableCredits} planned credits graded
+				</div>
 			{/if}
-		</p>
-	</section>
+		</div>
+
+		<section class="gates">
+			<div class="gate" class:bad={plan.gradableCredits < minCredits}>
+				<span class="g-label">credits</span>
+				<span class="g-val">{plan.gradableCredits}<em>/{minCredits}</em></span>
+				<span class="g-note"
+					>{plan.gradableCredits >= minCredits
+						? 'meets the minimum'
+						: `${minCredits - plan.gradableCredits} short`}</span
+				>
+			</div>
+			<div class="gate" class:bad={plan.cgpa !== null && plan.cgpa < GRAD_MIN_CGPA}>
+				<span class="g-label">cgpa ≥ {GRAD_MIN_CGPA}</span>
+				<span class="g-val">{plan.cgpa === null ? '–' : fmt(plan.cgpa)}</span>
+				<span class="g-note"
+					>{plan.cgpa === null
+						? 'no grades yet'
+						: plan.cgpa >= GRAD_MIN_CGPA
+							? 'above the floor'
+							: 'below the floor'}</span
+				>
+			</div>
+			<div class="gate" class:bad={uCount > 0}>
+				<span class="g-label">no U grades</span>
+				<span class="g-val">{uCount}</span>
+				<span class="g-note">{uCount === 0 ? 'all passed' : `${uCount} to clear`}</span>
+			</div>
+		</section>
+
+		<section class="recover">
+			<div class="recover-head">
+				<span>reach a CGPA of</span>
+				<input type="number" min="0" max="10" step="0.1" bind:value={target} />
+			</div>
+			<p class="recover-msg" class:warn={rec.kind === 'impossible'} class:good={rec.kind === 'secured'}>
+				{#if rec.kind === 'no-grades'}
+					set a few grades and I'll tell you what the rest of your plan needs to average.
+				{:else if rec.kind === 'complete'}
+					every planned credit is graded, your CGPA is final at <b>{fmt(rec.cgpa)}</b>.
+				{:else if rec.kind === 'secured'}
+					already locked in, you stay at or above <b>{target.toFixed(1)}</b> even scoring U on every remaining credit.
+				{:else if rec.kind === 'reachable'}
+					average at least <b>{fmt(rec.needed)}</b>{#if rec.letter}
+						(a <b>{rec.letter.letter}</b>){/if} across your remaining <b>{remaining}</b> credits.
+				{:else if rec.kind === 'impossible'}
+					out of reach for this plan, even all A+ on the remaining {remaining} credits tops out at
+					<b>{fmt(rec.max)}</b>.
+				{/if}
+			</p>
+		</section>
 	{/if}
 
 	{#if terms.length}
@@ -179,15 +191,16 @@
 								{@const c = byCode(code)}
 								<label class="c-row">
 									<span class="c-label" title="{plan.shownCode(code)} {c.title}"
-										>{#if plan.showCodes}<b>{plan.shownCode(code)}</b> {/if}{c.title}{#if isAttemptId(code)} <em>(failed attempt)</em>{/if}</span
+										>{#if plan.showCodes}<b>{plan.shownCode(code)}</b>
+										{/if}{c.title}{#if isAttemptId(code)}
+											<em>(failed attempt)</em>{/if}</span
 									>
 									<span class="c-cr">{c.credits} cr</span>
 									<select
 										class="c-grade"
 										class:set={plan.gradeOf(code) !== undefined}
 										value={plan.gradeOf(code) ?? ''}
-										onchange={(e) =>
-											plan.setGrade(code, (e.currentTarget.value || null) as GradeMark | null)}
+										onchange={(e) => plan.setGrade(code, (e.currentTarget.value || null) as GradeMark | null)}
 									>
 										<option value="">–</option>
 										{#each OTHER_MARKS as m (m.mark)}
@@ -211,8 +224,8 @@
 	{/if}
 
 	<p class="hint">
-		{year === undefined ? 'open a trimester above to grade its courses' : 'grade the courses above'}, or set a grade from any course's panel on the right.
-		audits carry no grade and stay out of the maths.
+		{year === undefined ? 'open a trimester above to grade its courses' : 'grade the courses above'}, or set a grade
+		from any course's panel on the right. audits carry no grade and stay out of the maths.
 	</p>
 </Modal>
 

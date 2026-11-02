@@ -6,7 +6,18 @@ import { planDocument } from './document';
 
 const PREFIX = '#plan=';
 /** the fields that make up a plan, as Plan.snapshot names them */
-const SHARED = ['version', 'placements', 'picks', 'structure', 'fourYear', 'yearCount', 'batchStartYear', 'audited', 'waived', 'targetLoad'];
+const SHARED = [
+	'version',
+	'placements',
+	'picks',
+	'structure',
+	'fourYear',
+	'yearCount',
+	'batchStartYear',
+	'audited',
+	'waived',
+	'targetLoad'
+];
 /** a link this long is already far past any real plan */
 const MAX_ENCODED = 12_000;
 
@@ -26,19 +37,25 @@ const fromBase64Url = (text: string) =>
 
 /** a link to `origin` that opens a copy of this plan */
 export async function shareLink(snapshot: Record<string, unknown>, origin: string): Promise<string> {
-	const plan: Record<string, unknown> = Object.fromEntries(SHARED.filter((key) => key in snapshot).map((key) => [key, snapshot[key]]));
+	const plan: Record<string, unknown> = Object.fromEntries(
+		SHARED.filter((key) => key in snapshot).map((key) => [key, snapshot[key]])
+	);
 	// a failed attempt (COMP201~1) is part of the grade record, which stays private
 	const placements = plan.placements;
 	if (placements && typeof placements === 'object')
 		plan.placements = Object.fromEntries(
-			Object.entries(placements).map(([slot, ids]) => [slot, Array.isArray(ids) ? ids.filter((id) => !/~\d+$/.test(String(id))) : ids])
+			Object.entries(placements).map(([slot, ids]) => [
+				slot,
+				Array.isArray(ids) ? ids.filter((id) => !/~\d+$/.test(String(id))) : ids
+			])
 		);
 	const packed = await through(new TextEncoder().encode(JSON.stringify(plan)), new CompressionStream('deflate-raw'));
 	return `${origin}/${PREFIX}${toBase64Url(packed)}`;
 }
 
 /** the encoded plan in a URL fragment, if it carries one */
-export const sharedPlanIn = (hash: string): string | null => (hash.startsWith(PREFIX) ? hash.slice(PREFIX.length) : null);
+export const sharedPlanIn = (hash: string): string | null =>
+	hash.startsWith(PREFIX) ? hash.slice(PREFIX.length) : null;
 
 /** Unpack and validate a shared plan. Courses are checked against the
  *  current curriculum when the plan is opened (Plan.restore). */

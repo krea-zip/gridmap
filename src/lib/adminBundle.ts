@@ -28,12 +28,7 @@ import {
 	saveProgrammeEdits,
 	saveSubjectEdits
 } from './adminEdits';
-import {
-	BATCH_EDITS_KEY,
-	loadBatchEdits,
-	parseBatchEdits,
-	saveBatchEdits
-} from './batchEdits';
+import { BATCH_EDITS_KEY, loadBatchEdits, parseBatchEdits, saveBatchEdits } from './batchEdits';
 import {
 	COURSE_EDITS_KEY,
 	NEW_COURSES_KEY,
@@ -137,7 +132,8 @@ export function sections(): ChangeSection[] {
 
 	const rules = loadRuleEdits();
 	const ruleLines = Object.entries(rules).map(
-		([k, v]) => `${RULE_INFO[k as keyof typeof RULE_INFO]?.label ?? k} — ${RULE_DEFAULTS[k as keyof typeof RULE_DEFAULTS]} → ${v}`
+		([k, v]) =>
+			`${RULE_INFO[k as keyof typeof RULE_INFO]?.label ?? k} — ${RULE_DEFAULTS[k as keyof typeof RULE_DEFAULTS]} → ${v}`
 	);
 
 	const batches = loadBatchEdits();
@@ -155,13 +151,64 @@ export function sections(): ChangeSection[] {
 	const descriptionLines = Object.entries(descriptions).map(([code, d]) => `${code} — ${d ? 'rewritten' : 'cleared'}`);
 
 	return [
-		{ id: 'courses', label: 'Courses', href: '/admin/courses', unit: 'course', count: new Set([...Object.keys(added), ...Object.keys(courseEdits), ...Object.keys(prereqs)]).size + (shareAll ? 1 : 0), lines: courseLines },
-		{ id: 'descriptions', label: 'Descriptions', href: '/admin/courses', unit: 'description', count: descriptionLines.length, lines: descriptionLines },
-		{ id: 'faculty', label: 'Faculty', href: '/admin/faculty', unit: 'change', count: facultyLines.length, lines: facultyLines },
-		{ id: 'departments', label: 'Departments', href: '/admin/departments', unit: 'change', count: departmentLines.length, lines: departmentLines },
-		{ id: 'requirements', label: 'Degree requirements', href: '/admin/requirements', unit: 'programme', count: requirementLines.length, lines: requirementLines },
-		{ id: 'batches', label: 'Batch overrides', href: '/admin/batches', unit: 'override', count: batchLines.length, lines: batchLines },
-		{ id: 'rules', label: 'University rules', href: '/admin/rules', unit: 'rule', count: ruleLines.length, lines: ruleLines }
+		{
+			id: 'courses',
+			label: 'Courses',
+			href: '/admin/courses',
+			unit: 'course',
+			count:
+				new Set([...Object.keys(added), ...Object.keys(courseEdits), ...Object.keys(prereqs)]).size +
+				(shareAll ? 1 : 0),
+			lines: courseLines
+		},
+		{
+			id: 'descriptions',
+			label: 'Descriptions',
+			href: '/admin/courses',
+			unit: 'description',
+			count: descriptionLines.length,
+			lines: descriptionLines
+		},
+		{
+			id: 'faculty',
+			label: 'Faculty',
+			href: '/admin/faculty',
+			unit: 'change',
+			count: facultyLines.length,
+			lines: facultyLines
+		},
+		{
+			id: 'departments',
+			label: 'Departments',
+			href: '/admin/departments',
+			unit: 'change',
+			count: departmentLines.length,
+			lines: departmentLines
+		},
+		{
+			id: 'requirements',
+			label: 'Degree requirements',
+			href: '/admin/requirements',
+			unit: 'programme',
+			count: requirementLines.length,
+			lines: requirementLines
+		},
+		{
+			id: 'batches',
+			label: 'Batch overrides',
+			href: '/admin/batches',
+			unit: 'override',
+			count: batchLines.length,
+			lines: batchLines
+		},
+		{
+			id: 'rules',
+			label: 'University rules',
+			href: '/admin/rules',
+			unit: 'rule',
+			count: ruleLines.length,
+			lines: ruleLines
+		}
 	];
 }
 

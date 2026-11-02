@@ -72,7 +72,15 @@
 		<marker id="pl-ok" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
 			<path d="M0,0 L8,4 L0,8 z" class="head ok" />
 		</marker>
-		<marker id="pl-late" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+		<marker
+			id="pl-late"
+			viewBox="0 0 8 8"
+			refX="7"
+			refY="4"
+			markerWidth="7"
+			markerHeight="7"
+			orient="auto-start-reverse"
+		>
 			<path d="M0,0 L8,4 L0,8 z" class="head late" />
 		</marker>
 	</defs>

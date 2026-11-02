@@ -67,11 +67,7 @@
 		width: var(--w);
 		max-width: 100%;
 		max-height: 100%;
-		background: linear-gradient(
-			to bottom,
-			var(--color-bg-card-start) 0%,
-			var(--color-bg-card-end) 100%
-		);
+		background: linear-gradient(to bottom, var(--color-bg-card-start) 0%, var(--color-bg-card-end) 100%);
 		border: 1px solid var(--color-border-card);
 		border-radius: 8px;
 		@include card-shine;

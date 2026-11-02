@@ -50,16 +50,9 @@
 	<!-- a course already on the grid leaves a dashed placeholder; the ↩ button
 	     lifts it back off, which flies it home to this slot (see the grid's
 	     out:sendCourse) -->
-	<div
-		data-course-card
-		tabindex="-1"
-		class="card placed"
-		class:compact
-		title="{label} is already on your plan"
-	>
+	<div data-course-card tabindex="-1" class="card placed" class:compact title="{label} is already on your plan">
 		<button class="placed-open" onclick={() => (plan.selected = course)} aria-label="view {label}">
-			{#if plan.showCodes || compact}<span class="code">{compact ? compactText : shownCode}</span
-				>{/if}
+			{#if plan.showCodes || compact}<span class="code">{compact ? compactText : shownCode}</span>{/if}
 			{#if !compact}
 				<span class="title">{course.title}</span>
 			{/if}
@@ -71,8 +64,8 @@
 			onclick={(e) => {
 				e.stopPropagation();
 				plan.remove(course.code);
-			}}
-		>↩</button>
+			}}>↩</button
+		>
 	</div>
 {:else}
 	<button
@@ -89,15 +82,15 @@
 		ondragstart={dragstart}
 		ondragend={() => (plan.dragging = null)}
 		onclick={() => (plan.selected = course)}
-		title={pending ? `${label}, credits awaiting confirmation` : mobile ? `view ${label}` : `drag ${label} onto the grid`}
+		title={pending
+			? `${label}, credits awaiting confirmation`
+			: mobile
+				? `view ${label}`
+				: `drag ${label} onto the grid`}
 	>
 		{#if plan.showCodes || compact}
 			<span class="code">
-				{#if showReq}<span
-						class="req-dot"
-						role="img"
-						aria-label="required"
-						title="required by your programme"
+				{#if showReq}<span class="req-dot" role="img" aria-label="required" title="required by your programme"
 					></span>{/if}
 				{compact ? compactText : shownCode}
 				{#if alsoCodes.length && !compact}

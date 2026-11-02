@@ -6,10 +6,7 @@ test.describe('phone planner', () => {
 		await page.addInitScript(() => {
 			localStorage.setItem('kcal-intro-seen', '1');
 			if (!localStorage.getItem('kcal-plan'))
-				localStorage.setItem(
-					'kcal-plan',
-					JSON.stringify({ version: 1, placements: {}, touched: true })
-				);
+				localStorage.setItem('kcal-plan', JSON.stringify({ version: 1, placements: {}, touched: true }));
 		});
 	});
 
@@ -100,17 +97,12 @@ test.describe('phone planner', () => {
 		await page.getByRole('navigation').getByRole('button', { name: 'your plan' }).tap();
 		await page.getByRole('button', { name: 'view y2 t1', exact: true }).tap();
 		await expect(page.getByRole('heading', { name: 'year 2 · trimester 1' })).toBeVisible();
-		await page
-			.getByRole('navigation')
-			.getByRole('button', { name: 'catalogue', exact: true })
-			.tap();
+		await page.getByRole('navigation').getByRole('button', { name: 'catalogue', exact: true }).tap();
 		await expect(page.getByText('offered in trimester 1', { exact: true })).toBeVisible();
 		await page.getByRole('button', { name: 'show all terms ×' }).tap();
 		await expect(page.getByText('offered in trimester 1', { exact: true })).not.toBeVisible();
 		await page.screenshot({ path: '/tmp/kcal-mobile-dark.png' });
-		expect(
-			await page.locator('.catalogue').evaluate((el) => el.scrollWidth - el.clientWidth)
-		).toBeLessThanOrEqual(1);
+		expect(await page.locator('.catalogue').evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
 	});
 
 	// phones only — from 768px a tablet keeps the desktop columns (below)
@@ -129,16 +121,14 @@ test.describe('phone planner', () => {
 					// Wide phone containers intentionally show three trimesters per row.
 					const columns = width >= 720 ? 3 : 1;
 					for (let i = 1; i < cells.length; i++) {
-						if (i % columns === 0)
-							expect(cells[i].top).toBeGreaterThanOrEqual(cells[i - 1].bottom);
+						if (i % columns === 0) expect(cells[i].top).toBeGreaterThanOrEqual(cells[i - 1].bottom);
 						else {
 							expect(cells[i].top).toBe(cells[i - 1].top);
 							expect(cells[i].left).toBeGreaterThanOrEqual(cells[i - 1].right);
 						}
 					}
 				}
-				if (width === 390 && name === 'your plan')
-					await page.screenshot({ path: '/tmp/kcal-mobile-plan.png' });
+				if (width === 390 && name === 'your plan') await page.screenshot({ path: '/tmp/kcal-mobile-plan.png' });
 				const overflow = await page.evaluate(() => {
 					const nodes = [
 						document.documentElement,
@@ -163,10 +153,7 @@ test.describe('phone planner', () => {
 test('desktop retains resizers, catalogue and drag placement', async ({ page }) => {
 	await page.addInitScript(() => {
 		localStorage.setItem('kcal-intro-seen', '1');
-		localStorage.setItem(
-			'kcal-plan',
-			JSON.stringify({ version: 1, placements: {}, touched: true })
-		);
+		localStorage.setItem('kcal-plan', JSON.stringify({ version: 1, placements: {}, touched: true }));
 	});
 	await page.goto('/');
 	await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true');
@@ -203,10 +190,7 @@ test.describe('tablet planner', () => {
 	test.beforeEach(async ({ page }) => {
 		await page.addInitScript(() => {
 			localStorage.setItem('kcal-intro-seen', '1');
-			localStorage.setItem(
-				'kcal-plan',
-				JSON.stringify({ version: 1, placements: {}, touched: true })
-			);
+			localStorage.setItem('kcal-plan', JSON.stringify({ version: 1, placements: {}, touched: true }));
 		});
 	});
 
@@ -215,7 +199,8 @@ test.describe('tablet planner', () => {
 		await page.goto('/');
 		await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true');
 		await expect(page.getByRole('navigation', { name: 'main navigation' })).not.toBeVisible();
-		for (const panel of ['.rail', '[data-panel="catalogue"]', '.board']) await expect(page.locator(panel)).toBeVisible();
+		for (const panel of ['.rail', '[data-panel="catalogue"]', '.board'])
+			await expect(page.locator(panel)).toBeVisible();
 		await expect(page.locator('[data-panel="details"]')).not.toBeVisible();
 		await page.getByRole('searchbox').fill('MATH201');
 		await page.locator('[data-course="MATH201"] button.card').tap();
@@ -255,7 +240,9 @@ test.describe('tablet planner', () => {
 		for (let i = 1; i <= 5; i++)
 			await touch('touchmove', from.x + ((to.x - from.x) * i) / 5, from.y + ((to.y - from.y) * i) / 5);
 		await touch('touchend', to.x, to.y);
-		await expect(page.locator('.overview .cell[data-year="2"][data-trim="1"] .chip[data-code="MATH201"]')).toBeVisible();
+		await expect(
+			page.locator('.overview .cell[data-year="2"][data-trim="1"] .chip[data-code="MATH201"]')
+		).toBeVisible();
 	});
 });
 
