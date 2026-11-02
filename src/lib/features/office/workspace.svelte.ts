@@ -43,19 +43,23 @@ export class Workspace {
 	canPublish = $derived(['admin', 'publisher'].includes(this.role));
 	canEdit = $derived(this.role !== 'contributor');
 
-	/** take the draft the server loaded; unsaved edits are replaced */
+	/** take the draft the server loaded. a form action anywhere in the office
+	 *  reloads it, so unsaved edits are kept and only the draft's standing
+	 *  updates; a revision someone else saved meanwhile is caught on save */
 	load(payload: WorkspacePayload, role: OfficeRole) {
+		this.role = role;
+		this.status = payload.status;
+		this.department = payload.department;
+		this.deployment = payload.deployment;
+		this.release = payload.release;
+		if (this.dirty && !this.#replace) return;
+		this.#replace = false;
 		// drafts saved before policies existed get the regulation defaults
 		payload.document.curriculum.policies ??= structuredClone(DEFAULT_POLICIES);
 		this.document = payload.document;
 		this.saved = structuredClone(payload.document);
 		this.baseline = structuredClone(payload.document);
 		this.revision = payload.revision;
-		this.status = payload.status;
-		this.role = role;
-		this.department = payload.department;
-		this.deployment = payload.deployment;
-		this.release = payload.release;
 		this.term = payload.document.terms.find((t) => t.status !== 'archived')?.id ?? payload.document.terms[0]?.id ?? '';
 		this.conflict = false;
 		this.error = '';
@@ -64,10 +68,13 @@ export class Workspace {
 			: 'Start by saving the catalogue as a shared draft.';
 	}
 
-	/** fetch the shared draft again, e.g. after someone else saved */
+	/** fetch the shared draft again and replace what's on screen, the way
+	 *  out of a save conflict (after the toolbar offers a download) */
 	reload() {
+		this.#replace = true;
 		return invalidate('office:workspace');
 	}
+	#replace = false;
 
 	async save(note = 'Updated academic records') {
 		if (this.busy || !this.document || !this.canEdit) return false;

@@ -48,7 +48,9 @@
 	];
 
 	const here = (path: string) => page.url.pathname.replace(/\/$/, '') === `/admin${path ? '/' + path : ''}`;
-	const visible = (path: string) => office.role !== 'contributor' || path === 'approvals';
+	// a contributor only sends requests; only an administrator manages access
+	const visible = (path: string) =>
+		office.role === 'contributor' ? path === 'approvals' : path !== 'staff' || office.role === 'admin';
 </script>
 
 <aside class="office-nav">
