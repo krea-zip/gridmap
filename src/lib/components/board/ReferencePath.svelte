@@ -13,6 +13,7 @@
 	// ─────────────────────────────────────────────
 	import { byCode, subjectById } from '$lib/data';
 	import type { TrimNum } from '$lib/types';
+	import { termMonthsShort } from '$lib/calendar';
 	import Modal from '../Modal.svelte';
 
 	let { onclose }: { onclose: () => void } = $props();
@@ -52,7 +53,7 @@
 	<div class="path" style="--cols: {plan.trims.length}">
 		<div class="corner"></div>
 		{#each plan.trims as t (t)}
-			<div class="head">t{t}</div>
+			<div class="head">{plan.trimNaming === 'year' ? `t${t}` : termMonthsShort(t)}</div>
 		{/each}
 
 		{#each plan.years as y (y)}

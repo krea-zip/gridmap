@@ -10,7 +10,7 @@ import { restoreBoard, saveBoard } from './features/plans/autosave';
 import { quietRedraw } from './transitions';
 import { selectCatalogue } from './catalogue';
 import { mergeCanvasCourses } from './canvasImport';
-import { guessNow, slotAt, slotOrder, type Here } from './calendar';
+import { guessNow, offeredIn, slotAt, slotOrder, trimName, trimSpelled, type Here, type TrimNaming } from './calendar';
 import {
 	AUDIT_LIMIT,
 	CORE_COURSES,
@@ -74,8 +74,7 @@ import {
 	type ProgrammeStat,
 	type SlotKey,
 	type StructureKind,
-	type TrimNum,
-	trimesterName
+	type TrimNum
 } from './types';
 
 const TRIMS: TrimNum[] = [1, 2, 3];
@@ -178,11 +177,8 @@ export class Plan {
 		this.view = on ? 'grades' : 'plan';
 	}
 	showGradeLabels = $state(true); // show the grade on each chip (only ever in grade view)
-	// how the grid numbers trimesters: 'each' numbers every one across the
-	// degree, t1 … t12 at the foot of each trimester; 'current' shows only the
-	// year you're in, in the header (t10 t11 t12 in year 4 for the 2023 batch),
-	// with "you are here" on the one you're in
-	trimNumbers = $state<'each' | 'current'>('each');
+	// students count trimesters by year or through the degree; see calendar.ts
+	trimNaming = $state<TrimNaming>('year');
 	// the load the student is aiming for each trimester. The university's own
 	// numbers are fixed (12 min / 20 cap); this is the line THEY want to sit
 	// on, and it's what the grid colours a trimester against, 16 is the
@@ -397,7 +393,7 @@ export class Plan {
 			view: this.view,
 			gradeMode: this.gradeMode, // older builds read this, keep writing it
 			showGradeLabels: this.showGradeLabels,
-			trimNumbers: this.trimNumbers,
+			trimNaming: this.trimNaming,
 			targetLoad: this.targetLoad,
 			creditTargetMode: this.creditTargetMode,
 			showCodes: this.showCodes,
@@ -437,7 +433,8 @@ export class Plan {
 		breaks?: unknown;
 		now?: unknown;
 		showGradeLabels?: unknown;
-		trimNumbers?: unknown;
+		trimNaming?: unknown;
+		trimNumbers?: unknown; // before trimNaming
 		creditTargetMode?: unknown;
 		showCodes?: unknown;
 		showTitles?: unknown;
@@ -523,8 +520,10 @@ export class Plan {
 		if (isBoardView(parsed.view)) this.view = parsed.view;
 		else if (typeof parsed.gradeMode === 'boolean') this.gradeMode = parsed.gradeMode; // a save from before views
 		if (typeof parsed.showGradeLabels === 'boolean') this.showGradeLabels = parsed.showGradeLabels;
-		if (parsed.trimNumbers === 'each' || parsed.trimNumbers === 'current') this.trimNumbers = parsed.trimNumbers;
-		else if (parsed.trimNumbers === 'degree') this.trimNumbers = 'current'; // an earlier build's name for it
+		if (parsed.trimNaming === 'year' || parsed.trimNaming === 'degree') this.trimNaming = parsed.trimNaming;
+		// earlier builds: 'current' (and before it 'degree') put degree numbers
+		// in the header, the closest thing to naming through the degree
+		else if (parsed.trimNumbers === 'current' || parsed.trimNumbers === 'degree') this.trimNaming = 'degree';
 		// A save exists, so this plan has been used before: treat it as touched
 		// unless it says otherwise. Getting this wrong in the `false` direction
 		// would let a programme change re-lay-out a plan somebody built, and a
@@ -924,8 +923,8 @@ export class Plan {
 		const moved = shift ? moving.reduce((n, [, codes]) => n + codes.length, 0) : 0;
 		this.#setFlash(
 			moved
-				? `${trimesterName(year, trim)} is ${info.kind === 'away' ? 'a term away' : `a ${BREAK_KINDS[info.kind].label}`} now, ${moved} course${moved === 1 ? '' : 's'} moved back ${shift === 3 ? 'a year' : 'a trimester'}`
-				: `${trimesterName(year, trim)} is ${info.kind === 'away' ? 'a term away' : `a ${BREAK_KINDS[info.kind].label}`} now`
+				? `${this.trimName(year, trim)} is ${info.kind === 'away' ? 'a term away' : `a ${BREAK_KINDS[info.kind].label}`} now, ${moved} course${moved === 1 ? '' : 's'} moved back ${shift === 3 ? 'a year' : 'a trimester'}`
+				: `${this.trimName(year, trim)} is ${info.kind === 'away' ? 'a term away' : `a ${BREAK_KINDS[info.kind].label}`} now`
 		);
 		return true;
 	}
@@ -948,7 +947,7 @@ export class Plan {
 		this.#touch();
 		const { [key]: _gone, ...rest } = this.breaks;
 		this.breaks = rest;
-		this.#setFlash(`${trimesterName(year, trim)} is a normal trimester again`);
+		this.#setFlash(`${this.trimName(year, trim)} is a normal trimester again`);
 	}
 
 	// true once more than one programme is on the plan
@@ -1133,6 +1132,13 @@ export class Plan {
 	}
 
 	/** flip one of the label switches, keeping at least one of them on */
+	trimName(year: number, trim: TrimNum): string {
+		return trimName(year, trim, this.trimNaming);
+	}
+	trimSpelled(year: number, trim: TrimNum): string {
+		return trimSpelled(year, trim, this.trimNaming);
+	}
+
 	toggleLabel(which: 'code' | 'title') {
 		if (which === 'code') {
 			this.showCodes = !this.showCodes;
@@ -1286,7 +1292,7 @@ export class Plan {
 		const off = this.breaks[slotKey(year, trim)];
 		if (off) {
 			this.#setFlash(
-				`${trimesterName(year, trim)} is marked as ${BREAK_KINDS[off.kind].label === 'away' ? 'a term away' : `a ${BREAK_KINDS[off.kind].label}`}, open it to take that off first`
+				`${this.trimName(year, trim)} is marked as ${BREAK_KINDS[off.kind].label === 'away' ? 'a term away' : `a ${BREAK_KINDS[off.kind].label}`}, open it to take that off first`
 			);
 			return;
 		}
@@ -1296,7 +1302,7 @@ export class Plan {
 		}
 		if (this.coreOnly(year, trim) && !isCore(code)) {
 			// a bounced drop is not an edit, stay where we are
-			this.#setFlash(`${trimesterName(1, trim)} takes foundation (KCCS) courses only`);
+			this.#setFlash(`${this.trimName(1, trim)} takes foundation (KCCS) courses only`);
 			return;
 		}
 		this.#touch();
@@ -1304,7 +1310,7 @@ export class Plan {
 		// planning stay fluid even when both slots are full), the hints
 		// flag the over-max slot until it's resolved
 		if (this.coreOnly(year, trim) && this.slotCourses(year, trim).filter((c) => c !== code).length >= Y1_CORE_MAX) {
-			this.#setFlash(`${trimesterName(1, trim)} is over the ${Y1_CORE_MAX}-course max now, move one out`);
+			this.#setFlash(`${this.trimName(1, trim)} is over the ${Y1_CORE_MAX}-course max now, move one out`);
 		}
 		// a slot the course isn't offered in (or open to) still takes the
 		// drop, the hints call it out instead of the drop bouncing
@@ -1364,7 +1370,7 @@ export class Plan {
 
 	/** wipe everything back to the freshly-seeded recommended plan */
 	reset() {
-		this.trimNumbers = 'each';
+		this.trimNaming = 'year';
 		this.breaks = {};
 		this.now = null;
 		this.audited = [];
@@ -1976,9 +1982,9 @@ export class Plan {
 				kind: 'caution',
 				text:
 					thin.length === 1
-						? `${trimesterName(thin[0].year, thin[0].trim)} is under the ${TRIM_MIN}-credit minimum (${thin[0].credits}/${TRIM_MIN})`
+						? `${this.trimName(thin[0].year, thin[0].trim)} is under the ${TRIM_MIN}-credit minimum (${thin[0].credits}/${TRIM_MIN})`
 						: `${thin.length} trimesters are under the ${TRIM_MIN}-credit minimum, ${thin
-								.map((t) => `${trimesterName(t.year, t.trim)} (${t.credits})`)
+								.map((t) => `${this.trimName(t.year, t.trim)} (${t.credits})`)
 								.join(', ')}`,
 				codes: []
 			});
@@ -2006,7 +2012,7 @@ export class Plan {
 				hints.push({
 					kind: 'warn',
 					id: `core-only:1-${trim}`,
-					text: `${trimesterName(1, trim)} can only hold foundation (KCCS) courses`,
+					text: `${this.trimName(1, trim)} can only hold foundation (KCCS) courses`,
 					codes: nonCore
 				});
 			}
@@ -2014,7 +2020,7 @@ export class Plan {
 				hints.push({
 					kind: 'warn',
 					id: `core-max:1-${trim}`,
-					text: `${trimesterName(1, trim)} can hold at most ${Y1_CORE_MAX} foundation courses (${codes.length}/${Y1_CORE_MAX})`,
+					text: `${this.trimName(1, trim)} can hold at most ${Y1_CORE_MAX} foundation courses (${codes.length}/${Y1_CORE_MAX})`,
 					codes
 				});
 			}
@@ -2043,7 +2049,7 @@ export class Plan {
 					hints.push({
 						kind: 'warn',
 						id,
-						text: `${code(pre)} before ${code(p.code)}, both are in ${trimesterName(p.year, p.trim)}`,
+						text: `${code(pre)} before ${code(p.code)}, both are in ${this.trimName(p.year, p.trim)}`,
 						codes: [p.code, pre]
 					});
 				} else if (prePos.order > p.year * 10 + p.trim) {
@@ -2077,7 +2083,7 @@ export class Plan {
 					// per trimester: "it runs in t2 this year" is a claim about t2,
 					// and must not quietly cover a later move into t3
 					id: `offered:${p.code}:t${p.trim}`,
-					text: `${code(p.code)} doesn't run in ${trimesterName(p.year, p.trim)}, it runs in ${course.offered.map((t) => `t${t}`).join('/')} that year`,
+					text: `${code(p.code)} doesn't run in ${this.trimName(p.year, p.trim)}, it runs in ${offeredIn(course.offered, this.trimNaming)}${this.trimNaming === 'year' ? ' that year' : ''}`,
 					codes: [p.code]
 				});
 			}
@@ -2176,7 +2182,7 @@ export class Plan {
 				if (credits > TRIM_HARD_MAX) {
 					hints.push({
 						kind: 'caution',
-						text: `${trimesterName(year, trim)} is over the ${TRIM_HARD_MAX}-credit cap (${credits}/${TRIM_HARD_MAX})`,
+						text: `${this.trimName(year, trim)} is over the ${TRIM_HARD_MAX}-credit cap (${credits}/${TRIM_HARD_MAX})`,
 						codes: this.slotCourses(year, trim)
 					});
 				} else if (credits > TRIM_STANDARD_MAX) {
@@ -2194,7 +2200,7 @@ export class Plan {
 			for (const h of heavy) {
 				hints.push({
 					kind: 'info',
-					text: `${trimesterName(h.year, h.trim)} is a heavy trimester (${h.credits}/${TRIM_HARD_MAX}), ${HEAVY_TRIMS_ALLOWED} allowed`,
+					text: `${this.trimName(h.year, h.trim)} is a heavy trimester (${h.credits}/${TRIM_HARD_MAX}), ${HEAVY_TRIMS_ALLOWED} allowed`,
 					codes: []
 				});
 			}

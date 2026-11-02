@@ -4,7 +4,7 @@
 	import { TRIM_HARD_MAX, TRIM_MIN, byCode, isAttemptId } from '$lib/data';
 	import { flip } from 'svelte/animate';
 	import { courseIn, courseOut, courseShift } from '$lib/transitions';
-	import { academicYear, degreeTrim } from '$lib/calendar';
+	import { academicYear, termMonths } from '$lib/calendar';
 
 	let { touchLayout = false }: { touchLayout?: boolean } = $props();
 	const plan = usePlan();
@@ -98,8 +98,15 @@
 
 <header>
 	<button class="back" onclick={() => (plan.zoom = null)}>← back</button>
-	<h1>year {year} · trimester {trim}</h1>
-	<span class="term">t{degreeTrim(year, trim)} · {academicYear(plan.batchStartYear, year)}</span>
+	<!-- named the student's way: "year 4 · trimester 1", or "trimester 10"
+	     with its place in the year underneath -->
+	{#if plan.trimNaming === 'degree'}
+		<h1>trimester {plan.trimName(year, trim).slice(1)}</h1>
+		<span class="term">year {year} · {termMonths(trim)} · {academicYear(plan.batchStartYear, year)}</span>
+	{:else}
+		<h1>year {year} · trimester {trim}</h1>
+		<span class="term">{termMonths(trim)} · {academicYear(plan.batchStartYear, year)}</span>
+	{/if}
 	<span class="load">
 		{#if off}{off.kind === 'away'
 				? `away · ${off.credits ?? 0} credits from elsewhere`

@@ -57,3 +57,28 @@ export const TERM_MONTHS: Record<TrimNum, [string, string]> = {
 
 /** a trimester's months, any year: "aug to oct" */
 export const termMonths = (trim: TrimNum): string => TERM_MONTHS[trim].join(' to ');
+
+/** for narrow table columns */
+export const termMonthsShort = (trim: TrimNum): string => TERM_MONTHS[trim].join('–');
+
+// ── naming a trimester ──
+// students count trimesters two ways, by year ("y2 t3", how courses are
+// offered) or through the degree ("t6"). mixing them made "t3" mean two
+// things on one screen, so every label goes through these and follows the
+// one naming the student picked.
+
+export type TrimNaming = 'year' | 'degree';
+
+export const trimName = (year: number, trim: TrimNum, naming: TrimNaming): string =>
+	naming === 'degree' ? `t${degreeTrim(year, trim)}` : `y${year} t${trim}`;
+
+/** for titles and screen readers, where "t6" alone says too little */
+export const trimSpelled = (year: number, trim: TrimNum, naming: TrimNaming): string =>
+	naming === 'degree'
+		? `trimester ${degreeTrim(year, trim)} of your degree (year ${year}, trimester ${trim})`
+		: `year ${year}, trimester ${trim}`;
+
+/** when in the year a course runs. through the degree it's the months,
+ *  since "t1" there would read as the first trimester of the degree */
+export const offeredIn = (trims: readonly TrimNum[], naming: TrimNaming): string =>
+	naming === 'degree' ? trims.map(termMonths).join(' or ') : trims.map((t) => `t${t}`).join('/');

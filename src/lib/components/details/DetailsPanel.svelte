@@ -19,7 +19,7 @@
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import type { TrimNum } from '$lib/types';
-	import { academicYear, degreeTrim, slotOrder } from '$lib/calendar';
+	import { academicYear, slotOrder, termMonthsShort } from '$lib/calendar';
 	import { descriptionOf, loadDescriptions } from '$lib/descriptions.svelte';
 	import { GRADE_SCALE, OTHER_MARKS, type GradeMark } from '$lib/grades';
 
@@ -121,8 +121,8 @@
 		fits?: { year: number; trim: TrimNum };
 	};
 	let hereAt = $derived(slotOrder(plan.here.year, plan.here.trim));
-	const spelled = (year: number, trim: number) =>
-		`t${degreeTrim(year, trim)}: year ${year}, trimester ${trim} (${academicYear(plan.batchStartYear, year)})`;
+	const spelled = (year: number, trim: TrimNum) =>
+		`${plan.trimSpelled(year, trim)}, ${academicYear(plan.batchStartYear, year)}`;
 	// the first trimester after now, and before this course when it's placed,
 	// that the prerequisite runs in and has room in under your target load
 	function fitsFor(pre: string): { year: number; trim: TrimNum } | null {
@@ -155,19 +155,19 @@
 			};
 		}
 		const o = slotOrder(at.year, at.trim);
-		const n = degreeTrim(at.year, at.trim);
+		const n = plan.trimName(at.year, at.trim);
 		const via = at.code === byCode(pre).code ? '' : `, as ${plan.courseLabel(at.code)}`;
 		if (placedAt && o >= slotOrder(placedAt.year, placedAt.trim))
 			return {
 				kind: 'late',
-				text: `t${n} · too late`,
+				text: `${n} · too late`,
 				title: `planned for ${spelled(at.year, at.trim)}${via}, not before this course: move it earlier`
 			};
 		if (o < hereAt)
-			return { kind: 'done', text: `✓ t${n} · done`, title: `taken in ${spelled(at.year, at.trim)}${via}` };
+			return { kind: 'done', text: `✓ ${n} · done`, title: `taken in ${spelled(at.year, at.trim)}${via}` };
 		if (o === hereAt)
-			return { kind: 'ok', text: `✓ t${n} · now`, title: `being taken now, ${spelled(at.year, at.trim)}${via}` };
-		return { kind: 'ok', text: `✓ t${n}`, title: `planned for ${spelled(at.year, at.trim)}${via}` };
+			return { kind: 'ok', text: `✓ ${n} · now`, title: `being taken now, ${spelled(at.year, at.trim)}${via}` };
+		return { kind: 'ok', text: `✓ ${n}`, title: `planned for ${spelled(at.year, at.trim)}${via}` };
 	}
 
 	// shut on Esc, unless a dialog is open, which Esc closes first
@@ -244,9 +244,11 @@
 					<thead>
 						<tr>
 							<th></th>
-							{#each [1, 2, 3] as t (t)}
+							{#each plan.trims as t (t)}
 								<th scope="col" class:mine={placedAt?.trim === t}
-									>t{t}{#if placedAt?.trim === t}<span class="d-runs-tag">your plan</span>{/if}</th
+									>{plan.trimNaming === 'year' ? `t${t}` : termMonthsShort(t)}{#if placedAt?.trim === t}<span
+											class="d-runs-tag">your plan</span
+										>{/if}</th
 								>
 							{/each}
 						</tr>
@@ -442,7 +444,7 @@
 											class="d-add"
 											title="add {plan.courseLabel(p)} to {spelled(fits.year, fits.trim)}"
 											onclick={() => plan.place(byCode(p).code, fits.year, fits.trim)}
-											>+ t{degreeTrim(fits.year, fits.trim)}</button
+											>+ {plan.trimName(fits.year, fits.trim)}</button
 										>
 									{/if}
 								</span>

@@ -4,7 +4,6 @@
 	import { settings, TEXT_SIZES, type ThemeChoice } from '$lib/settings.svelte';
 	import { savedPlans, MAX_SAVES } from '$lib/features/plans/local-plans.svelte';
 	import { shareLink } from '$lib/features/plans/share';
-	import { trimesterName } from '$lib/types';
 	import { byCode, subjectById } from '$lib/data';
 	import Modal from './Modal.svelte';
 	import FeedbackForm from './FeedbackForm.svelte';
@@ -86,7 +85,7 @@
 				const codes = plan.slotCourses(y, t);
 				if (codes.length)
 					lines.push(
-						`${trimesterName(y, t)} (${plan.slotCredits(y, t)} cr): ${codes.map((c) => `${byCode(c).code} ${byCode(c).title}`).join('; ')}`
+						`${plan.trimName(y, t)} (${plan.slotCredits(y, t)} cr): ${codes.map((c) => `${byCode(c).code} ${byCode(c).title}`).join('; ')}`
 					);
 			}
 		lines.push('', `${plan.totalPlacedCredits} of ${plan.creditMinimum} credits placed`);

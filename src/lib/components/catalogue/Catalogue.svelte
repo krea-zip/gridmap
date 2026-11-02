@@ -3,6 +3,7 @@
 	import PixelIcon from '../PixelIcon.svelte';
 	import { tick } from 'svelte';
 	import { COURSES, SUBJECTS, subjectById } from '$lib/data';
+	import { offeredIn } from '$lib/calendar';
 	import CatalogueCard from './CatalogueCard.svelte';
 
 	let { mobile = false }: { mobile?: boolean } = $props();
@@ -132,7 +133,7 @@
 
 	{#if plan.zoom}
 		<div class="reveal-note">
-			<span>offered in trimester {plan.zoom.trim}</span><button onclick={() => (plan.zoom = null)}
+			<span>offered in {offeredIn([plan.zoom.trim], plan.trimNaming)}</span><button onclick={() => (plan.zoom = null)}
 				>show all terms ×</button
 			>
 		</div>

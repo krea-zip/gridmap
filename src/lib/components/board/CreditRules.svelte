@@ -5,7 +5,7 @@
 	// arrives as "you've used 1 of 2" instead of as a paragraph to re-read.
 	// Below them, the standing and progression rules from the SIAS Exams &
 	// Assessments Manual, checked against whatever grades are entered.
-	import { trimesterName, type TrimNum } from '$lib/types';
+	import type { TrimNum } from '$lib/types';
 	import {
 		AUDIT_LIMIT,
 		HEAVY_TRIMS_ALLOWED,
@@ -259,8 +259,8 @@
 						{#if rule.slots?.length || rule.codes?.length}
 							<div class="slots">
 								{#each rule.slots ?? [] as s (`${s.y}-${s.t}`)}
-									<button title="open year {s.y} trimester {s.t}" onclick={() => jump(s.y, s.t)}>
-										Y{s.y} T{s.t} · {s.credits} cr
+									<button title="open {plan.trimSpelled(s.y, s.t)}" onclick={() => jump(s.y, s.t)}>
+										{plan.trimName(s.y, s.t)} · {s.credits} cr
 									</button>
 								{/each}
 								{#each rule.codes ?? [] as code (code)}
@@ -321,8 +321,8 @@
 								<button
 									class="bar {barKind(y, credits)}"
 									style="--v: {credits}; --i: {yi * plan.trims.length + ti}"
-									title="Y{y} T{t} · {credits} cr, {barText(y, credits)}. Click to open."
-									aria-label="{trimesterName(y, t)}: {credits} credits, {barText(y, credits)}. Open it."
+									title="{plan.trimName(y, t)} · {credits} cr, {barText(y, credits)}. Click to open."
+									aria-label="{plan.trimSpelled(y, t)}: {credits} credits, {barText(y, credits)}. Open it."
 									onclick={() => jump(y, t)}
 								>
 									<i></i>

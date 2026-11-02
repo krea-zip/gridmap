@@ -89,8 +89,6 @@ export type SlotKey = string;
 
 export const slotKey = (year: number, trim: TrimNum): SlotKey => `${year}-${trim}`;
 
-/** "y2 t1", how a trimester is named in text: the year, then its trimester */
-export const trimesterName = (year: number, trim: TrimNum): string => `y${year} t${trim}`;
 
 export const parseSlot = (key: SlotKey): { year: number; trim: TrimNum } => {
 	const [y, t] = key.split('-').map(Number);

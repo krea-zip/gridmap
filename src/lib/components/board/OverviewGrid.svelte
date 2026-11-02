@@ -2,7 +2,7 @@
 	import { usePlan } from '$lib/planner/context';
 	import PixelIcon from '../PixelIcon.svelte';
 	import { BOARD_VIEWS, type BoardView } from '$lib/plan.svelte';
-	import { trimesterName, type TrimNum } from '$lib/types';
+	import type { TrimNum } from '$lib/types';
 	import { TRIM_HARD_MAX, TRIM_NORMAL_MAX, byCode, isAttemptId, isCore, subjectById } from '$lib/data';
 	import { flip } from 'svelte/animate';
 	import { fade, fly, scale } from 'svelte/transition';
@@ -14,6 +14,7 @@
 	import PrereqLines from './PrereqLines.svelte';
 	import { milestones, planEnd, prereqChain, runRecord, runText, teacherOf, whatIfVerdict } from '$lib/boardViews';
 	import { academicYear, degreeTrim, slotOrder, termMonths } from '$lib/calendar';
+	import Rolling from '$lib/components/Rolling.svelte';
 	import { BREAK_KINDS } from '$lib/plan.svelte';
 	import { GRAD_MIN_CGPA } from '$lib/grades';
 	import CreditRules from './CreditRules.svelte';
@@ -375,6 +376,23 @@
 			>{/if}
 	</div>
 
+	<!-- how trimesters are named everywhere (hints, details, the trimester
+	     view): by year, or straight through the degree. The headings flip it too -->
+	<div class="keys" role="group" aria-label="trimester names">
+		<button
+			class:active={plan.trimNaming === 'year'}
+			aria-pressed={plan.trimNaming === 'year'}
+			title="name trimesters by year: y2 t3 is year 2, trimester 3"
+			onclick={() => (plan.trimNaming = 'year')}>y2 t3</button
+		>
+		<button
+			class:active={plan.trimNaming === 'degree'}
+			aria-pressed={plan.trimNaming === 'degree'}
+			title="number trimesters through the degree, t1 to t{degreeTrim(plan.years.length, 3)}: t6 is year 2, trimester 3"
+			onclick={() => (plan.trimNaming = 'degree')}>t6</button
+		>
+	</div>
+
 	<span class="bar-rule" aria-hidden="true"></span>
 
 	<!-- what the chip colours mean, folded into one key: laid out along the
@@ -549,24 +567,22 @@
 	ondrop={drop}
 >
 	<div class="corner"></div>
-	<!-- the trimester headings are the switch: a click flips between every
-	     trimester numbered (t1 … t12 at the foot of each) and just the ones
-	     you're in now, here in the header (t10 t11 t12 in year 4 for the
-	     2023 batch) -->
+	<!-- the trimester headings, which flip the naming too. By year: t1 over
+	     its months. Through the degree: the months, over the numbers that
+	     column holds (t1 · t4 · t7 · t10), so no "t1" stands over a t10 -->
 	{#each plan.trims as t (t)}
-		{@const across = plan.trimNumbers === 'current'}
-		{@const first = degreeTrim(plan.here.year, 1)}
+		{@const byYear = plan.trimNaming === 'year'}
 		<button
 			class="trim-head"
-			class:across
-			title={across
-				? `t${degreeTrim(plan.here.year, t)}: year ${plan.here.year}, trimester ${t}, the year you're in · click to number every trimester (t1–t${degreeTrim(plan.years.length, 3)})`
-				: `trimester ${t} of each year · click to show the ones you're in now (t${first}–t${first + 2})`}
-			onclick={() => (plan.trimNumbers = across ? 'each' : 'current')}
+			title={byYear
+				? `trimester ${t} of each year, ${termMonths(t)} · click to number trimesters through the degree`
+				: `${termMonths(t)}, trimester ${t} of each year · click to name trimesters by year`}
+			onclick={() => (plan.trimNaming = byYear ? 'degree' : 'year')}
 		>
-			t{across ? degreeTrim(plan.here.year, t) : t}
-			<!-- its months under it; the year is on each row already -->
-			<span class="trim-date">{termMonths(t)}</span>
+			<Rolling value={byYear ? `t${t}` : termMonths(t)} />
+			<span class="trim-date"
+				><Rolling value={byYear ? termMonths(t) : plan.years.map((y) => `t${degreeTrim(y, t)}`).join(' · ')} /></span
+			>
 		</button>
 	{/each}
 
@@ -626,7 +642,7 @@
 				data-core-only={coreSlot || undefined}
 				role="button"
 				tabindex="0"
-				aria-label="open {trimesterName(y, t)}"
+				aria-label="open {plan.trimSpelled(y, t)}"
 				onpointerdown={(e) => (pressOnItem = !!(e.target as Element).closest('.chip, .ghost, .cell-credits'))}
 				onclick={() => !pressOnItem && open(y, t)}
 				onkeydown={(e) => {
@@ -638,11 +654,11 @@
 			>
 				<button
 					class="mobile-term"
-					aria-label="view {trimesterName(y, t)}"
+					aria-label="view {plan.trimSpelled(y, t)}"
 					onclick={(e) => {
 						e.stopPropagation();
 						open(y, t);
-					}}>t{degreeTrim(y, t)} · trimester {t}<span>view trimester →</span></button
+					}}>{plan.trimName(y, t)} · {termMonths(t)}<span>view trimester →</span></button
 				>
 				<!-- the core-only rule, named only while there's nothing in the
 				     cell at all, not over the suggestions waiting in it -->
@@ -816,20 +832,18 @@
 					{/each}
 				{/if}
 
-				<!-- the trimester's footer: numbering every trimester, its number on
-				     the left (year 4 T1 is t10; the one you're in, in the accent);
-				     its load and credits on the right -->
-				{#if plan.trimNumbers === 'each' || slotCredits > 0}
+				<!-- the trimester's footer: through the degree, its number on the left
+				     (the one you're in, in the accent); its load and credits on the right -->
+				{#if plan.trimNaming === 'degree' || slotCredits > 0}
 					<div class="cell-foot">
-						{#if plan.trimNumbers === 'each'}
+						{#if plan.trimNaming === 'degree'}
 							{@const current = plan.view !== 'whatif' && slotOrder(y, t) === hereAt}
 							<span
 								class="cell-term"
 								class:now={current}
-								title="trimester {degreeTrim(y, t)} of your degree: year {y}, T{t} of {academicYear(
-									plan.batchStartYear,
-									y
-								)}{current ? ', the one you’re in now' : ''}">t{degreeTrim(y, t)}</span
+								title="{plan.trimSpelled(y, t)}, {academicYear(plan.batchStartYear, y)}{current
+									? ', the one you’re in now'
+									: ''}">{plan.trimName(y, t)}</span
 							>
 						{/if}
 						{#if slotCredits > 0}
@@ -859,7 +873,7 @@
 								<button
 									class="clear"
 									title="clear this trimester"
-									aria-label="clear {trimesterName(y, t)}"
+									aria-label="clear {plan.trimName(y, t)}"
 									onclick={(e) => {
 										e.stopPropagation();
 										plan.clearSlot(y, t);
@@ -1008,8 +1022,8 @@
 		}
 	}
 
-	// a trimester heading, and the switch for how trimesters are numbered:
-	// it looks like a heading until pointed at
+	// a trimester heading, and a switch for how trimesters are named: it
+	// looks like a heading until pointed at
 	.trim-head {
 		display: flex;
 		flex-direction: column;

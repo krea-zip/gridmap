@@ -19,7 +19,6 @@
 		subjectById
 	} from '$lib/data';
 	import type { Verdict } from '$lib/boardViews';
-	import { degreeTrim } from '$lib/calendar';
 
 	let { verdict }: { verdict: Verdict | null } = $props();
 	const plan = usePlan();
@@ -141,7 +140,7 @@
 		>
 			{#each [1, 2, 3] as t (t)}<option value={t}>T{t}</option>{/each}
 		</select>
-		<b class="wi-term">t{degreeTrim(plan.here.year, plan.here.trim)}</b>
+		{#if plan.trimNaming === 'degree'}<b class="wi-term">{plan.trimName(plan.here.year, plan.here.trim)}</b>{/if}
 		{#if guessed}
 			<span class="wi-note">guessed from your batch and today's date; change it if it's wrong</span>
 		{:else}
