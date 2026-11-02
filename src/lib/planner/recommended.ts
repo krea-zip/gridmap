@@ -2,6 +2,7 @@
 // grid is seeded with on a first visit and what the dashed ghosts show
 // afterwards. plain functions of the plan, derived by the store.
 import type { Plan } from '$lib/planner/plan.svelte';
+import type { Programme } from '$lib/types';
 import {
 	byCode,
 	CORE_COURSES,
@@ -26,7 +27,8 @@ import { slotKey, TRIMS, type SlotKey, type TrimNum } from '$lib/types';
  * lost in, it is what the app would suggest, recomputed whenever the
  * degree changes, and shown as ghosts in the slots it would use.
  */
-export function recommendedPath(plan: Plan): Record<SlotKey, string[]> {
+export function recommendedPath(plan: Plan, programmes: Programme[] = plan.programmes): Record<SlotKey, string[]> {
+	const subjects = programmes.map((p) => p.subject);
 	const placements: Record<SlotKey, string[]> = {};
 	const pos = new Map<string, number>(); // code -> year*10+trim
 	const load = (y: number, t: TrimNum) => (placements[slotKey(y, t)] ?? []).reduce((s, c) => s + byCode(c).credits, 0);
@@ -106,7 +108,7 @@ export function recommendedPath(plan: Plan): Record<SlotKey, string[]> {
 	// these, so the elective credits the table allows stay OPEN for the
 	// student to fill (maths: 52 required placed, 8 left, not pre-filled)
 	const requiredUnion = new Set(
-		plan.programmes.flatMap((prog) =>
+		programmes.flatMap((prog) =>
 			requiredSetFor(prog.subject, prog.role, plan.fourYear, plan.isDouble, plan.batchStartYear)
 		)
 	);
@@ -123,7 +125,7 @@ export function recommendedPath(plan: Plan): Record<SlotKey, string[]> {
 	// the departments' published pathways first, where they exist, but
 	// only for the courses that are actually required, so a pathway's
 	// recommended electives (maths Topology 1) aren't force-placed
-	for (const prog of plan.programmes) {
+	for (const prog of programmes) {
 		for (const { year, trim, code } of recommendedFor(
 			prog.subject,
 			prog.role,
@@ -176,7 +178,7 @@ export function recommendedPath(plan: Plan): Record<SlotKey, string[]> {
 			// course) isn't on the programme's list, seeding it buries the plan
 			// in green 'other' support courses. The prereq LAW still flags the
 			// ordering if the student chooses to add it.
-			if (!byCode(pre).subjects.some((subj) => plan.selectedSubjects.includes(subj))) continue;
+			if (!byCode(pre).subjects.some((subj) => subjects.includes(subj))) continue;
 			remaining.add(pre);
 			stack.push(...byCode(pre).prereqs);
 		}

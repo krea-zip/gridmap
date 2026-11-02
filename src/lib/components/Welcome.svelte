@@ -1,17 +1,61 @@
 <script lang="ts">
+	// the first thing a new visitor sees: their batch and degree. the grid
+	// behind starts empty and fills in as they answer, the foundation core
+	// with the batch, then each programme's courses as it's picked, so it
+	// builds up instead of showing someone else's example and reshuffling.
+	// every answer is also in the sidebar; nothing here is final.
+	import { onMount } from 'svelte';
 	import { usePlan } from '$lib/planner/context';
-	// The first thing a new visitor sees: two questions about their degree, so
-	// the grid behind opens on their own department's suggested path instead
-	// of someone else's example. The grid re-lays itself out live as they
-	// answer, and every answer is also in the sidebar, nothing here is final.
 	import { MAJOR_SUBJECTS } from '$lib/curriculum/data';
+	import type { ProgrammeRole } from '$lib/types';
 	import Modal from './Modal.svelte';
 
 	let { ondone }: { ondone: () => void } = $props();
 	const plan = usePlan();
-
-	const changed = () => plan.programmeChanged();
 	const BATCHES = [2022, 2023, 2024, 2025, 2026];
+
+	// which questions have been answered; the plan holds defaults for the
+	// rest, which mustn't show as if the student had chosen them
+	const answered = $state({ batch: false, degree: false, major1: false, major2: false, minor: false, conc: false });
+
+	onMount(() => {
+		plan.placements = {};
+		plan.welcoming = true;
+		return () => (plan.welcoming = false);
+	});
+
+	const has = (structure: string, part: string) => answered.degree && structure.includes(part);
+	const asked = $derived({
+		major2: has(plan.structure, 'double'),
+		minor: has(plan.structure, 'minor'),
+		conc: has(plan.structure, 'conc')
+	});
+	const ready = $derived(
+		answered.batch &&
+			answered.degree &&
+			answered.major1 &&
+			(!asked.major2 || answered.major2) &&
+			(!asked.minor || answered.minor) &&
+			(!asked.conc || answered.conc)
+	);
+
+	// the programmes answered so far, in the order the plan lists them
+	function chosen() {
+		let majors = 0;
+		const ok: Record<ProgrammeRole, () => boolean> = {
+			major: () => (majors++ === 0 ? answered.major1 : asked.major2 && answered.major2),
+			minor: () => asked.minor && answered.minor,
+			concentration: () => asked.conc && answered.conc
+		};
+		return plan.programmes.filter((p) => ok[p.role]());
+	}
+
+	function answer(key: keyof typeof answered) {
+		answered[key] = true;
+		plan.ensureDistinctPicks();
+		if (plan.yearCount < plan.minYears) plan.yearCount = plan.minYears;
+		if (answered.batch) plan.growRecommended(chosen());
+	}
 </script>
 
 <Modal title="welcome to kcal" width="54rem" onclose={ondone}>
@@ -27,14 +71,23 @@
 				<div class="fields">
 					<label class="field">
 						<span>batch</span>
-						<select bind:value={plan.batchStartYear} onchange={changed}>
+						<select
+							value={answered.batch ? plan.batchStartYear : ''}
+							onchange={(e) => ((plan.batchStartYear = Number(e.currentTarget.value)), answer('batch'))}
+						>
+							{#if !answered.batch}<option value="" disabled>choose…</option>{/if}
 							{#each BATCHES as year (year)}
 								<option value={year}>{year}-{String(year + (plan.fourYear ? 4 : 3)).slice(-2)}</option>
 							{/each}
 						</select>
 					</label>
 					<label class="check">
-						<input type="checkbox" class="tick" bind:checked={plan.fourYear} onchange={changed} />
+						<input
+							type="checkbox"
+							class="tick"
+							bind:checked={plan.fourYear}
+							onchange={() => answered.batch && answer('batch')}
+						/>
 						4-year degree
 					</label>
 				</div>
@@ -48,7 +101,11 @@
 				<div class="fields">
 					<label class="field">
 						<span>degree</span>
-						<select bind:value={plan.structure} onchange={changed}>
+						<select
+							value={answered.degree ? plan.structure : ''}
+							onchange={(e) => ((plan.structure = e.currentTarget.value as typeof plan.structure), answer('degree'))}
+						>
+							{#if !answered.degree}<option value="" disabled>choose…</option>{/if}
 							<option value="single-major">single major</option>
 							<option value="double-major">double major</option>
 							<option value="major-minor">major + minor</option>
@@ -58,36 +115,52 @@
 					</label>
 					<label class="field">
 						<span>major</span>
-						<select bind:value={plan.picks.major1} onchange={changed}>
+						<select
+							value={answered.major1 ? plan.picks.major1 : ''}
+							onchange={(e) => ((plan.picks.major1 = e.currentTarget.value), answer('major1'))}
+						>
+							{#if !answered.major1}<option value="" disabled>choose…</option>{/if}
 							{#each MAJOR_SUBJECTS as s (s.id)}
 								<option value={s.id}>{s.label}</option>
 							{/each}
 						</select>
 					</label>
-					{#if plan.structure === 'double-major'}
+					{#if asked.major2}
 						<label class="field">
 							<span>second major</span>
-							<select bind:value={plan.picks.major2} onchange={changed}>
+							<select
+								value={answered.major2 ? plan.picks.major2 : ''}
+								onchange={(e) => ((plan.picks.major2 = e.currentTarget.value), answer('major2'))}
+							>
+								{#if !answered.major2}<option value="" disabled>choose…</option>{/if}
 								{#each plan.major2Opts as s (s.id)}
 									<option value={s.id}>{s.label}</option>
 								{/each}
 							</select>
 						</label>
 					{/if}
-					{#if plan.structure === 'major-minor' || plan.structure === 'major-minor-conc'}
+					{#if asked.minor}
 						<label class="field">
 							<span>minor</span>
-							<select bind:value={plan.picks.minor} onchange={changed}>
+							<select
+								value={answered.minor ? plan.picks.minor : ''}
+								onchange={(e) => ((plan.picks.minor = e.currentTarget.value), answer('minor'))}
+							>
+								{#if !answered.minor}<option value="" disabled>choose…</option>{/if}
 								{#each plan.minorOpts as s (s.id)}
 									<option value={s.id}>{s.label}</option>
 								{/each}
 							</select>
 						</label>
 					{/if}
-					{#if plan.structure === 'major-conc' || plan.structure === 'major-minor-conc'}
+					{#if asked.conc}
 						<label class="field">
 							<span>concentration</span>
-							<select bind:value={plan.picks.conc} onchange={changed}>
+							<select
+								value={answered.conc ? plan.picks.conc : ''}
+								onchange={(e) => ((plan.picks.conc = e.currentTarget.value), answer('conc'))}
+							>
+								{#if !answered.conc}<option value="" disabled>choose…</option>{/if}
 								{#each plan.concOpts as s (s.id)}
 									<option value={s.id}>{s.label}</option>
 								{/each}
@@ -100,12 +173,12 @@
 	</ol>
 
 	<p class="note">
-		I'll lay out your department's suggested path to start from, move, add or drop anything. your plan saves in this
-		browser, and you can change all of this later in the sidebar.
+		your department's suggested path fills in behind this as you answer, move, add or drop anything. your plan saves in
+		this browser, and you can change all of this later in the sidebar.
 	</p>
 
 	<div class="actions">
-		<button class="go" onclick={ondone}>build my plan <span aria-hidden="true">→</span></button>
+		<button class="go" disabled={!ready} onclick={ondone}>build my plan <span aria-hidden="true">→</span></button>
 	</div>
 </Modal>
 
@@ -234,6 +307,13 @@
 
 		&:hover {
 			filter: brightness(1.07);
+		}
+
+		// until every question asked has an answer
+		&:disabled {
+			opacity: 0.45;
+			cursor: default;
+			filter: none;
 		}
 	}
 </style>

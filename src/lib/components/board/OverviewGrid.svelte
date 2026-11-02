@@ -49,7 +49,7 @@
 
 <!-- until the student changes something the grid is the suggested path,
      filled in for them; say so, so it doesn't read as someone else's plan -->
-{#if !plan.touched && plan.view === 'plan'}
+{#if !plan.touched && !plan.welcoming && plan.view === 'plan'}
 	<p class="example-note">
 		<b>this is the suggested path for your degree, filled in to start you off.</b> change anything and it's yours, until then,
 		picking a different degree on the left lays it out again.

@@ -17,7 +17,7 @@
 	let others = $derived(plan.otherPlacedCodes.length);
 </script>
 
-{#if plan.view === 'plan'}
+{#if plan.view === 'plan' && !plan.welcoming}
 	<div class="acts-row" data-tour="board-actions">
 		{#if plan.missingRequiredCodes.length}
 			<button

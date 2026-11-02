@@ -179,6 +179,9 @@ export class Plan {
 	// never move their courses. No UI, the student never sees this decision,
 	// they just find that the app does the obvious thing either way.
 	touched = $state(false);
+	// the first-visit welcome is open: the board shows only what's been
+	// answered, not the suggested path for the defaults behind the questions
+	welcoming = $state(false);
 	// warn hints the student has waived, a broken prerequisite is a real rule,
 	// but plenty of students hold a waiver for one, so a red hint can be crossed
 	// off. Keyed by the hint's rule id, so it stays crossed off across reloads
@@ -1458,6 +1461,22 @@ export class Plan {
 	 * offering, year eligibility, prereq order and the 20-credit load.
 	 * Replaces whatever is on the grid, called when the programme changes.
 	 */
+	/** the first-visit welcome: lay out the suggested path for the programmes
+	 *  answered so far, adding only what's new. courses already on the grid
+	 *  stay where they are, so the grid fills in rather than reshuffling with
+	 *  every answer; a programme switched away takes its courses with it */
+	growRecommended(programmes: Programme[]) {
+		const target = recommendedPath(this, programmes);
+		const wanted = new Set(Object.values(target).flat());
+		const grid: Record<SlotKey, string[]> = {};
+		for (const [slot, codes] of Object.entries(this.placements))
+			grid[slot as SlotKey] = codes.filter((c) => wanted.has(c));
+		const placed = new Set(Object.values(grid).flat());
+		for (const [slot, codes] of Object.entries(target))
+			for (const code of codes) if (!placed.has(code)) (grid[slot as SlotKey] ??= []).push(code);
+		this.placements = grid;
+	}
+
 	seedRecommended() {
 		quietRedraw(); // every chip is about to change at once, fade, don't fly
 		this.placements = Object.fromEntries(Object.entries(this.recommended).map(([key, codes]) => [key, [...codes]]));
@@ -1514,7 +1533,7 @@ export class Plan {
 
 	/** the recommendation's ghosts for one cell */
 	suggestionsFor(year: number, trim: TrimNum): string[] {
-		return this.suggestions[slotKey(year, trim)] ?? [];
+		return this.welcoming ? [] : (this.suggestions[slotKey(year, trim)] ?? []);
 	}
 
 	/** take one suggestion: it lands in the slot the recommendation put it in */
