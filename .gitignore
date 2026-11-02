@@ -3,6 +3,8 @@ node_modules
 /build
 /.svelte-kit
 /package
+# build output, Vercel makes its own on every deploy
+/.vercel
 
 # generated data-pipeline artifacts (rebuilt by misc/*.py)
 /course-tree.html

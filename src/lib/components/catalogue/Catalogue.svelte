@@ -50,6 +50,17 @@
 		return inProgramme.length === 1 ? inProgramme[0] : undefined;
 	}
 
+	// The highlight (outline + "showing" bar) holds until a click anywhere
+	// else: the background, the grid, another course. A click on the card
+	// itself or on the bar keeps it. A sidebar tag's press clears the old one
+	// before its click reveals the new one.
+	function clickAway(e: PointerEvent) {
+		if (!plan.catalogueReveal) return;
+		const target = e.target as Element | null;
+		if (target?.closest('.cell.revealed, .reveal-note')) return;
+		plan.catalogueReveal = null;
+	}
+
 	// dropping a course back on the catalogue removes it from the plan
 	function drop(e: DragEvent) {
 		e.preventDefault();
@@ -57,6 +68,8 @@
 		if (code) plan.remove(code);
 	}
 </script>
+
+<svelte:window onpointerdown={clickAway} />
 
 <div
 	class="catalogue"

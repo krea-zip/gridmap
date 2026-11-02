@@ -20,6 +20,8 @@
 // Kept free of any import from data.ts, data.ts imports THIS.
 // ─────────────────────────────────────────────
 
+import { ADMIN_CHANGED } from './adminEdits';
+
 export const PREREQ_EDITS_KEY = 'kcal-prereq-edits';
 
 /** course code → its full replacement prerequisite list */
@@ -52,4 +54,5 @@ export function savePrereqEdits(edits: PrereqEdits) {
 	} catch {
 		// storage full or blocked; the edit still applies for this session
 	}
+	if (typeof window !== 'undefined') window.dispatchEvent(new Event(ADMIN_CHANGED));
 }

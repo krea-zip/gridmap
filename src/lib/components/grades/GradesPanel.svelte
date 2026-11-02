@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Plan } from '$lib/plan.svelte';
-	import { byCode, hasCode } from '$lib/data';
+	import { byCode, hasCode, isAttemptId } from '$lib/data';
 	import { slide } from 'svelte/transition';
 	import {
 		GRADE_POINTS,
@@ -22,17 +22,18 @@
 
 	type Term = { year: number; trim: number; codes: string[] };
 
-	// placed non-audit courses grouped by trimester, for the per-term TGPA
+	// placed non-audit courses grouped by trimester, for the per-term TGPA.
+	// A failed attempt is listed in the trimester it was sat, with its U.
 	let terms = $derived.by<Term[]>(() => {
 		const seen = new Set<string>();
 		const groups = new Map<string, Term>();
-		for (const p of [...plan.placed].sort((a, b) => a.year - b.year || a.trim - b.trim)) {
-			if (seen.has(p.code) || !hasCode(p.code) || plan.isAudit(p.code)) continue;
+		for (const p of [...plan.attempts].sort((a, b) => a.year - b.year || a.trim - b.trim)) {
+			if (seen.has(p.id) || !hasCode(p.code) || plan.isAudit(p.id)) continue;
 			if (year !== undefined && p.year !== year) continue;
-			seen.add(p.code);
+			seen.add(p.id);
 			const key = `${p.year}-${p.trim}`;
 			if (!groups.has(key)) groups.set(key, { year: p.year, trim: p.trim, codes: [] });
-			groups.get(key)!.codes.push(p.code);
+			groups.get(key)!.codes.push(p.id);
 		}
 		return [...groups.values()];
 	});
@@ -177,7 +178,7 @@
 								{@const c = byCode(code)}
 								<label class="c-row">
 									<span class="c-label" title="{plan.shownCode(code)} {c.title}"
-										>{#if plan.showCodes}<b>{plan.shownCode(code)}</b> {/if}{c.title}</span
+										>{#if plan.showCodes}<b>{plan.shownCode(code)}</b> {/if}{c.title}{#if isAttemptId(code)} <em>(failed attempt)</em>{/if}</span
 									>
 									<span class="c-cr">{c.credits} cr</span>
 									<select

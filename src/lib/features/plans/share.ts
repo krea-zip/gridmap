@@ -26,7 +26,13 @@ const fromBase64Url = (text: string) =>
 
 /** a link to `origin` that opens a copy of this plan */
 export async function shareLink(snapshot: Record<string, unknown>, origin: string): Promise<string> {
-	const plan = Object.fromEntries(SHARED.filter((key) => key in snapshot).map((key) => [key, snapshot[key]]));
+	const plan: Record<string, unknown> = Object.fromEntries(SHARED.filter((key) => key in snapshot).map((key) => [key, snapshot[key]]));
+	// a failed attempt (COMP201~1) is part of the grade record, which stays private
+	const placements = plan.placements;
+	if (placements && typeof placements === 'object')
+		plan.placements = Object.fromEntries(
+			Object.entries(placements).map(([slot, ids]) => [slot, Array.isArray(ids) ? ids.filter((id) => !/~\d+$/.test(String(id))) : ids])
+		);
 	const packed = await through(new TextEncoder().encode(JSON.stringify(plan)), new CompressionStream('deflate-raw'));
 	return `${origin}/${PREFIX}${toBase64Url(packed)}`;
 }

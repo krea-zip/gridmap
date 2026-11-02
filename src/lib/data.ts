@@ -6,6 +6,15 @@
 // ─────────────────────────────────────────────
 
 import { browser } from '$app/environment';
+import {
+	emptyLecturerEdits,
+	emptySubjectEdits,
+	loadLecturerEdits,
+	loadProgrammeEdits,
+	loadSubjectEdits,
+	programmeKey,
+	type ProgrammeEdits
+} from './adminEdits';
 import { batchKey, loadBatchEdits, type BatchRule } from './batchEdits';
 import {
 	loadCourseEdits,
@@ -40,7 +49,14 @@ export const DATA_UPDATED = snapshot.updatedOn ? new Date(snapshot.updatedOn) : 
 
 // ── Subjects ──
 
-export const SUBJECTS: Subject[] = snapshot.subjects;
+/** the departments as the curriculum shipped them, before any /admin edit */
+export const SHIPPED_SUBJECTS: Subject[] = snapshot.subjects;
+const subjectEdits = browser ? loadSubjectEdits() : emptySubjectEdits();
+export const SUBJECTS: Subject[] = [
+	...snapshot.subjects.map((s) => ({ ...s, ...subjectEdits.edited[s.id] })),
+	// departments /admin added; they join after the shipped ones
+	...Object.values(subjectEdits.added).filter((a) => !snapshot.subjects.some((s) => s.id === a.id))
+];
 export const MAJOR_SUBJECTS: Subject[] = SUBJECTS.filter((s) => s.majorable);
 /** what the minor/concentration pickers offer: every real subject, not the
  *  foundation core, nor the open minor (offered separately, minor slot only) */
@@ -169,10 +185,25 @@ for (const c of COURSES) c.prereqs = c.prereqs.filter((p) => index.has(p));
 // `unlocks` is exactly the inverse relation, derived, never stored
 for (const c of COURSES) for (const p of c.prereqs) index.get(p)!.unlocks.push(c.code);
 
-export const hasCode = (code: string): boolean => index.has(code) || aliases.has(code);
+// A failed course stays on the plan as the attempt it was, under the course's
+// code plus `~n` (COMP201~1), so the code itself is free to place again as the
+// retake. Everything below reads an attempt as the course it is an attempt at.
+const ATTEMPT_RE = /~(\d+)$/;
+/** the course a plan entry is about: a code, or one of its failed attempts */
+export const baseCode = (id: string): string => id.replace(ATTEMPT_RE, '');
+/** a failed attempt kept on the plan, not the live course */
+export const isAttemptId = (id: string): boolean => ATTEMPT_RE.test(id);
+/** which attempt a `~n` id is, 0 for the course's own code */
+export const attemptNumber = (id: string): number => Number(ATTEMPT_RE.exec(id)?.[1] ?? 0);
+export const attemptId = (code: string, n: number): string => `${baseCode(code)}~${n}`;
+
+export const hasCode = (code: string): boolean => {
+	const c = baseCode(code);
+	return index.has(c) || aliases.has(c);
+};
 
 export const byCode = (code: string): Course => {
-	const c = index.get(code) ?? aliases.get(code);
+	const c = index.get(baseCode(code)) ?? aliases.get(baseCode(code));
 	if (!c) throw new Error(`unknown course code: ${code}`);
 	return c;
 };
@@ -213,13 +244,13 @@ for (const { maths, applied } of MATHS_COVERS) {
 /** codes accepted in place of `code`, ask this wherever a requirement or
  *  prerequisite needs "is this already satisfied?" */
 export const satisfiedBy = (code: string): string[] => {
-	const c = index.get(code);
+	const c = index.get(baseCode(code));
 	return c ? [...new Set([...(c.substitutes ?? []), ...(c.coveredBy ?? [])])] : [];
 };
 
 const TRANSCRIPT_ONLY = new Set(snapshot.equivalences.transcriptOnly);
 /** on the transcript, toward no programme (matched on the canonical code) */
-export const isTranscriptOnly = (code: string): boolean => TRANSCRIPT_ONLY.has(index.get(code)?.code ?? code);
+export const isTranscriptOnly = (code: string): boolean => TRANSCRIPT_ONLY.has(index.get(baseCode(code))?.code ?? baseCode(code));
 
 // ── The KCCS foundation core: every student, years 1–2 (KCCS190 in year 3);
 //    year 1 t1/t2 hold only these, at most Y1_CORE_MAX per trimester ──
@@ -227,12 +258,12 @@ export const isTranscriptOnly = (code: string): boolean => TRANSCRIPT_ONLY.has(i
 export const CORE_COURSES: Course[] = COURSES.filter((c) => c.subject === 'core');
 export const CORE_CREDITS = CORE_COURSES.reduce((sum, c) => sum + c.credits, 0);
 export const Y1_CORE_MAX = 4;
-export const isCore = (code: string): boolean => index.get(code)?.subject === 'core';
+export const isCore = (code: string): boolean => index.get(baseCode(code))?.subject === 'core';
 
 // The drop form's audit rules: a 2- or 4-credit course, never KCCS/391/490/491.
 const AUDIT_EXCLUDED_RE = /(?:391|490|491)$/;
 export const canAudit = (code: string): boolean => {
-	const c = index.get(code);
+	const c = index.get(baseCode(code));
 	if (!c || c.subject === 'core') return false;
 	if (c.codes.some((x) => AUDIT_EXCLUDED_RE.test(x))) return false;
 	return c.credits === 2 || c.credits === 4;
@@ -241,15 +272,27 @@ export const canAudit = (code: string): boolean => {
 // ── Lecturers ──
 
 export type Professor = Lecturer;
+/** the directory as the curriculum shipped it, before any /admin edit */
+export const SHIPPED_LECTURERS: Professor[] = snapshot.lecturers;
+const lecturerEdits = browser ? loadLecturerEdits() : emptyLecturerEdits();
+const removedLecturers = new Set(lecturerEdits.removed);
 /** everyone in the directory, plus lecturers the term sheets name */
-export const LECTURERS: Professor[] = snapshot.lecturers;
-const lecturers = new Map(snapshot.lecturers.map((l) => [l.id, l]));
+export const LECTURERS: Professor[] = [
+	...snapshot.lecturers.map((l) => ({ ...l, ...lecturerEdits.edited[l.id] })),
+	...Object.values(lecturerEdits.added).filter((a) => !snapshot.lecturers.some((l) => l.id === a.id))
+].filter((l) => !removedLecturers.has(l.id));
+const lecturers = new Map(LECTURERS.map((l) => [l.id, l]));
 export const lecturerById = (id: string): Professor | undefined => lecturers.get(id);
 const courseRecords = new Map(snapshot.courses.map((c) => [c.code, c]));
 
+/** who a course lists as its lecturers, as shipped */
+export const shippedTeachers = (code: string): string[] => courseRecords.get(code)?.lecturers ?? [];
+/** lecturer ids for a course, /admin's assignment first */
+const lecturerIdsOf = (code: string): string[] => lecturerEdits.teaches[code] ?? shippedTeachers(code);
+
 /** who has taught a course, position, office hours, photo where known */
 export function facultyOf(code: string): Professor[] {
-	return (courseRecords.get(byCode(code).code)?.lecturers ?? []).flatMap((id) => lecturers.get(id) ?? []);
+	return lecturerIdsOf(byCode(code).code).flatMap((id) => lecturers.get(id) ?? []);
 }
 
 /** who teaches a course, as the search bar reads it: the names lecturers go
@@ -267,13 +310,27 @@ export const termLabel = (term: string): string => {
 export const termsOffered = (code: string): string[] =>
 	(courseRecords.get(byCode(code).code)?.terms ?? []).map(termLabel);
 
+/** the raw term ids a course ran ("24_T1"), for counting */
+export const ranIn = (code: string): string[] => courseRecords.get(byCode(code).code)?.terms ?? [];
+
+/** Every term the timetables cover, by trimester, oldest first: what "how
+ *  often did it run in T1" is counted against. A term missing from the
+ *  timetables (no sheet for it) simply isn't counted. */
+export const RECORDED_TERMS: Record<1 | 2 | 3, string[]> = (() => {
+	const by: Record<1 | 2 | 3, string[]> = { 1: [], 2: [], 3: [] };
+	for (const term of [...new Set(snapshot.courses.flatMap((c) => c.terms ?? []))].sort()) {
+		const trim = Number(/T(\d)$/i.exec(term)?.[1]);
+		if (trim === 1 || trim === 2 || trim === 3) by[trim].push(term);
+	}
+	return by;
+})();
+
 // A lecturer is credited with every term a course of theirs ran, the data
 // keeps each course's latest lecturers, so close enough to show what someone
 // teaches and how recently.
 const taught = new Map<string, string[]>();
-for (const c of snapshot.courses) {
-	if (!index.has(c.code)) continue;
-	for (const id of c.lecturers) taught.set(id, [...(taught.get(id) ?? []), c.code]);
+for (const c of COURSES) {
+	for (const id of lecturerIdsOf(c.code)) taught.set(id, [...(taught.get(id) ?? []), c.code]);
 }
 
 /** a lecturer's courses by term, newest first, the latest `terms` terms */
@@ -301,17 +358,46 @@ export function facultyCourses(prof: Professor): Course[] {
 const defaultSet = snapshot.requirementSets.find((s) => s.batches === null)!;
 const latestSet = snapshot.requirementSets.findLast((s) => s.batches !== null) ?? defaultSet;
 const programmes = new Map(
-	snapshot.requirementSets.flatMap((set) => set.programmes.map((p) => [`${set.id}|${p.subject}|${p.variant}`, p] as const))
+	snapshot.requirementSets.flatMap((set) => set.programmes.map((p) => [programmeKey(set.id, p.subject, p.variant), p] as const))
 );
+const programmeEdits: ProgrammeEdits = browser ? loadProgrammeEdits() : {};
+
+/** the requirement sets, for /admin: which rules apply to which batches */
+export const REQUIREMENT_SETS = snapshot.requirementSets.map(({ id, name, batches }) => ({ id, name, batches }));
+
+/** a programme as the curriculum shipped it, before any /admin edit */
+export const shippedProgramme = (setId: string, subject: string, variant: Variant) =>
+	programmes.get(programmeKey(setId, subject, variant));
+
+/** a programme with /admin's edits laid over it, a created one has nothing
+ *  but what was entered; the pathway and choose-N pools are never edited */
+function programmeAt(setId: string, subject: string, variant: Variant): ProgrammeRequirements | undefined {
+	const base = programmes.get(programmeKey(setId, subject, variant));
+	const edit = programmeEdits[programmeKey(setId, subject, variant)];
+	if (!edit) return base;
+	return {
+		subject,
+		variant,
+		credits: {
+			total: edit.total ?? base?.credits.total ?? 0,
+			required: edit.required !== undefined ? edit.required : (base?.credits.required ?? null),
+			elective: edit.elective !== undefined ? edit.elective : (base?.credits.elective ?? null)
+		},
+		required: edit.requiredCourses ?? base?.required ?? [],
+		picks: base?.picks ?? [],
+		electives: edit.electives ?? base?.electives ?? [],
+		choices: base?.choices ?? [],
+		pathway: base?.pathway ?? []
+	};
+}
+export const programmeOf = programmeAt;
 /** the newest requirement set: its name and the batches it governs */
 export const CURRENT_REQUIREMENTS = { name: latestSet.name, batches: latestSet.batches ?? [] };
 const setFor = (batch: number | undefined): RequirementSet =>
 	batch === undefined ? latestSet : (snapshot.requirementSets.find((s) => s.batches?.includes(batch)) ?? defaultSet);
 
 function programmeFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number) {
-	return programmes.get(`${setFor(batch).id}|${subject}|${variantOf(role, fourYear, isDouble)}`) as
-		| ProgrammeRequirements
-		| undefined;
+	return programmeAt(setFor(batch).id, subject, variantOf(role, fourYear, isDouble));
 }
 
 const VARIANT_SHAPE: Record<Variant, [ProgrammeRole, boolean, boolean]> = {

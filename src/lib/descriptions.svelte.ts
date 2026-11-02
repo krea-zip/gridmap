@@ -7,9 +7,12 @@
 // ─────────────────────────────────────────────
 
 import { browser } from '$app/environment';
+import { loadDescriptionEdits } from './adminEdits';
 
 let descriptions = $state<Record<string, string> | null>(null);
 let started = false;
+/** descriptions /admin rewrote; they win over the shipped text */
+const edited = browser ? loadDescriptionEdits() : {};
 
 /** start fetching the descriptions chunk, safe to call as often as you like */
 export function loadDescriptions() {
@@ -20,4 +23,5 @@ export function loadDescriptions() {
 		.catch(() => (started = false)); // offline / chunk 404 → try again next time
 }
 
-export const descriptionOf = (code: string): string | undefined => descriptions?.[code] ?? undefined;
+export const descriptionOf = (code: string): string | undefined =>
+	code in edited ? edited[code] || undefined : (descriptions?.[code] ?? undefined);

@@ -1,20 +1,27 @@
 <script lang="ts">
 	import PixelIcon from '../PixelIcon.svelte';
-	import { MAX_YEARS, type Plan } from '$lib/plan.svelte';
+	import { BOARD_VIEWS, type BoardView, type Plan } from '$lib/plan.svelte';
 	import { trimesterName, type TrimNum } from '$lib/types';
-	import { TRIM_HARD_MAX, TRIM_NORMAL_MAX, byCode, isCore, subjectById } from '$lib/data';
+	import { TRIM_HARD_MAX, TRIM_NORMAL_MAX, byCode, isAttemptId, isCore, subjectById } from '$lib/data';
 	import { flip } from 'svelte/animate';
 	import { fade, fly, scale } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
 	import { courseIn, courseOut, courseShift, reducedMotion, roll } from '$lib/transitions';
-	import { tick } from 'svelte';
+	import { tick, untrack } from 'svelte';
+	import ViewStrip from './ViewStrip.svelte';
+	import ViewMenu from './ViewMenu.svelte';
+	import PrereqLines from './PrereqLines.svelte';
+	import { milestones, planEnd, prereqChain, runRecord, runText, teacherOf, whatIfVerdict } from '$lib/boardViews';
+	import { academicYear, degreeTrim, slotOrder, termMonths } from '$lib/calendar';
+	import { BREAK_KINDS } from '$lib/plan.svelte';
 	import { GRAD_MIN_CGPA } from '$lib/grades';
 	import CreditRules from './CreditRules.svelte';
 	import GradesPanel from '../grades/GradesPanel.svelte';
 
 	let { plan, touchLayout = false }: { plan: Plan; touchLayout?: boolean } = $props();
 
-	let gridEl: HTMLDivElement;
+	// state, not a plain binding: the prerequisite arrows wait for it to exist
+	let gridEl = $state() as HTMLDivElement;
 	let dropTarget = $state<string | null>(null);
 	let showCredits = $state(false);
 	let showGrades = $state(false);
@@ -30,6 +37,56 @@
 		showGradeHint = false;
 		localStorage.setItem(GRADE_HINT_KEY, '1');
 	}
+
+	// the view picker: plan, grades, and the views to come, one at a time.
+	// Shuts on a pick, a click anywhere else, or Escape.
+	let viewEl: HTMLDivElement;
+	let viewBtn = $state<HTMLButtonElement>();
+	let viewOpen = $state(false);
+	let currentView = $derived(BOARD_VIEWS.find((v) => v.id === plan.view) ?? BOARD_VIEWS[0]);
+	function setView(view: BoardView) {
+		viewOpen = false;
+		viewBtn?.focus(); // back where the menu was opened from
+		plan.view = view;
+		// what-if starts from the plan as it is, every time
+		if (view === 'whatif') plan.startWhatIf();
+		// prerequisites starts on the course already open, if it's on the grid
+		chainRoot = view === 'prereqs' && plan.selected && plan.placedCodes.has(plan.selected.code) ? plan.selected.code : null;
+		// grades changes what the whole board means, so the first visit says so
+		if (view === 'grades' && !localStorage.getItem(GRADE_HINT_KEY)) showGradeHint = true;
+		else showGradeHint = false;
+	}
+
+	// ── the views' layers on the grid ──
+	// prerequisites: the chain of the course last clicked, until a click
+	// anywhere that isn't a course, the course panel or the view's bar
+	let chainRoot = $state<string | null>(null);
+	$effect(() => {
+		const code = plan.selected?.code;
+		untrack(() => {
+			if (plan.view === 'prereqs' && code && plan.placedCodes.has(code)) chainRoot = code;
+		});
+	});
+	let chain = $derived(
+		plan.view === 'prereqs' && chainRoot && plan.placedCodes.has(chainRoot) ? prereqChain(plan, chainRoot) : null
+	);
+	// what-if: a course that would stop or start counting under the degree tried
+	function whatIfChange(code: string): 'stops' | 'starts' | null {
+		if (isCore(code) || isAttemptId(code)) return null;
+		const now = plan.courseType(code) !== 'other';
+		const then = plan.whatIfType(code) !== 'other';
+		return now === then ? null : now ? 'stops' : 'starts';
+	}
+	let stones = $derived(plan.view === 'milestones' ? milestones(plan) : []);
+	// the year the plan graduates in: the degree's own last year, or later
+	// when a break, a suspension or a retake pushes it on
+	let gradYear = $derived(Math.max(plan.minYears, planEnd(plan).end?.year ?? plan.minYears));
+	// what-if: the verdict for the degree tried (the bar reads it, and the grid
+	// draws the courses it still needs where they'd fit)
+	let verdict = $derived(plan.view === 'whatif' && plan.whatIf ? whatIfVerdict(plan) : null);
+	let hereAt = $derived(slotOrder(plan.here.year, plan.here.trim));
+	const neededIn = (year: number, trim: TrimNum) =>
+		verdict ? verdict.needed.filter((n) => n.at?.year === year && n.at.trim === trim) : [];
 
 	// the colour key's dropdown: shuts on a click anywhere else or Escape,
 	// and lets go of any chips it had lit
@@ -249,8 +306,19 @@
 </script>
 
 <svelte:window
-	onpointerdown={(e) => keyOpen && !keyEl.contains(e.target as Node) && setKeyOpen(false)}
-	onkeydown={(e) => keyOpen && e.key === 'Escape' && setKeyOpen(false)}
+	onpointerdown={(e) => {
+		if (keyOpen && !keyEl.contains(e.target as Node)) setKeyOpen(false);
+		if (viewOpen && !viewEl.contains(e.target as Node)) viewOpen = false;
+		if (chainRoot && !(e.target as Element | null)?.closest('.overview .chip, .details, .view-strip')) chainRoot = null;
+	}}
+	onkeydown={(e) => {
+		if (e.key !== 'Escape') return;
+		if (keyOpen) setKeyOpen(false);
+		if (viewOpen) {
+			viewOpen = false;
+			viewBtn?.focus();
+		}
+	}}
 />
 
 <div class="board-bar" data-tour="board-toggles">
@@ -262,21 +330,27 @@
 
 	<span class="bar-rule" aria-hidden="true"></span>
 
-	<!-- grade view: unlocks grade entry on chips, in the details panel, and the
-	     CGPA / recovery panel -->
-	<div class="keys">
-	<button
-		class:active={plan.gradeMode}
-		aria-pressed={plan.gradeMode}
-		title="grade view, enter grades and track your CGPA"
-		onclick={() => {
-			plan.gradeMode = !plan.gradeMode;
-			if (plan.gradeMode && !localStorage.getItem(GRADE_HINT_KEY)) showGradeHint = true;
-			else showGradeHint = false;
-		}}
-	>
-		<PixelIcon name="grade" /> grade view
-	</button>
+	<!-- what the board shows: the plan, or one view laid over it (grades
+	     unlocks grade entry on chips, in the details panel, and the CGPA /
+	     recovery panel). One at a time, each says what it's for. -->
+	<div class="view-pick" bind:this={viewEl}>
+		<div class="keys">
+			<button
+				bind:this={viewBtn}
+				class:active={plan.view !== 'plan'}
+				class:open={viewOpen}
+				aria-expanded={viewOpen}
+				aria-controls="view-list"
+				title="what the board shows"
+				onclick={() => (viewOpen = !viewOpen)}
+			>
+				{#if plan.view === 'grades'}<PixelIcon name="grade" />{/if}
+				view: {currentView.label} <span class="caret" aria-hidden="true">▾</span>
+			</button>
+		</div>
+		{#if viewOpen}
+			<ViewMenu {plan} onpick={setView} />
+		{/if}
 	</div>
 
 	<span class="bar-rule" aria-hidden="true"></span>
@@ -385,10 +459,12 @@
 	{/if}
 </div>
 
+<ViewStrip {plan} {chain} {verdict} />
+
 {#if showGradeHint}
 	<div class="grade-hint" transition:fly={{ y: -8, duration: 180 }}>
 		<button class="hint-close" onclick={dismissGradeHint} aria-label="dismiss">×</button>
-		<strong>grade view</strong>
+		<strong>grades view</strong>
 		<ul>
 			<li>click a course on the grid, then set its <b>grade</b> in the course panel on the right</li>
 			<li>each trimester shows its <b>TGPA</b> instead of credits; the button above shows your <b>CGPA</b></li>
@@ -408,7 +484,7 @@
 	<GradesPanel {plan} year={gradesYear} onclose={() => (showGrades = false)} />
 {/if}
 
-{#if !plan.touched && !plan.gradeMode}
+{#if !plan.touched && plan.view === 'plan'}
 	<p class="example-note">
 		<b>this is the suggested path for your degree, filled in to start you off.</b> change anything and it's
 		yours, until then, picking a different degree on the left lays it out again.
@@ -437,8 +513,25 @@
 	ondrop={drop}
 >
 	<div class="corner"></div>
+	<!-- the trimester headings are the switch: a click flips between every
+	     trimester numbered (t1 … t12 at the foot of each) and just the ones
+	     you're in now, here in the header (t10 t11 t12 in year 4 for the
+	     2023 batch) -->
 	{#each plan.trims as t (t)}
-		<div class="trim-head">t{t}</div>
+		{@const across = plan.trimNumbers === 'current'}
+		{@const first = degreeTrim(plan.here.year, 1)}
+		<button
+			class="trim-head"
+			class:across
+			title={across
+				? `t${degreeTrim(plan.here.year, t)}: year ${plan.here.year}, trimester ${t}, the year you're in · click to number every trimester (t1–t${degreeTrim(plan.years.length, 3)})`
+				: `trimester ${t} of each year · click to show the ones you're in now (t${first}–t${first + 2})`}
+			onclick={() => (plan.trimNumbers = across ? 'each' : 'current')}
+		>
+			t{across ? degreeTrim(plan.here.year, t) : t}
+			<!-- its months under it; the year is on each row already -->
+			<span class="trim-date">{termMonths(t)}</span>
+		</button>
 	{/each}
 
 	{#each plan.years as y (y)}
@@ -466,13 +559,21 @@
 			{:else}
 				<span class="year-short">y{y}</span><span class="year-long">year {y}</span>
 			{/if}
+			<!-- the academic year this year of the degree falls in, from the batch -->
+			<span class="year-ay">{academicYear(plan.batchStartYear, y)}</span>
 		</div>
 		{#each plan.trims as t (t)}
 			{@const coreSlot = plan.coreOnly(y, t)}
 			{@const slotCredits = plan.slotCredits(y, t)}
 			{@const codes = plan.slotCourses(y, t)}
+			{@const off = plan.breakAt(y, t)}
+			{@const isNow = plan.view !== 'whatif' && slotOrder(y, t) === hereAt}
 			<div
 				class="cell"
+				class:is-off={!!off}
+				class:past={plan.view === 'whatif' && slotOrder(y, t) < hereAt}
+				class:here={plan.view === 'whatif' && slotOrder(y, t) === hereAt}
+				class:now={isNow}
 				class:fresh={y === freshYear}
 				class:lit={plan.highlight.length > 0 && codes.some((c) => plan.highlight.includes(c))}
 				style="--t: {t}"
@@ -496,26 +597,46 @@
 					}
 				}}
 			>
-				<button class="mobile-term" aria-label="view {trimesterName(y, t)}" onclick={(e) => { e.stopPropagation(); open(y, t); }}>trimester {t}<span>view trimester →</span></button>
+				<button class="mobile-term" aria-label="view {trimesterName(y, t)}" onclick={(e) => { e.stopPropagation(); open(y, t); }}>t{degreeTrim(y, t)} · trimester {t}<span>view trimester →</span></button>
 				<!-- the core-only rule, named only while there's nothing in the
 				     cell at all, not over the suggestions waiting in it -->
-				{#if coreSlot && plan.slotCourses(y, t).length === 0 && (plan.gradeMode || plan.suggestionsFor(y, t).length === 0)}
+				<!-- a trimester off: a break, a suspension or a term away; set and
+				     taken off again in the trimester's own view -->
+				{#if off}
+					<span class="off-card" data-kind={off.kind}>
+						<b>{off.kind === 'away' ? 'away' : off.kind === 'suspension' ? 'suspended' : 'on a break'}</b>
+						{#if off.kind === 'away'}<span>{off.credits ?? 0} cr from elsewhere</span>{/if}
+					</span>
+				{/if}
+				<!-- where you are: "now" on the trimester you're in, whichever way
+				     the trimesters are numbered -->
+				{#if isNow || (plan.view === 'whatif' && slotOrder(y, t) === hereAt)}<span class="here-tag" title="the trimester you're in now, from your batch and today's date (you can change it in what-if)">now</span>{/if}
+				{#if coreSlot && plan.slotCourses(y, t).length === 0 && (plan.view !== 'plan' || plan.suggestionsFor(y, t).length === 0)}
 					<span class="core-note">kccs courses</span>
 				{/if}
 				{#each codes as code, i (code)}
-					{@const type = plan.courseType(code)}
+					<!-- what-if reads every chip as the tried degree would -->
+					{@const type = plan.view === 'whatif' && !isAttemptId(code) ? plan.whatIfType(code) : plan.courseType(code)}
+					{@const run = plan.view === 'runs' && !isAttemptId(code) ? runRecord(code, t) : null}
+					{@const change = plan.view === 'whatif' ? whatIfChange(code) : null}
+					{@const who = plan.view === 'faculty' && !isCore(code) ? teacherOf(code) : ''}
 					<div
 						class="chip"
+						class:faded={!!chain && !chain.nodes.has(code)}
+						class:chain-root={chain?.root === code}
+						class:with-who={!!who}
 						class:flagged={plan.flaggedCodes.has(code)}
 						class:is-audit={plan.isAudit(code)}
+						class:is-attempt={isAttemptId(code)}
+						class:is-retake={!isAttemptId(code) && plan.attemptsOf(code).length > 0}
 						class:showing-title={plan.showTitles}
 						class:dragging={plan.dragging === code}
 						class:lit={plan.highlight.includes(code)}
 						data-code={code}
 						style="order: {chipOrder(`${y}-${t}`, codes, code, i)}"
 						data-type={type}
-						style:--hue={plan.hueOf(code)}
-						draggable={!touchLayout}
+						style:--hue={plan.view === 'whatif' ? plan.whatIfHue(code) : plan.hueOf(code)}
+						draggable={!touchLayout && !isAttemptId(code)}
 						role="listitem"
 						animate:flip={courseShift}
 						in:courseIn={{ key: code }}
@@ -524,8 +645,9 @@
 						ondragend={() => (plan.dragging = null)}
 
 					>
-						<button class="chip-open" onclick={(e) => { e.stopPropagation(); plan.selected = byCode(code); }} aria-label="view {plan.courseLabel(code)}" title="{plan.courseLabel(code)}, {plan.roleLabel(code)}">
-						{#if plan.gradeMode && plan.showGradeLabels && plan.gradeOf(code)}
+						<button class="chip-open" onclick={(e) => { e.stopPropagation(); plan.select(code); if (plan.view === 'prereqs' && !isAttemptId(code)) chainRoot = code; }} aria-label="view {plan.courseLabel(code)}" title="{plan.courseLabel(code)}{isAttemptId(code) ? ' (failed attempt)' : plan.attemptsOf(code).length ? ' (retake)' : ''}, {plan.roleLabel(code)}">
+						<!-- a failed attempt wears its U always, grade view or not -->
+						{#if (isAttemptId(code) || (plan.gradeMode && plan.showGradeLabels)) && plan.gradeOf(code)}
 							<span class="chip-grade" class:fail={plan.gradeOf(code) === 'U'}>{plan.gradeOf(code)}</span>
 						{/if}
 						<!-- a course named in a hint leads with that hint's severity
@@ -535,6 +657,10 @@
 						<span class="label"
 							>{#if plan.showCodes}<b class="chip-code">{plan.shownCode(code)}</b>{/if}{#if plan.showCodes && plan.showTitles}{' · '}{/if}{#if plan.showTitles}{byCode(code).title}{/if}{#if !plan.showTitles}<span class="mobile-title">{byCode(code).title}</span>{/if}</span
 						>
+						<!-- each view's mark: how often it ran, whether it'd still count, who teaches it -->
+						{#if run}<span class="run-mark" data-kind={run.kind} role="img" aria-label={runText(code, t)} title={runText(code, t)}></span>{/if}
+						{#if change}<span class="wi-mark" data-change={change} role="img" aria-label={change === 'stops' ? 'would stop counting' : 'would start counting'} title={change === 'stops' ? 'would stop counting' : 'would start counting'}>{change === 'stops' ? '−' : '+'}</span>{/if}
+						{#if who}<span class="chip-who" title={who}>{who}</span>{/if}
 						</button>
 						<button
 							class="x"
@@ -562,12 +688,31 @@
 					</span>
 				{/if}
 
+				<!-- what-if: a course the tried degree still needs, in the earliest
+				     trimester it fits, dashed like a suggestion; click it to read it -->
+				{#each neededIn(y, t) as n (n.code)}
+					<button
+						class="ghost needed"
+						class:showing-title={plan.showTitles}
+						data-type={plan.whatIfType(n.code)}
+						style:--hue={plan.whatIfHue(n.code)}
+						title="still needed{n.why === 'prerequisite' && n.for ? `, first, for ${plan.courseLabel(n.for)}` : ''}: {plan.courseLabel(n.code)}"
+						onclick={(e) => {
+							e.stopPropagation();
+							plan.select(n.code);
+						}}
+					>
+						<span class="label">{plan.courseLabel(n.code)}</span>
+						<span class="plus" aria-hidden="true">+</span>
+					</button>
+				{/each}
+
 				<!-- The recommended path, shown where it would go. Not a second plan
 				     and not a mode: a course the department would put in this
 				     trimester that isn't anywhere on your grid yet. Click it to take
 				     it; ignore it and it just sits there. Hidden in grade view, which
 				     is about what you HAVE taken. -->
-				{#if !plan.gradeMode}
+				{#if plan.view === 'plan'}
 					{#each plan.suggestionsFor(y, t) as code (code)}
 						<button
 							class="ghost"
@@ -586,6 +731,20 @@
 					{/each}
 				{/if}
 
+				<!-- the trimester's footer: numbering every trimester, its number on
+				     the left (year 4 T1 is t10; the one you're in, in the accent);
+				     its load and credits on the right -->
+				{#if plan.trimNumbers === 'each' || slotCredits > 0}
+				<div class="cell-foot">
+				{#if plan.trimNumbers === 'each'}
+					{@const current = plan.view !== 'whatif' && slotOrder(y, t) === hereAt}
+					<span
+						class="cell-term"
+						class:now={current}
+						title="trimester {degreeTrim(y, t)} of your degree: year {y}, T{t} of {academicYear(plan.batchStartYear, y)}{current ? ', the one you’re in now' : ''}"
+						>t{degreeTrim(y, t)}</span
+					>
+				{/if}
 				{#if slotCredits > 0}
 					{@const load = plan.slotLoad(y, t)}
 					<span class="cell-credits" data-status={plan.gradeMode ? undefined : load.status}>
@@ -619,15 +778,50 @@
 						>
 					</span>
 				{/if}
+				</div>
+				{/if}
 			</div>
 		{/each}
+		{#if plan.view === 'milestones'}
+			{@const m = stones.find((s) => s.year === y)}
+			{#if m}
+				<div class="milestone" class:met={m.met} class:short={!!m.exit && !m.met} role="note">
+					<span class="ms-when">end of year {y}</span>
+					<span><b>{m.credits}</b> cr placed · {m.inYear} this year</span>
+					{#each m.off as o (o.trim)}
+						<span class="ms-off">T{o.trim} {o.kind === 'away' ? 'away' : o.kind === 'suspension' ? 'suspended' : 'on a break'}</span>
+					{/each}
+					{#if m.exit && y !== gradYear}
+						<span class="ms-exit">
+							{m.met ? `✓ enough to leave with a ${m.exit.award}` : `${m.short} cr short of a ${m.exit.award} (${m.exit.credits} cr)`}
+						</span>
+					{/if}
+					{#if y === gradYear}
+						<span class="ms-grad" class:ok={m.credits >= plan.creditMinimum}>
+							{m.credits >= plan.creditMinimum
+								? `✓ enough to graduate (${plan.creditMinimum} cr)`
+								: `${plan.creditMinimum - m.credits} cr short of graduating (${plan.creditMinimum} cr)`}
+						</span>
+					{/if}
+				</div>
+			{/if}
+		{/if}
 	{/each}
+
+	<!-- prerequisites: the chain's arrows, over everything -->
+	{#if chain && gridEl}
+		<PrereqLines
+			grid={gridEl}
+			edges={chain.edges}
+			version="{JSON.stringify(plan.placements)}|{plan.showTitles}|{plan.showCodes}"
+		/>
+	{/if}
 
 	<!-- grow or shrink the grid by a year: a dashed row waiting to exist, and
 	     the way back off the last one (never below the degree's own length) -->
-	{#if !plan.gradeMode && (plan.years.length < MAX_YEARS || plan.canRemoveYear)}
+	{#if plan.view === 'plan' && (plan.years.length < plan.maxYears || plan.canRemoveYear)}
 		<div class="year-acts">
-			{#if plan.years.length < MAX_YEARS}
+			{#if plan.years.length < plan.maxYears}
 				<button class="add-year" onclick={addYear}>+ add year {plan.years.length + 1}</button>
 			{/if}
 			{#if plan.canRemoveYear}
@@ -654,7 +848,7 @@
      Each shows only while it has something to do and says what it will move
      in plain words, greyed-out buttons reading "0" confused people. Adding
      first, taking away after; clearing sits apart at the far end. -->
-{#if !plan.gradeMode}
+{#if plan.view === 'plan'}
 	<div class="acts-row" data-tour="board-actions">
 		{#if plan.missingRequiredCodes.length}
 			<button
@@ -706,7 +900,7 @@
 	.overview {
 		position: relative;
 		display: grid;
-		grid-template-columns: var(--head, 4rem) repeat(var(--cols), 1fr);
+		grid-template-columns: var(--head, 6rem) repeat(var(--cols), 1fr);
 		gap: 1rem;
 		padding: 2.4rem 3.2rem;
 		transition: grid-template-columns 0.4s var(--ease-out);
@@ -718,16 +912,75 @@
 	}
 
 
+	// a trimester heading, and the switch for how trimesters are numbered:
+	// it looks like a heading until pointed at
 	.trim-head {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.2rem;
+		padding: 0 0 0.4rem;
+		font: inherit;
 		font-size: 2.2rem;
 		text-align: center;
-		padding-bottom: 0.4rem;
+		color: var(--color-text);
+		background: none;
+		border: 0;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: color 0.15s ease;
+
+		&:hover,
+		&:focus-visible {
+			color: var(--color-accent);
+
+			.trim-date {
+				color: var(--color-accent);
+			}
+		}
+	}
+
+	.trim-date {
+		font-size: 1.05rem;
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--color-text-muted);
 	}
 
 	.year-head {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.2rem;
 		font-size: 2.2rem;
 		align-self: center;
 		text-align: center;
+	}
+
+	.year-ay {
+		font-size: 1.05rem;
+		font-weight: 600;
+		white-space: nowrap;
+		color: var(--color-text-muted);
+		font-variant-numeric: tabular-nums;
+	}
+
+	// counting across the degree: the trimester's number, at the footer's
+	// left; the one you're in is in the accent (and tagged "you are here")
+	.cell-term {
+		display: flex;
+		flex: none;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 1.2rem;
+		font-weight: 700;
+		white-space: nowrap;
+		color: var(--color-text-muted);
+		font-variant-numeric: tabular-nums;
+
+		&.now {
+			color: var(--color-accent);
+		}
 	}
 
 	// grade view: the year's GPA on a small glossy capsule, a readout from an
@@ -826,6 +1079,14 @@
 			box-shadow: var(--shadow-inset), inset 0 0 0 100vmax rgba(0, 0, 0, 0.1);
 		}
 
+		// the trimester you're in (counting across the degree): ringed like
+		// what-if's "you are here", a straight rule where the others are dashed.
+		// A warning still turns it red, and a drag still rings it
+		&.now {
+			outline: 2px solid color-mix(in srgb, var(--color-accent) 70%, transparent);
+			outline-offset: -3px;
+		}
+
 		// year-1 t1/t2: reserved for the foundation core, tinted like the
 		// core chips so the pairing is obvious at a glance
 		&.core-slot {
@@ -855,11 +1116,24 @@
 		}
 	}
 
-	// the trimester's load meter and credits, in its bottom-right corner
-	.cell-credits {
+	// the trimester's footer row: its number on the left (counting across the
+	// degree), its load meter and credits on the right. In a narrow trimester
+	// the meter narrows first, so nothing runs into anything
+	.cell-foot {
 		position: absolute;
-		bottom: 0.7rem;
+		left: 1rem;
 		right: 0.9rem;
+		bottom: 0.7rem;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		min-width: 0;
+	}
+
+	// the load meter and credits, at the footer's right
+	.cell-credits {
+		margin-left: auto;
+		min-width: 0;
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
@@ -871,10 +1145,9 @@
 			color: var(--color-danger);
 		}
 
+		// the credits never give way; the load meter beside them does
 		.credits-text {
-			min-width: 0;
-			overflow: hidden;
-			text-overflow: ellipsis;
+			flex: none;
 			white-space: nowrap;
 		}
 
@@ -903,7 +1176,9 @@
 	// 4 credits; colour follows the corner's status
 	.load-meter {
 		display: inline-flex;
-		flex: none;
+		flex: 0 1 auto; // gives way in a narrow trimester
+		min-width: 0;
+		overflow: hidden;
 		gap: 2px;
 		height: 0.8rem;
 		padding: 1px;
@@ -989,6 +1264,133 @@
 			color: var(--color-danger);
 			border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
 		}
+	}
+
+	// ── the views' marks on a chip ──
+	.chip .run-mark {
+		@include run-mark;
+	}
+	.chip .wi-mark {
+		@include whatif-mark;
+	}
+	// faculty: the lecturer on a line of their own under the code, the chip
+	// stretched across its trimester so the name has the room
+	.chip.with-who {
+		flex-grow: 1;
+	}
+	.chip.with-who .chip-open {
+		flex-wrap: wrap;
+	}
+	.chip-who {
+		flex-basis: 100%;
+		min-width: 0;
+		// a long name never widens the chip (and with it the column): the
+		// chip is as wide as its code, the name trims to fit, hover shows it all
+		contain: inline-size;
+		overflow: hidden;
+		font-size: 1.1rem;
+		font-weight: 400;
+		color: color-mix(in srgb, var(--course-ink, var(--color-text)) 75%, transparent);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+	// prerequisites: the chain stands out, everything else steps back
+	.chip.faded {
+		opacity: 0.3;
+	}
+	.chip.chain-root {
+		box-shadow: 0 0 0 2px var(--color-accent), var(--shadow-card);
+	}
+
+	// a trimester off: the cell holds one quiet card instead of courses
+	.off-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		width: 100%;
+		padding: 1rem 1.2rem;
+		font-size: 1.25rem;
+		color: var(--color-text-muted);
+		border: 1px dashed color-mix(in srgb, var(--color-text-muted) 55%, transparent);
+		border-radius: 5px;
+
+		b {
+			font-weight: 650;
+			color: var(--color-text);
+		}
+
+		span {
+			font-size: 1.15rem;
+		}
+	}
+	.cell.is-off {
+		background-image: repeating-linear-gradient(
+			135deg,
+			transparent 0 8px,
+			color-mix(in srgb, var(--color-text-muted) 7%, transparent) 8px 9px
+		);
+	}
+
+	// what-if: what's already taken steps back; "you are here" is marked
+	.cell.past {
+		opacity: 0.55;
+	}
+	.cell.here {
+		outline: 2px solid color-mix(in srgb, var(--color-accent) 70%, transparent);
+		outline-offset: -3px;
+	}
+	.here-tag {
+		position: absolute;
+		top: -0.9rem;
+		left: 0.8rem;
+		z-index: 1;
+		padding: 0 0.6rem;
+		font-size: 1.05rem;
+		font-weight: 650;
+		line-height: 1.6;
+		color: var(--color-on-accent);
+		background: var(--color-accent);
+		border-radius: 999px;
+	}
+
+	// milestones: a line under each year, what the plan has earned by then
+	.milestone {
+		grid-column: 1 / -1;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.4rem 1.6rem;
+		margin: -0.2rem 0 0.6rem;
+		padding: 0.7rem 1.2rem;
+		font-size: 1.25rem;
+		color: var(--color-text-muted);
+		border-top: 1px dotted var(--color-border-light);
+		border-bottom: 1px dotted var(--color-border-light);
+
+		b {
+			color: var(--color-text);
+		}
+
+		.ms-when {
+			font-weight: 650;
+			color: var(--color-text);
+		}
+
+		&.met .ms-exit,
+		.ms-grad.ok {
+			color: var(--color-accent);
+		}
+
+		&.short .ms-exit,
+		.ms-grad:not(.ok) {
+			color: var(--color-danger);
+		}
+	}
+
+	// the course placed again after a failed attempt
+	.chip.is-retake .chip-code::after {
+		content: ' ↻';
+		font-weight: 400;
 	}
 
 	.chip {
@@ -1299,6 +1701,21 @@
 			&.active + button {
 				border-left-color: var(--bar-key-on-edge);
 			}
+		}
+	}
+
+	// the view picker: one of the bar's keys, its menu (ViewMenu) hangs below
+	// it; the caret turns over while it's open, as the colour key's does
+	.view-pick {
+		position: relative;
+
+		.caret {
+			font-size: 1rem;
+			transition: transform 260ms var(--spring);
+		}
+
+		.open .caret {
+			transform: rotate(180deg);
 		}
 	}
 
@@ -1907,11 +2324,13 @@
 			transition: none;
 		}
 		.corner,
-		.trim-head {
-			display: none;
+		.trim-head,
+		.cell-term {
+			display: none; // the trimester's own button names it
 		}
 		.year-head {
 			display: flex;
+			flex-direction: row; // the desktop stacks the academic year under the year
 			align-items: center;
 			gap: 1rem;
 			text-align: left;

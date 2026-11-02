@@ -1,3 +1,4 @@
+import { ADMIN_CHANGED } from './adminEdits';
 import type { ProgrammeRole } from './types';
 export const BATCH_EDITS_KEY = 'kcal-batch-edits';
 export type BatchRule = { courses: Record<string, 'required' | 'elective'>; requiredCredits?: number };
@@ -30,5 +31,8 @@ export function loadBatchEdits(): BatchEdits {
 	catch { return {}; }
 }
 export function saveBatchEdits(edits: BatchEdits) {
-	localStorage.setItem(BATCH_EDITS_KEY, JSON.stringify(parseBatchEdits(edits)));
+	const clean = parseBatchEdits(edits);
+	if (Object.keys(clean).length) localStorage.setItem(BATCH_EDITS_KEY, JSON.stringify(clean));
+	else localStorage.removeItem(BATCH_EDITS_KEY);
+	window.dispatchEvent(new Event(ADMIN_CHANGED));
 }

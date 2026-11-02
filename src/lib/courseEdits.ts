@@ -14,6 +14,7 @@
 // Kept free of any import from data.ts, data.ts imports THIS.
 // ─────────────────────────────────────────────
 
+import { ADMIN_CHANGED } from './adminEdits';
 import type { TrimNum } from './types';
 
 export const COURSE_EDITS_KEY = 'kcal-course-edits';
@@ -232,6 +233,7 @@ function save(key: string, value: unknown) {
 	} catch {
 		// storage full or blocked; the edit still applies for this session
 	}
+	if (typeof window !== 'undefined') window.dispatchEvent(new Event(ADMIN_CHANGED));
 }
 
 export function parseNewCourses(raw: unknown): NewCourses {

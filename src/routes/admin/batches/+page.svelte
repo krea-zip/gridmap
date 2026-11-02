@@ -32,7 +32,8 @@
 	}
 </script>
 
-<h1>Batch requirements</h1>
+<div class="doc wide">
+<h1>Batch overrides</h1>
 <p class="intro">Every batch inherits the same curriculum. Override only the courses that changed for a specific batch, programme and degree track. Other batches stay unchanged.</p>
 <div class="selectors">
 	<label>Batch starts<select bind:value={year}>{#each [2022,2023,2024,2025,2026] as y}<option value={y}>{y}</option>{/each}</select></label>
@@ -62,10 +63,10 @@
 			</select></td></tr>
 	{/each}</tbody>
 </table>
-<p class="intro">Batch overrides are included in the courses page’s export / import file. Switching batches does not move courses in an edited student plan.</p>
+<p class="intro">Batch overrides are included in the export on the Changes page. Switching batches does not move courses in an edited student plan.</p>
+</div>
 
 <style>
-	h1 { font-size: 2rem; margin-bottom: 1rem; }
 	.intro { max-width: 85rem; line-height: 1.6; margin: 1rem 0 2rem; color: var(--color-text-muted); font-size: 1.4rem; }
 	.selectors, .budget { display: flex; align-items: end; gap: 1.6rem; flex-wrap: wrap; margin: 1.6rem 0; font-size: 1.3rem; }
 	label { display: flex; flex-direction: column; gap: .6rem; }

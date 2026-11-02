@@ -22,7 +22,7 @@
 		{
 			target: 'board-toggles',
 			title: 'switch how you view it',
-			body: 'grade view turns the grid into your transcript, enter grades and track your CGPA instead of credits. show codes / titles controls course labels everywhere, including hints and the catalogue.'
+			body: 'view switches what the board shows: grades turns the grid into your transcript, enter grades and track your CGPA instead of credits. show codes / titles controls course labels everywhere, including hints and the catalogue.'
 		},
 		{
 			target: 'board-actions',

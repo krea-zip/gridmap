@@ -5,6 +5,8 @@
 //   @use '$lib/styles/mixins' as *;
 // ─────────────────────────────────────────────
 
+@use 'sass:list';
+
 // Card surface with subtle top-shine
 @mixin card-shine {
 	box-shadow: var(--shadow-inset), var(--shadow-card);
@@ -323,6 +325,13 @@
 		border-width: 1.5px;
 		border-color: var(--color-accent);
 	}
+	// a failed attempt kept on the plan as a record: dimmed, dotted edge
+	&.is-attempt {
+		opacity: 0.5;
+		border-style: dotted;
+		border-width: 1.5px;
+		filter: saturate(0.6);
+	}
 	}
 }
 
@@ -421,5 +430,62 @@ $shape-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 @mixin touch {
 	@media (any-pointer: coarse) {
 		@content;
+	}
+}
+
+// The "will it run?" mark, on a chip and in the view's key: filled when the
+// course ran every time on record in that trimester, half when some years,
+// an empty red ring when never, dotted when there's no record at all.
+@mixin run-mark {
+	display: inline-block;
+	flex-shrink: 0;
+	width: 1rem;
+	height: 1rem;
+	border-radius: 50%;
+	border: 1.5px solid var(--color-text-muted);
+
+	&[data-kind='always'] {
+		background: var(--color-text);
+		border-color: var(--color-text);
+	}
+	&[data-kind='sometimes'] {
+		background: linear-gradient(90deg, var(--color-text) 50%, transparent 50%);
+		border-color: var(--color-text);
+	}
+	&[data-kind='never'] {
+		border-color: var(--color-danger);
+		border-width: 2px;
+	}
+	&[data-kind='unknown'] {
+		border-style: dotted;
+	}
+}
+
+// The what-if mark: − a course that would stop counting, + one that would
+// start. A caller that only ever draws one of them names it, so no rule for
+// the other is left unused: @include whatif-mark(stops).
+@mixin whatif-mark($changes...) {
+	display: inline-grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	font-size: 1.1rem;
+	font-style: normal;
+	font-weight: 700;
+	line-height: 1;
+	border-radius: 50%;
+	color: var(--color-bg-light);
+
+	$all: list.length($changes) == 0;
+	@if $all or list.index($changes, stops) {
+		&[data-change='stops'] {
+			background: var(--color-danger);
+		}
+	}
+	@if $all or list.index($changes, starts) {
+		&[data-change='starts'] {
+			background: var(--color-accent);
+		}
 	}
 }

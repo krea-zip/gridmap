@@ -39,6 +39,15 @@
 		plan.highlight = pinnedCodes;
 		if (pinnedCodes.length) focusOnGrid(pinnedCodes[0]);
 	}
+	// the lit courses hold until a click anywhere else: the grid, the
+	// background, another hint. The lit line's own button is left alone so a
+	// second click on it still switches it off (pin toggles); another line's
+	// press clears this one before its click lights the new one.
+	function clickAway(e: PointerEvent) {
+		if (!pinned) return;
+		if ((e.target as Element | null)?.closest('.hint-detail li.lit .jump')) return;
+		unpin();
+	}
 	const preview = (codes: string[]) => (plan.highlight = codes.filter(hasCode));
 	const restoreHighlight = () => (plan.highlight = pinnedCodes);
 	/** bring a course's chip into view on the grid */
@@ -147,6 +156,8 @@
 	});
 
 </script>
+
+<svelte:window onpointerdown={clickAway} />
 
 {#snippet hintGroup(group: Group, gi: number)}
 	{@const open = openKey === group.key}

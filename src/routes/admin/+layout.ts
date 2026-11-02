@@ -1,2 +1,3 @@
-// Local drafting tools for now: static pages that edit this browser's copy.
-export const prerender = true;
+// Staff data is fetched from authenticated Vercel endpoints, never prerendered.
+export const prerender = false;
+export const ssr = false;

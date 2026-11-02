@@ -37,8 +37,17 @@ writes fail visibly. The database validates names, document shape and size.
 
 All authenticated accounts may save private plans. Public reviews retain their
 separate verified Krea Google eligibility policy. Curriculum JSON is a versioned
-build artifact; the existing `/admin` pages edit local drafts and export them for
+build artifact; the `/admin` pages edit local drafts and export them for
 the data pipeline. They do not grant access to other users or publish database changes.
+
+`/admin` is a home page of jobs plus a sidebar: courses (including descriptions and
+who teaches them), faculty, departments, cross-listing, degree requirements, batch
+overrides, university rules and the prerequisite map. Every editor saves to its own
+`kcal-*-edits` localStorage key and `data.ts` lays the edits over the snapshot at
+load. The Changes page (`/admin/changes`, `src/lib/adminBundle.ts`) counts, lists,
+exports, imports and discards all of them as one JSON file. The new editors'
+storage lives in `src/lib/adminEdits.ts`; programme edits replace a programme's
+course lists and credits but never its choose-N pools or suggested pathway.
 
 ## Development checks
 

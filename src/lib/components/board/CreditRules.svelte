@@ -144,10 +144,16 @@
 			.map((p) => ({ code: p.code, year: p.year, mark: plan.gradeOf(p.code) }))
 			.filter((m) => m.mark)
 	);
-	let graded = $derived(marks.length > 0);
-	let failsY1 = $derived(marks.filter((m) => m.mark === 'U' && m.year === 1).map((m) => m.code));
-	let failsY12 = $derived(marks.filter((m) => m.mark === 'U' && m.year <= 2).map((m) => m.code));
-	let unfinished = $derived(marks.filter((m) => m.mark === 'U' || m.mark === 'I').map((m) => m.code));
+	// a failed attempt stays on the grid under its own id; it counts until the
+	// retake has a grade (plan.failedAttempts), a U on a live course is an older save
+	let fails = $derived([
+		...marks.filter((m) => m.mark === 'U').map((m) => ({ code: m.code, year: m.year })),
+		...plan.failedAttempts.map((a) => ({ code: a.code, year: a.year }))
+	]);
+	let graded = $derived(marks.length > 0 || fails.length > 0);
+	let failsY1 = $derived(fails.filter((f) => f.year === 1).map((f) => f.code));
+	let failsY12 = $derived(fails.filter((f) => f.year <= 2).map((f) => f.code));
+	let unfinished = $derived([...fails.map((f) => f.code), ...marks.filter((m) => m.mark === 'I').map((m) => m.code)]);
 	let years = $derived(plan.fourYear ? 4 : 3);
 
 	let standing = $derived<Rule[]>([
@@ -376,7 +382,7 @@
 		{#if standingOpen}
 			<div transition:slide={unfold()}>
 				{#if !graded}
-					<p class="note lead">Enter grades in grade view and these check themselves against them.</p>
+					<p class="note lead">Enter grades in the grades view and these check themselves against them.</p>
 				{/if}
 				{@render ruleList(standing)}
 			</div>

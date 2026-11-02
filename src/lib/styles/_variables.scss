@@ -19,6 +19,12 @@
 	--color-text-muted: #76626c; // ≥4.5:1 on every light surface, so small muted text stays legible
 	--color-accent: #7c4b69;
 	--color-on-accent: #fff8f8; // text/icons sitting ON an accent fill
+	// the page's own text and accent, resolved here on :root (so the dark set
+	// below flows into them too) and untouched by a palette that re-points
+	// --color-text / --color-accent, as the board bar does: a sample of the
+	// board drawn inside the bar's menus uses these to look like the board
+	--color-text-page: var(--color-text);
+	--color-accent-page: var(--color-accent);
 
 	// ── Borders ──
 	// Structural/frame borders (column separators, header + section
