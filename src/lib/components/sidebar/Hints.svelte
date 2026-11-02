@@ -1,20 +1,19 @@
 <script lang="ts">
+	// the plan's hints, worst first: rows fold same-kind hints together, a
+	// line lights its courses on the grid, and a rule the student has a
+	// waiver for can be crossed off
 	import { usePlan } from '$lib/planner/context';
 	import { tick, untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { reducedMotion } from '$lib/transitions';
 	import type { Hint } from '$lib/types';
-	import { byCode, hasCode, subjectById } from '$lib/data';
+	import { byCode, hasCode } from '$lib/data';
 	import ReferencePath from '$lib/components/board/ReferencePath.svelte';
-	import Progress from './Progress.svelte';
 
 	const plan = usePlan();
 
 	let showPath = $state(false);
-	// one programme's breakdown open at a time
-	let openProg = $state<string | null>(null);
-	const left = (done: number, needed: number) => (done >= needed ? '✓ done' : `${needed - done} cr left`);
 	// one hint open at a time, opening another folds the last
 	let openKey = $state<string | null>(null);
 	// the open hint's courses stay lit on the grid; pointing at another hint
@@ -235,132 +234,6 @@
 	</div>
 {/snippet}
 
-<div class="section">
-	<h3>information</h3>
-
-	<div class="stats">
-		<!-- the whole degree as one plain count; the bars below break it down -->
-		<div class="total">
-			<span>total</span>
-			<b>{plan.totalPlacedCredits}<em>/</em>{plan.creditTarget} cr</b>
-		</div>
-		<!-- planned, not earned: what stands between this plan and graduating -->
-		<button
-			class="readiness"
-			class:clear={!problems}
-			onclick={() =>
-				document
-					.querySelector('[data-tour="hints"]')
-					?.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' })}
-		>
-			{problems ? `${problems} planning issue${problems === 1 ? '' : 's'} to sort out ↓` : '✓ no planning issues'}
-		</button>
-
-		{#each plan.stats as s (s.role + s.subject)}
-			{@const key = s.role + s.subject}
-			{@const open = openProg === key}
-			<div class="prog" class:open>
-				<!-- a click opens what's left: required courses by name, and the
-				     credits still owed to each part -->
-				<button class="prog-toggle" aria-expanded={open} onclick={() => (openProg = open ? null : key)}>
-					<span class="prog-name"
-						><span>{s.label}</span><span class="muted">{s.role}<span class="chev" aria-hidden="true"></span></span
-						></span
-					>
-					<!-- required and elective credits on one bar, split where one
-					     hands over to the other -->
-					<Progress
-						required={{ done: s.requiredDone, needed: s.requiredNeeded }}
-						elective={{ done: s.electiveDone, needed: s.electiveNeeded }}
-						electiveLabel={s.subject === 'open' ? 'free courses' : 'electives'}
-						hue={subjectById(s.subject).hue}
-					/>
-				</button>
-				{#if open}
-					<div class="prog-detail" transition:slide={{ duration: reducedMotion() ? 0 : 210, easing: cubicOut }}>
-						{#if s.requiredNeeded > 0}
-							<div class="pd-row"><span>required</span><b>{left(s.requiredDone, s.requiredNeeded)}</b></div>
-							{#if s.requiredLeft.length}
-								<div class="pd-tags">
-									{#each s.requiredLeft as code (code)}
-										<button
-											class="tag"
-											data-type={plan.courseType(code)}
-											style:--hue={plan.hueOf(code)}
-											title="show {plan.courseLabel(code)}"
-											onclick={() => plan.revealCourse(code)}>{plan.shownCode(code)}</button
-										>
-									{/each}
-								</div>
-							{/if}
-						{/if}
-						{#if s.electiveNeeded > 0}
-							<div class="pd-row">
-								<span>{s.subject === 'open' ? 'free courses' : 'electives'}</span><b
-									>{left(s.electiveDone, s.electiveNeeded)}</b
-								>
-							</div>
-						{/if}
-					</div>
-				{/if}
-			</div>
-		{/each}
-	</div>
-</div>
-
-{#if plan.choices.length}
-	<div class="section">
-		<h3>choices</h3>
-
-		<div class="choices">
-			{#each plan.choices as prog (prog.role + prog.label)}
-				<!-- one block per programme; each pool says what to pick and how
-				     far along the plan is -->
-				<div class="choice-prog">
-					<div class="choice-prog-name">{prog.label} · {prog.role}</div>
-					{#each prog.groups as group, gi (group.rule + gi)}
-						{@const done = group.chosen >= group.pick}
-						<div class="choice" class:done>
-							<div class="choice-rule">
-								<span>{group.rule}</span>
-								<span class="choice-count">{done ? '✓ done' : `${group.chosen} of ${group.pick}`}</span>
-							</div>
-							{#if group.counts !== 'required'}
-								<div class="choice-note">counts toward {group.counts} credits</div>
-							{/if}
-							{#if group.courses.length}
-								<!-- courses you can take first; the ones not in the
-								     catalogue yet trail behind, dimmed -->
-								{@const courses = [...group.courses].sort((a, b) => Number(!a.code) - Number(!b.code))}
-								<ul class="choice-list">
-									{#each courses as course (course.title)}
-										<li
-											class:missing={!course.code}
-											class:done={course.code && plan.placedCodes.has(course.code)}
-											title={course.title}
-										>
-											<!-- labelled like the grid (the codes / titles switches); a
-											     click finds the course in the catalogue -->
-											{#if course.code}
-												{@const code = course.code}
-												<button class="choice-course" onclick={() => plan.revealCourse(code)}>
-													{#if plan.showCodes}<b>{plan.shownCode(code)}</b>{/if}{plan.showCodes && plan.showTitles
-														? ' '
-														: ''}{#if plan.showTitles}{course.title}{/if}
-												</button>
-											{:else}{course.title} <em>· not offered yet</em>{/if}
-										</li>
-									{/each}
-								</ul>
-							{/if}
-						</div>
-					{/each}
-				</div>
-			{/each}
-		</div>
-	</div>
-{/if}
-
 <div class="section" data-tour="hints">
 	<h3>
 		hints
@@ -435,15 +308,7 @@
 	@use '$lib/styles/mixins' as *;
 
 	.section {
-		border-bottom: 1px solid var(--color-border-light);
-
-		h3 {
-			@include section-label;
-			display: flex;
-			align-items: center;
-			gap: 0.6rem;
-			padding: 1.2rem 1.6rem 0;
-		}
+		@include rail-section;
 
 		// how many of the hints below need fixing, one badge per severity
 		.tally {
@@ -498,255 +363,6 @@
 		}
 	}
 
-	.stats {
-		padding: 0.6rem 1.6rem 1.4rem;
-		font-size: var(--text-body);
-		line-height: 1.5;
-
-		.readiness {
-			display: block;
-			margin-top: 0.2rem;
-			padding: 0;
-			font: inherit;
-			font-size: 1.25rem;
-			text-align: left;
-			color: color-mix(in srgb, var(--color-hint-warn-deep) 70%, var(--color-text));
-			background: none;
-			border: 0;
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-				text-underline-offset: 0.2em;
-			}
-
-			&.clear {
-				color: var(--color-hint-good-deep);
-				cursor: default;
-				text-decoration: none;
-			}
-		}
-
-		.total {
-			display: flex;
-			align-items: baseline;
-			justify-content: space-between;
-			font-weight: 700;
-
-			b {
-				font-variant-numeric: tabular-nums;
-			}
-
-			em {
-				font-style: normal;
-				font-weight: 400;
-				color: var(--color-text-muted);
-			}
-		}
-
-		.prog {
-			margin-top: 1rem;
-			padding-top: 0.8rem;
-			border-top: 1px dotted var(--color-border-light);
-		}
-
-		.prog-toggle {
-			display: block;
-			width: 100%;
-			padding: 0;
-			font: inherit;
-			text-align: left;
-			color: inherit;
-			background: none;
-			border: 0;
-			cursor: pointer;
-		}
-
-		// subject on the left, its role pushed to the right edge
-		.prog-name {
-			display: flex;
-			align-items: baseline;
-			justify-content: space-between;
-			gap: 0.8rem;
-			font-weight: 700;
-
-			.muted {
-				display: inline-flex;
-				align-items: center;
-				gap: 0.6rem;
-			}
-
-			.chev {
-				margin: -0.2rem 0 0;
-			}
-		}
-
-		.prog-toggle:hover .prog-name > span:first-child {
-			text-decoration: underline;
-			text-underline-offset: 0.2em;
-		}
-
-		// what's left, under the bar: one line per part, required courses by name
-		.prog-detail {
-			display: flex;
-			flex-direction: column;
-			gap: 0.4rem;
-			padding-top: 0.8rem;
-			font-size: 1.25rem;
-		}
-
-		.pd-row {
-			display: flex;
-			justify-content: space-between;
-			color: var(--color-text-muted);
-
-			b {
-				font-weight: 600;
-				color: var(--color-text);
-				font-variant-numeric: tabular-nums;
-			}
-		}
-
-		.pd-tags {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 0.4rem;
-			margin-bottom: 0.2rem;
-
-			.tag {
-				font-family: inherit;
-				border: 0;
-				cursor: pointer;
-			}
-		}
-
-		.muted {
-			font-weight: 400;
-			color: var(--color-text-muted);
-		}
-	}
-
-	.choices {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		padding: 1.2rem 1.6rem;
-	}
-
-	// each programme on its own dotted rule, like the programmes above
-	.choice-prog {
-		display: flex;
-		flex-direction: column;
-		gap: 1.2rem;
-	}
-
-	.choice-prog + .choice-prog {
-		padding-top: 1.2rem;
-		border-top: 1px dotted var(--color-border-light);
-	}
-
-	.choice-prog-name {
-		@include section-label;
-	}
-
-	// how far along a pool is, at the end of its rule
-	.choice-count {
-		flex: none;
-		font-size: 1.15rem;
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
-		color: var(--color-text-muted);
-
-		.done & {
-			color: var(--color-hint-good-deep);
-		}
-	}
-
-	.choice-rule {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 0.2rem 0.8rem;
-		font-size: var(--text-body);
-		font-weight: 700;
-		color: var(--color-text);
-	}
-
-	// one line per course, long titles ellipsize (full title on hover) so a
-	// pool reads as a tidy list instead of a wall of wrapped text
-	.choice-list {
-		margin: 0.4rem 0 0;
-		padding-left: 0;
-		font-size: var(--text-body);
-		line-height: 1.5;
-		color: var(--color-text);
-
-		li {
-			position: relative;
-			padding-left: 1.6rem;
-			list-style: none;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-
-			// own bullet, so a course already on the grid can swap it for a
-			// tick, the pool then reads "3 chosen, 2 to go" at a glance
-			&::before {
-				content: '•';
-				position: absolute;
-				left: 0.3rem;
-				color: var(--color-text-muted);
-			}
-		}
-
-		li.done {
-			&::before {
-				content: '✓';
-				left: 0.1rem;
-				font-size: 1.1rem;
-				font-weight: 700;
-				color: var(--color-hint-good-deep);
-			}
-		}
-
-		.choice-course {
-			display: block;
-			width: 100%;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			padding: 0;
-			font: inherit;
-			text-align: left;
-			color: inherit;
-			background: none;
-			border: 0;
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-				text-underline-offset: 0.2em;
-			}
-		}
-
-		// a course the university lists but no term has taught yet, dimmed,
-		// so it reads as "offered on paper, not on the plan"
-		li.missing {
-			color: var(--color-text-muted);
-
-			em {
-				font-size: 1.1rem;
-			}
-		}
-	}
-
-	.choice-note {
-		font-size: var(--text-body);
-		line-height: 1.4;
-		color: var(--color-text-muted);
-	}
-
 	.hint-heading {
 		display: flex;
 		align-items: flex-start;
@@ -794,13 +410,7 @@
 	}
 
 	.tag {
-		padding: 0.05rem 0.5rem;
-		font-size: 1.1rem;
-		font-weight: 600;
-		line-height: 1.5;
-		color: var(--color-text);
-		border-radius: 3px;
-		@include course-type-fill(false);
+		@include course-tag;
 	}
 
 	.tag-more {

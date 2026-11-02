@@ -29,7 +29,9 @@
 	import CanvasImportPanel from '$lib/components/CanvasImport.svelte';
 	import SharedPlanPrompt from '$lib/features/plans/SharedPlanPrompt.svelte';
 	import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
-	import HintsPanel from '$lib/components/sidebar/HintsPanel.svelte';
+	import DegreeProgress from '$lib/components/sidebar/DegreeProgress.svelte';
+	import ChoicePools from '$lib/components/sidebar/ChoicePools.svelte';
+	import Hints from '$lib/components/sidebar/Hints.svelte';
 	import Catalogue from '$lib/components/catalogue/Catalogue.svelte';
 	import DetailsPanel from '$lib/components/details/DetailsPanel.svelte';
 
@@ -141,7 +143,9 @@
 		inert={viewport.desktop ? overlayDetails || (viewport.railSlide && !plan.railOpen) : covered('rail')}
 	>
 		<Sidebar ontour={() => (tour = true)} onimport={() => (canvasOpen = true)} />
-		<HintsPanel />
+		<DegreeProgress />
+		<ChoicePools />
+		<Hints />
 	</aside>
 
 	<div class="catalogue" data-panel="catalogue" inert={covered('catalogue')}>

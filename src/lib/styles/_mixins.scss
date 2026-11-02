@@ -512,3 +512,29 @@ $shape-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 	animation: kcal-drop-in 0.45s var(--spring) both;
 	animation-delay: calc(var(--t, 0) * 45ms);
 }
+
+// a sidebar section: a hairline under it and a small-caps heading, so the
+// rail reads as one column of labelled blocks
+@mixin rail-section {
+	border-bottom: 1px solid var(--color-border-light);
+
+	h3 {
+		@include section-label;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 1.2rem 1.6rem 0;
+	}
+}
+
+// a course named in the sidebar, as a tiny chip in the fill it wears on the
+// grid, so the eye can match the two
+@mixin course-tag {
+	padding: 0.05rem 0.5rem;
+	font-size: 1.1rem;
+	font-weight: 600;
+	line-height: 1.5;
+	color: var(--color-text);
+	border-radius: 3px;
+	@include course-type-fill(false);
+}
