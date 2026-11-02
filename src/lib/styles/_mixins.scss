@@ -506,3 +506,9 @@ $shape-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 	cursor: pointer;
 	@include glossy-accent;
 }
+
+// a year added just now drops into its row, trimester by trimester (--t)
+@mixin drop-in {
+	animation: kcal-drop-in 0.45s var(--spring) both;
+	animation-delay: calc(var(--t, 0) * 45ms);
+}

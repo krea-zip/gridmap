@@ -39,11 +39,11 @@ test.describe('phone planner', () => {
 		await page.getByRole('button', { name: 'close course details' }).tap();
 		await page.getByRole('navigation').getByRole('button', { name: 'your plan' }).tap();
 		await page.getByRole('button', { name: 'grade view', exact: true }).tap();
-		await page.locator('.chip[data-code="MATH201"] .chip-open').tap();
+		await page.locator('.chip[data-code="MATH201"] .open').tap();
 		await page.getByRole('combobox', { name: 'grade', exact: true }).selectOption('A');
 		await page.getByRole('button', { name: 'close course details' }).tap();
 		await expect(page.locator('.cgpa-btn')).toContainText('9.60');
-		await page.locator('.chip[data-code="MATH201"] .chip-open').tap();
+		await page.locator('.chip[data-code="MATH201"] .open').tap();
 		await page.getByRole('button', { name: 'remove', exact: true }).tap();
 		await expect(page.locator('.d-place-where')).toContainText('not added');
 		expect(errors).toEqual([]);
@@ -167,7 +167,7 @@ test('desktop retains resizers, catalogue and drag placement', async ({ page }) 
 		.locator('[data-course="MATH201"] button.card')
 		.dragTo(page.locator('.overview .cell[data-year="2"][data-trim="1"]'));
 	await expect(page.locator('.chip[data-code="MATH201"]')).toBeVisible();
-	await page.locator('.chip[data-code="MATH201"] .chip-open').click();
+	await page.locator('.chip[data-code="MATH201"] .open').click();
 	await expect(page.locator('.d-place-where')).toContainText('Year 2 · Trimester 1');
 	// a course's padding opens the course, and a press that slips off the chip
 	// onto its trimester doesn't open the trimester zoom
