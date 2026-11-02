@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { restoreBoard, saveBoard } from '../src/lib/features/plans/autosave.ts';
 import { planDocument, planName } from '../src/lib/features/plans/document.ts';
