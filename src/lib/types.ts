@@ -89,7 +89,6 @@ export type SlotKey = string;
 
 export const slotKey = (year: number, trim: TrimNum): SlotKey => `${year}-${trim}`;
 
-
 export const parseSlot = (key: SlotKey): { year: number; trim: TrimNum } => {
 	const [y, t] = key.split('-').map(Number);
 	return { year: y, trim: t as TrimNum };
