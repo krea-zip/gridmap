@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
-	import { OFFICE_CONTEXT, type Workspace } from '$lib/features/office/workspace.svelte';
+	import { useOffice } from '$lib/features/office/workspace.svelte';
 	import CoursePicker from './CoursePicker.svelte';
-	const office = getContext<Workspace>(OFFICE_CONTEXT);
+	const office = useOffice();
 	let from = $state(''),
 		to = $state('');
 </script>

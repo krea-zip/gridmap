@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
-	import { OFFICE_CONTEXT, type Workspace } from '$lib/features/office/workspace.svelte';
+	import { useOffice } from '$lib/features/office/workspace.svelte';
 	import { emptyFaculty } from '$lib/features/office/model';
 	let { kind }: { kind: 'faculty' | 'departments' } = $props();
-	const office = getContext<Workspace>(OFFICE_CONTEXT);
+	const office = useOffice();
 	let search = $state(''),
 		selected = $state(''),
 		name = $state(''),

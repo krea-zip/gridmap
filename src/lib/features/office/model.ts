@@ -102,6 +102,15 @@ export type OfficeDocument = {
 	fields: CustomField[];
 	prefixes: Record<string, string>;
 };
+/** the shared draft as the server hands it to the office */
+export type WorkspacePayload = {
+	document: OfficeDocument;
+	revision: number;
+	status: string;
+	department: string;
+	deployment: string;
+	release: string;
+};
 export type OfficeIssue = { severity: 'error' | 'warning'; area: string; record: string; message: string };
 export type OfficeRevision = {
 	revision: number;

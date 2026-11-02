@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import { page } from '$app/state';
-	import { OFFICE_CONTEXT, type Workspace } from '$lib/features/office/workspace.svelte';
+	import { useOffice } from '$lib/features/office/workspace.svelte';
 	import { newCourse, admissionFor, applyAdmission, ELIGIBILITY, type OfficeCourse } from '$lib/features/office/model';
 	import CoursePicker from './CoursePicker.svelte';
-	const office = getContext<Workspace>(OFFICE_CONTEXT);
+	const office = useOffice();
 	let query = $state('');
 	let department = $state('');
 	let status = $state('active');

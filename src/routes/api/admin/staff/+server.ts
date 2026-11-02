@@ -8,7 +8,7 @@ export async function GET(event: RequestEvent) {
 	return json(data, { headers: { 'cache-control': 'no-store' } });
 }
 export async function POST(event: RequestEvent) {
-	const { db, user } = await officeAccess(event, ['admin']);
+	const { db, email: own } = await officeAccess(event, ['admin']);
 	const b = await officeBody(event);
 	const email = String(b.email ?? '')
 		.trim()
@@ -19,7 +19,7 @@ export async function POST(event: RequestEvent) {
 		!['admin', 'publisher', 'reviewer', 'editor', 'contributor'].includes(role)
 	)
 		error(400, 'Enter a valid email address and staff role.');
-	if (email === user.email?.toLowerCase() && (b.active === false || role !== 'admin'))
+	if (email === own.toLowerCase() && (b.active === false || role !== 'admin'))
 		error(400, 'Ask another administrator to change your own access.');
 	const department = typeof b.department === 'string' && b.department ? b.department : null;
 	if (role === 'contributor' && !department) error(400, 'Select the contributor’s department.');

@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
-	import { OFFICE_CONTEXT, type Workspace } from '$lib/features/office/workspace.svelte';
-	const office = getContext<Workspace>(OFFICE_CONTEXT);
+	import { useOffice } from '$lib/features/office/workspace.svelte';
+	const office = useOffice();
 	const jobs = [
 		[
 			'/admin/import',
