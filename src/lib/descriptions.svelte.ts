@@ -7,19 +7,19 @@
 // ─────────────────────────────────────────────
 
 import { browser } from '$app/environment';
-import { loadDescriptionEdits } from './adminEdits';
+import { previewSnapshot } from './curriculum/preview';
 
 let descriptions = $state<Record<string, string> | null>(null);
 let started = false;
-/** descriptions /admin rewrote; they win over the shipped text */
-const edited = browser ? loadDescriptionEdits() : {};
+// the office's student preview carries its own descriptions
+const previewed = previewSnapshot()?.descriptions;
 
 /** start fetching the descriptions chunk, safe to call as often as you like */
 export function loadDescriptions() {
 	if (started || !browser) return;
 	started = true;
+	if (previewed) return void (descriptions = previewed);
 	import('./data/course-descriptions.json').then((m) => (descriptions = m.default)).catch(() => (started = false)); // offline / chunk 404 → try again next time
 }
 
-export const descriptionOf = (code: string): string | undefined =>
-	code in edited ? edited[code] || undefined : (descriptions?.[code] ?? undefined);
+export const descriptionOf = (code: string): string | undefined => descriptions?.[code] || undefined;

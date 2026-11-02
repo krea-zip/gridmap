@@ -27,7 +27,6 @@ export type Course = {
 	// Absent = the site-wide default (CREDIT_SHARE_DEFAULT in data.ts).
 	share?: 'one' | 'all';
 	retired?: boolean;
-	added?: boolean; // created in /admin, not by the data pipeline
 };
 
 export type Subject = {

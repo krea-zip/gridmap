@@ -19,11 +19,16 @@ export type CurriculumSnapshot = {
 	equivalences: Equivalences;
 	requirementSets: RequirementSet[];
 	batchRules: BatchRuleRecord[];
+	/** how a course counting for two of a student's programmes is credited by
+	 *  default; set in the office, absent from older releases */
+	creditSharing?: CreditShare;
 };
+
+export type CreditShare = 'one' | 'all';
 
 /** A course as the catalogue ships it. `unlocks` and the equivalence edges
  *  are derived by the runtime from `prereqs` and `equivalences`. */
-export type SnapshotCourse = Omit<Course, 'unlocks' | 'substitutes' | 'covers' | 'coveredBy' | 'added'> & {
+export type SnapshotCourse = Omit<Course, 'unlocks' | 'substitutes' | 'covers' | 'coveredBy'> & {
 	/** every term it ran, newest first: "25_T2" */
 	terms: string[];
 	/** lecturer ids, as the latest term listed them */

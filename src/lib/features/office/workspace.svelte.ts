@@ -14,6 +14,7 @@ import {
 	type WorkspacePayload
 } from './model';
 import { validateOffice } from './validation';
+import { PREVIEW_KEY } from '$lib/curriculum/preview';
 
 export class Workspace {
 	document = $state<OfficeDocument | null>(null);
@@ -93,7 +94,7 @@ export class Workspace {
 	preview() {
 		if (!this.document) return;
 		try {
-			sessionStorage.setItem('kcal-office-preview', JSON.stringify(publication($state.snapshot(this.document))));
+			sessionStorage.setItem(PREVIEW_KEY, JSON.stringify(publication($state.snapshot(this.document))));
 			window.open('/?admin-preview=1', '_blank');
 		} catch {
 			this.error = 'The preview could not be opened. Check browser storage permissions.';

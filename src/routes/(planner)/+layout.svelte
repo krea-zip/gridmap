@@ -17,7 +17,7 @@
 	import { focusScope } from '$lib/focusScope';
 	import { dragMotion } from '$lib/dragMotion';
 	import { touchDrag } from '$lib/touchDrag';
-	import { hasCode } from '$lib/data';
+	import { hasCode, PREVIEWING } from '$lib/data';
 	import { loadDescriptions } from '$lib/descriptions.svelte';
 	import PanelResizers, { type Panel, type PanelWidths } from '$lib/components/layout/PanelResizers.svelte';
 	import MobileNavigation from '$lib/components/layout/MobileNavigation.svelte';
@@ -172,6 +172,12 @@
 
 <Flash />
 
+<!-- staff opened this tab from the office: the catalogue here is their
+     unsaved draft, so say so where it can't be missed -->
+{#if PREVIEWING}
+	<p class="previewing" role="status">Office preview · this tab shows the unsaved draft, not what students see</p>
+{/if}
+
 {#if plan.feedbackDraft !== null}
 	<Modal title="feedback" onclose={() => (plan.feedbackDraft = null)}>
 		<FeedbackForm prefill={plan.feedbackDraft} onsent={() => (plan.feedbackDraft = null)} />
@@ -290,6 +296,21 @@
 				transform: rotate(180deg);
 			}
 		}
+	}
+
+	.previewing {
+		position: fixed;
+		top: 0;
+		left: 50%;
+		z-index: 50;
+		translate: -50% 0;
+		padding: 0.4rem 1.4rem;
+		font-size: 1.3rem;
+		font-weight: 600;
+		color: var(--color-on-accent);
+		background: var(--color-accent);
+		border-radius: 0 0 8px 8px;
+		pointer-events: none;
 	}
 
 	// behind a slid-in panel: a faint dim to tap on to put it away

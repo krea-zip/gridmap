@@ -1,35 +1,17 @@
 // ─────────────────────────────────────────────
 // The curriculum at runtime: indexes over the compiled snapshot and the
 // questions the planner asks of it. Nothing here reconciles source data,
-// that is the compiler's job (curriculum/compiler.ts). Until /admin edits the
-// database, this browser's admin drafts are laid over the snapshot here.
+// that is the compiler's job (curriculum/compiler.ts). The catalogue is the
+// published release this build pulled, or, in the office's student preview,
+// the draft being previewed (curriculum/preview.ts).
 // ─────────────────────────────────────────────
 
-import { browser } from '$app/environment';
-import {
-	emptyLecturerEdits,
-	emptySubjectEdits,
-	loadLecturerEdits,
-	loadProgrammeEdits,
-	loadSubjectEdits,
-	programmeKey,
-	type ProgrammeEdits
-} from './adminEdits';
-import { batchKey, loadBatchEdits, type BatchRule } from './batchEdits';
-import {
-	loadCourseEdits,
-	loadNewCourses,
-	loadRuleEdits,
-	loadShareDefault,
-	resolveRules,
-	ruleProblems,
-	type CreditShare
-} from './courseEdits';
 import snapshotData from './data/curriculum.json';
-import { loadPrereqEdits } from './prereqEdits';
+import { previewSnapshot } from './curriculum/preview';
 import {
 	variantOf,
 	type ChoiceGroup,
+	type CreditShare,
 	type CurriculumSnapshot,
 	type Lecturer,
 	type ProgrammeRequirements,
@@ -41,7 +23,8 @@ import type { Course, ProgrammeRole, Subject, TrimNum } from './types';
 
 export type { ChoiceCourse, ChoiceGroup } from './curriculum/snapshot';
 
-const snapshot = snapshotData as unknown as CurriculumSnapshot;
+const snapshot: CurriculumSnapshot = previewSnapshot() ?? (snapshotData as unknown as CurriculumSnapshot);
+export const PREVIEWING = snapshot !== (snapshotData as unknown);
 export const CURRICULUM_RELEASE = snapshot.release;
 
 /** when the catalogue was last rebuilt from the term sheets */
@@ -49,14 +32,7 @@ export const DATA_UPDATED = snapshot.updatedOn ? new Date(snapshot.updatedOn) : 
 
 // ── Subjects ──
 
-/** the departments as the curriculum shipped them, before any /admin edit */
-export const SHIPPED_SUBJECTS: Subject[] = snapshot.subjects;
-const subjectEdits = browser ? loadSubjectEdits() : emptySubjectEdits();
-export const SUBJECTS: Subject[] = [
-	...snapshot.subjects.map((s) => ({ ...s, ...subjectEdits.edited[s.id] })),
-	// departments /admin added; they join after the shipped ones
-	...Object.values(subjectEdits.added).filter((a) => !snapshot.subjects.some((s) => s.id === a.id))
-];
+export const SUBJECTS: Subject[] = snapshot.subjects;
 export const MAJOR_SUBJECTS: Subject[] = SUBJECTS.filter((s) => s.majorable);
 /** what the minor/concentration pickers offer: every real subject, not the
  *  foundation core, nor the open minor (offered separately, minor slot only) */
@@ -70,11 +46,9 @@ export const subjectById = (id: string): Subject => {
 	return s;
 };
 
-// ── The drop form's numbers, university-wide. /admin may override them; a
-//    set of overrides that contradicts itself is ignored wholesale. ──
+// ── The drop form's numbers, university-wide, set in the office's policies ──
 
-const ruleEdits = browser ? loadRuleEdits() : {};
-const RULES = ruleProblems(ruleEdits).length ? snapshot.rules : resolveRules(ruleEdits);
+const RULES = snapshot.rules;
 export const TRIM_MIN = RULES.TRIM_MIN; // minimum credits per trimester (full-time status)
 export const TRIM_NORMAL_MAX = RULES.TRIM_NORMAL_MAX; // recommended load, four 4-credit courses
 export const TRIM_STANDARD_MAX = RULES.TRIM_STANDARD_MAX; // above this a trimester is heavy …
@@ -90,7 +64,7 @@ export const MAX_TOTAL_4YR = RULES.MAX_TOTAL_4YR; // total-credit ceiling, four-
 
 /** how a course that satisfies more than one of a student's programmes is
  *  credited when it carries no override of its own, see Course.share */
-export const CREDIT_SHARE_DEFAULT: CreditShare = browser ? loadShareDefault() : 'one';
+export const CREDIT_SHARE_DEFAULT: CreditShare = snapshot.creditSharing ?? 'one';
 
 const toCourse = ({ terms: _terms, lecturers: _lecturers, ...c }: SnapshotCourse): Course => ({
 	...c,
@@ -103,84 +77,16 @@ const toCourse = ({ terms: _terms, lecturers: _lecturers, ...c }: SnapshotCourse
 	unlocks: []
 });
 
-/** every course, retired ones included, only /admin needs these */
+/** every course, retired ones included, for importers that meet old codes */
 export const ALL_COURSES: Course[] = snapshot.courses.map(toCourse);
-
-// courses /admin added: a bare record, finished by the edits below
-if (browser)
-	for (const n of Object.values(loadNewCourses())) {
-		if (ALL_COURSES.some((c) => c.code === n.code) || !SUBJECTS.some((s) => s.id === n.subject)) continue;
-		ALL_COURSES.push({
-			code: n.code,
-			title: n.title,
-			faculty: '',
-			subject: n.subject,
-			subjects: [n.subject],
-			codes: [n.code],
-			codesBySubject: { [n.subject]: n.code },
-			credits: 4,
-			required: false,
-			offered: [1, 2, 3],
-			eligibleYears: [1, 2, 3, 4],
-			prereqs: [],
-			unlocks: [],
-			added: true
-		});
-	}
-
-/** a course as the curriculum shipped it, before any /admin edit, what the
- *  admin shows as "was" and what a revert goes back to */
-export type ShippedCourse = Pick<
-	Course,
-	'title' | 'credits' | 'required' | 'offered' | 'eligibleYears' | 'faculty' | 'codesBySubject'
->;
-const shipped = new Map<string, ShippedCourse>(
-	ALL_COURSES.map((c) => [
-		c.code,
-		{
-			title: c.title,
-			credits: c.credits,
-			required: c.required,
-			offered: [...c.offered],
-			eligibleYears: [...c.eligibleYears],
-			faculty: c.faculty,
-			codesBySubject: { ...c.codesBySubject }
-		}
-	])
-);
-export const shippedCourse = (code: string): ShippedCourse | undefined => shipped.get(code);
-
-// /admin's course edits, before anything below reads the catalogue
-if (browser) {
-	const all = new Map(ALL_COURSES.map((c) => [c.code, c]));
-	for (const [code, edit] of Object.entries(loadCourseEdits())) {
-		const course = all.get(code);
-		if (!course) continue; // an edit for a course the curriculum no longer has
-		const { codesBySubject, ...rest } = edit;
-		Object.assign(course, rest);
-		// a new cross-listing: the course keeps its own department and code;
-		// subjects and codes are rebuilt from the map so the three agree
-		if (codesBySubject) {
-			const map = { ...codesBySubject, [course.subject]: course.code };
-			course.codesBySubject = map;
-			course.subjects = [course.subject, ...Object.keys(map).filter((s) => s !== course.subject)];
-			course.codes = [course.code, ...new Set(Object.values(map).filter((c) => c !== course.code))];
-		}
-	}
-}
 
 /** the live catalogue, everything the planner can show and place */
 export const COURSES: Course[] = ALL_COURSES.filter((c) => !c.retired);
 const index = new Map(COURSES.map((c) => [c.code, c]));
 const aliases = new Map(COURSES.flatMap((c) => c.codes.map((code) => [code, c] as const)));
 
-// /admin's prerequisite edits win over the curriculum's; a retired course
-// drops out of every list, or it would be a requirement no one could meet
-if (browser)
-	for (const [code, prereqs] of Object.entries(loadPrereqEdits())) {
-		const course = index.get(code);
-		if (course) course.prereqs = prereqs.filter((p) => p !== code);
-	}
+// a retired course drops out of every prerequisite list, or it would be a
+// requirement no one could meet
 for (const c of COURSES) c.prereqs = c.prereqs.filter((p) => index.has(p));
 // `unlocks` is exactly the inverse relation, derived, never stored
 for (const c of COURSES) for (const p of c.prereqs) index.get(p)!.unlocks.push(c.code);
@@ -273,23 +179,14 @@ export const canAudit = (code: string): boolean => {
 // ── Lecturers ──
 
 export type Professor = Lecturer;
-/** the directory as the curriculum shipped it, before any /admin edit */
-export const SHIPPED_LECTURERS: Professor[] = snapshot.lecturers;
-const lecturerEdits = browser ? loadLecturerEdits() : emptyLecturerEdits();
-const removedLecturers = new Set(lecturerEdits.removed);
 /** everyone in the directory, plus lecturers the term sheets name */
-export const LECTURERS: Professor[] = [
-	...snapshot.lecturers.map((l) => ({ ...l, ...lecturerEdits.edited[l.id] })),
-	...Object.values(lecturerEdits.added).filter((a) => !snapshot.lecturers.some((l) => l.id === a.id))
-].filter((l) => !removedLecturers.has(l.id));
+export const LECTURERS: Professor[] = snapshot.lecturers;
 const lecturers = new Map(LECTURERS.map((l) => [l.id, l]));
 export const lecturerById = (id: string): Professor | undefined => lecturers.get(id);
 const courseRecords = new Map(snapshot.courses.map((c) => [c.code, c]));
 
-/** who a course lists as its lecturers, as shipped */
-export const shippedTeachers = (code: string): string[] => courseRecords.get(code)?.lecturers ?? [];
-/** lecturer ids for a course, /admin's assignment first */
-const lecturerIdsOf = (code: string): string[] => lecturerEdits.teaches[code] ?? shippedTeachers(code);
+/** lecturer ids for a course, as its latest term listed them */
+const lecturerIdsOf = (code: string): string[] => courseRecords.get(code)?.lecturers ?? [];
 
 /** who has taught a course, position, office hours, photo where known */
 export function facultyOf(code: string): Professor[] {
@@ -353,46 +250,19 @@ export function facultyCourses(prof: Professor): Course[] {
 // ── Programme requirements ──
 // The snapshot holds every programme variant, resolved, for each requirement
 // set; a batch follows the set that names it, else the default (the website).
-// With no batch given, the newest set. Rules for one batch only, and this
-// browser's /admin batch drafts, are applied on top.
+// With no batch given, the newest set. Rules for one batch only go on top.
 
 const defaultSet = snapshot.requirementSets.find((s) => s.batches === null)!;
 const latestSet = snapshot.requirementSets.findLast((s) => s.batches !== null) ?? defaultSet;
+const programmeKey = (setId: string, subject: string, variant: Variant) => `${setId}|${subject}|${variant}`;
 const programmes = new Map(
 	snapshot.requirementSets.flatMap((set) =>
 		set.programmes.map((p) => [programmeKey(set.id, p.subject, p.variant), p] as const)
 	)
 );
-const programmeEdits: ProgrammeEdits = browser ? loadProgrammeEdits() : {};
 
-/** the requirement sets, for /admin: which rules apply to which batches */
-export const REQUIREMENT_SETS = snapshot.requirementSets.map(({ id, name, batches }) => ({ id, name, batches }));
-
-/** a programme as the curriculum shipped it, before any /admin edit */
-export const shippedProgramme = (setId: string, subject: string, variant: Variant) =>
+const programmeAt = (setId: string, subject: string, variant: Variant): ProgrammeRequirements | undefined =>
 	programmes.get(programmeKey(setId, subject, variant));
-
-/** a programme with /admin's edits laid over it, a created one has nothing
- *  but what was entered; the pathway and choose-N pools are never edited */
-function programmeAt(setId: string, subject: string, variant: Variant): ProgrammeRequirements | undefined {
-	const base = programmes.get(programmeKey(setId, subject, variant));
-	const edit = programmeEdits[programmeKey(setId, subject, variant)];
-	if (!edit) return base;
-	return {
-		subject,
-		variant,
-		credits: {
-			total: edit.total ?? base?.credits.total ?? 0,
-			required: edit.required !== undefined ? edit.required : (base?.credits.required ?? null),
-			elective: edit.elective !== undefined ? edit.elective : (base?.credits.elective ?? null)
-		},
-		required: edit.requiredCourses ?? base?.required ?? [],
-		picks: base?.picks ?? [],
-		electives: edit.electives ?? base?.electives ?? [],
-		choices: base?.choices ?? [],
-		pathway: base?.pathway ?? []
-	};
-}
 export const programmeOf = programmeAt;
 /** the newest requirement set: its name and the batches it governs */
 export const CURRENT_REQUIREMENTS = { name: latestSet.name, batches: latestSet.batches ?? [] };
@@ -403,25 +273,14 @@ function programmeFor(subject: string, role: ProgrammeRole, fourYear: boolean, i
 	return programmeAt(setFor(batch).id, subject, variantOf(role, fourYear, isDouble));
 }
 
-const VARIANT_SHAPE: Record<Variant, [ProgrammeRole, boolean, boolean]> = {
-	single_major_4yr: ['major', true, false],
-	double_major_4yr: ['major', true, true],
-	single_major_3yr: ['major', false, false],
-	double_major_3yr: ['major', false, true],
-	minor_4yr: ['minor', true, false],
-	minor_3yr: ['minor', false, false],
-	concentration_4yr: ['concentration', true, false],
-	concentration_3yr: ['concentration', false, false]
-};
-const batchEdits: Record<string, BatchRule> = {
-	...Object.fromEntries(
-		snapshot.batchRules.map(({ batch, subject, variant, courses, requiredCredits }) => {
-			const [role, fourYear, isDouble] = VARIANT_SHAPE[variant];
-			return [batchKey(batch, subject, role, fourYear, isDouble), { courses, requiredCredits }];
-		})
-	),
-	...(browser ? loadBatchEdits() : {})
-};
+type BatchRule = { courses: Record<string, 'required' | 'elective'>; requiredCredits?: number };
+const batchKey = (batch: number, subject: string, variant: Variant) => `${batch}|${subject}|${variant}`;
+const batchRules = new Map<string, BatchRule>(
+	snapshot.batchRules.map(({ batch, subject, variant, courses, requiredCredits }) => [
+		batchKey(batch, subject, variant),
+		{ courses, requiredCredits }
+	])
+);
 
 export function batchRuleFor(
 	subject: string,
@@ -430,7 +289,9 @@ export function batchRuleFor(
 	isDouble: boolean,
 	batch?: number
 ) {
-	return batch === undefined ? undefined : batchEdits[batchKey(batch, subject, role, fourYear, isDouble)];
+	return batch === undefined
+		? undefined
+		: batchRules.get(batchKey(batch, subject, variantOf(role, fourYear, isDouble)));
 }
 
 export function creditsFor(

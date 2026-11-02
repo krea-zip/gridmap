@@ -3,7 +3,6 @@
 	// arrives with the page (see +layout.server.ts); a fresh copy from the
 	// server, after a reload or a sign-in, replaces what's on screen.
 	import '../../app.scss';
-	import './legacy.scss';
 	import './admin.scss';
 	import type { LayoutProps } from './$types';
 	import { page } from '$app/state';
@@ -12,6 +11,7 @@
 	import OfficeNav from '$lib/components/admin/OfficeNav.svelte';
 	import OfficeToolbar from '$lib/components/admin/OfficeToolbar.svelte';
 	import OfficeSignIn from '$lib/components/admin/OfficeSignIn.svelte';
+	import OldEditsNotice from '$lib/components/admin/OldEditsNotice.svelte';
 
 	let { data, children }: LayoutProps = $props();
 	const office = provideOffice(new Workspace());
@@ -43,8 +43,8 @@
 <div class="office-shell" class:large-text={large}>
 	{#if signedIn}<OfficeNav bind:large />{/if}
 	<div class="office-body">
-		{#if signedIn}<OfficeToolbar />{/if}
-		<main class="office-main adm">
+		{#if signedIn}<OfficeToolbar /><OldEditsNotice />{/if}
+		<main class="office-main">
 			{#if data.session.state === 'signed-out'}
 				<OfficeSignIn />
 			{:else if data.session.state === 'no-access'}

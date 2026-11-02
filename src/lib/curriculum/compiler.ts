@@ -7,10 +7,8 @@
 // it. Every correction to the source data lives here, documented where made.
 // ─────────────────────────────────────────────
 
-import type { BatchRule } from '$lib/batchEdits';
 import type { Course, ProgrammeRole, Subject, TrimNum } from '$lib/types';
 import type { CurriculumSnapshot, ProgrammeRequirements, RequirementSet as SnapshotSet, Variant } from './snapshot';
-import { RULE_DEFAULTS } from '$lib/courseEdits';
 import coursesData from '$lib/data/courses.json';
 import departmentData from '$lib/data/department.json';
 import manualOfferings from '$lib/data/manual-offerings.json';
@@ -20,6 +18,7 @@ import batchRulesData from '$lib/data/batch-rules.json';
 
 // Rules for a single batch that a department document states (EVS: ENVS201
 // for the 2022 batch).
+type BatchRule = { courses: Record<string, 'required' | 'elective'>; requiredCredits?: number };
 type BatchRuleFile = { batches: Record<string, Record<string, Record<string, BatchRule['courses']>>> };
 const batchEdits: Record<string, BatchRule> = Object.fromEntries(
 	Object.entries((batchRulesData as BatchRuleFile).batches).flatMap(([year, subjects]) =>
@@ -123,7 +122,18 @@ export const OPEN_MINOR_CREDITS = 24; // nominal minor-sized allowance of free c
 
 // ── The laws' numbers, straight from the ERP Course Drop Form
 //    guidelines; university-wide, not per-subject. ──
-const RULES = RULE_DEFAULTS;
+const RULES = {
+	TRIM_MIN: 12,
+	TRIM_NORMAL_MAX: 16,
+	TRIM_STANDARD_MAX: 18,
+	TRIM_HARD_MAX: 20,
+	HEAVY_TRIMS_ALLOWED: 2,
+	AUDIT_LIMIT: 2,
+	MIN_TOTAL_3YR: 120,
+	MIN_TOTAL_4YR: 160,
+	MAX_TOTAL_3YR: 128,
+	MAX_TOTAL_4YR: 176
+};
 export const TRIM_MIN = RULES.TRIM_MIN; // minimum credits per trimester (full-time status)
 export const TRIM_NORMAL_MAX = RULES.TRIM_NORMAL_MAX; // recommended registration, four 4-credit courses
 export const TRIM_HARD_MAX = RULES.TRIM_HARD_MAX; // absolute cap (a fifth course / additional load) …
@@ -1158,7 +1168,7 @@ function programmesFor(batch: number): ProgrammeRequirements[] {
 /** The whole curriculum, reconciled. `release` is left to the caller, which
  *  hashes the serialised result. */
 export function compileCurriculum(): Omit<CurriculumSnapshot, 'release'> {
-	const courses = COURSES.map(({ unlocks: _u, substitutes: _s, covers: _c, coveredBy: _b, added: _a, ...course }) => {
+	const courses = COURSES.map(({ unlocks: _u, substitutes: _s, covers: _c, coveredBy: _b, ...course }) => {
 		const raw = rawCourses[course.code];
 		return {
 			...course,
