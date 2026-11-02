@@ -116,7 +116,8 @@ export function applyOldEdits(doc: OfficeDocument, old: OldEdits): number {
 		if (target) (Object.assign(target, fields), changed++);
 	}
 	for (const [id, person] of entries(lecturers.added))
-		if (!c.lecturers.some((l) => l.id === id)) (c.lecturers.push({ ...(person as unknown as Lecturer), id }), changed++);
+		if (!c.lecturers.some((l) => l.id === id))
+			(c.lecturers.push({ ...(person as unknown as Lecturer), id }), changed++);
 	const removed = new Set(strings(lecturers.removed) ?? []);
 	if (removed.size) ((c.lecturers = c.lecturers.filter((l) => !removed.has(l.id))), (changed += removed.size));
 	if (isObject(lecturers.teaches))
