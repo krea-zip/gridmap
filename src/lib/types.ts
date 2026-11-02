@@ -87,6 +87,9 @@ export type ProgrammeStat = {
 /** "year-trim" e.g. "3-1" for Year 3, Trimester 1 */
 export type SlotKey = string;
 
+/** a year's trimesters, in order */
+export const TRIMS: TrimNum[] = [1, 2, 3];
+
 export const slotKey = (year: number, trim: TrimNum): SlotKey => `${year}-${trim}`;
 
 export const parseSlot = (key: SlotKey): { year: number; trim: TrimNum } => {
