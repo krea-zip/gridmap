@@ -4,18 +4,24 @@ The application uses SvelteKit for the UI and Supabase Auth/Postgres for shared
 persistence. The UI can be prerendered and served from a CDN; database authorization
 is enforced by Postgres, not hidden buttons or frontend email checks.
 
-| Layer          | Location                                                     | Responsibility                                                          |
-| -------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| Routes         | `src/routes`                                                 | Page composition, layout and browser lifecycle                          |
-| UI             | `src/lib/components`                                         | Planner, catalogue, details and settings views                          |
-| Authentication | `src/lib/features/auth`                                      | One shared account/session lifecycle                                    |
-| Plans          | `src/lib/features/plans`                                     | Document validation, browser saves, cloud repository and cloud UI state |
-| Reviews        | `src/lib/features/reviews`                                   | Review validation and database operations                               |
-| Infrastructure | `src/lib/infrastructure/supabase`                            | One typed Supabase client and schema contract                           |
-| Planner domain | `src/lib/plan.svelte.ts`, `data.ts`, `grades.ts`, `types.ts` | Scheduling, curriculum rules and derived state                          |
-| Curriculum     | `src/lib/data`, `misc`                                       | Versioned generated data and ingestion scripts                          |
-| Database       | `supabase/migrations`                                        | Versioned tables, constraints, grants and RLS policies                  |
-| Verification   | `tests`                                                      | Domain/storage checks, migration tests and browser workflows            |
+| Layer          | Location                             | Responsibility                                                                    |
+| -------------- | ------------------------------------ | --------------------------------------------------------------------------------- |
+| Routes         | `src/routes`                         | Pages, layouts, server loads and form actions                                     |
+| Planner shell  | `src/routes/(planner)`               | The four-column grid layout; the page is the board                                |
+| Office         | `src/routes/admin`                   | The academic office: server-rendered, Supabase only                               |
+| UI             | `src/lib/components`                 | Planner, board, catalogue, details, sidebar and office components                 |
+| Planner domain | `src/lib/planner`                    | The plan store, its rules and suggested path, calendar, grades, shared context    |
+| Curriculum     | `src/lib/curriculum`, `src/lib/data` | The runtime catalogue (`data.ts`), snapshot types, compiler, office preview       |
+| Features       | `src/lib/features`                   | Auth, plans (saves, sharing, imports), reviews, and the office's draft model      |
+| Server         | `src/lib/server`                     | Request-scoped Supabase client; office access checks, review and publishing       |
+| Infrastructure | `src/lib/infrastructure/supabase`    | The browser's Supabase client and schema contract                                 |
+| UI helpers     | `src/lib/ui`                         | Motion, drag, focus, breakpoints and display settings                             |
+| Database       | `supabase/migrations`                | Versioned tables, constraints, grants and RLS policies                            |
+| Verification   | `tests`                              | Vitest unit tests (rules, office, storage, database) and Playwright browser tests |
+
+Components share state through `createContext`: the planner's `usePlan()`
+(`$lib/planner/context`), the board's `useBoard()` and the office's `useOffice()`.
+Nothing passes the plan down by prop.
 
 Feature repositories are the only place that query feature tables. Components
 render state and invoke actions. Cloud state ignores stale responses after a panel

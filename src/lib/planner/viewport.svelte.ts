@@ -1,7 +1,7 @@
 // Which planner layout the window calls for. Keep the queries in
 // $lib/layout aligned with the responsive mixins in styles/_mixins.scss.
 import { MediaQuery } from 'svelte/reactivity';
-import { COMPACT_LAYOUT_QUERY, DETAILS_OVERLAY_QUERY, RAIL_OVERLAY_QUERY } from '$lib/layout';
+import { COMPACT_LAYOUT_QUERY, DETAILS_OVERLAY_QUERY, RAIL_OVERLAY_QUERY } from '$lib/ui/layout';
 
 class Viewport {
 	#phone = new MediaQuery(COMPACT_LAYOUT_QUERY, false);

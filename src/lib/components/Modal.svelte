@@ -1,8 +1,8 @@
 <script lang="ts">
 	// the shell every dialog in the app shares: backdrop, titled card, close
 	// button, esc-to-close, click-outside-to-close
-	import { portal } from '$lib/portal';
-	import { focusScope } from '$lib/focusScope';
+	import { portal } from '$lib/ui/portal';
+	import { focusScope } from '$lib/ui/focusScope';
 	import { fade, scale } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import type { Snippet } from 'svelte';

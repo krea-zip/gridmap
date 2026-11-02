@@ -2,7 +2,7 @@
 	// a column's heading: its trimester over its months. through the degree it
 	// counts from where the student is (t10 t11 t12 in year 4), since that's
 	// the row they're thinking about. a click flips the naming everywhere.
-	import { degreeTrim, termMonths } from '$lib/calendar';
+	import { degreeTrim, termMonths } from '$lib/planner/calendar';
 	import { usePlan } from '$lib/planner/context';
 	import type { TrimNum } from '$lib/types';
 	import Rolling from '$lib/components/Rolling.svelte';

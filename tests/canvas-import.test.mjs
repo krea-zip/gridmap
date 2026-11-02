@@ -6,7 +6,7 @@ import {
 	mergeCanvasCourses,
 	parseCanvasTerm,
 	groupCanvasCourses
-} from '../src/lib/canvasImport.ts';
+} from '../src/lib/features/plans/canvas-import.ts';
 import { destinationUrl, importUrl } from '../extensions/canvas-import/transfer.js';
 import { validateReview, summarizeReviews } from '../src/lib/features/reviews/model.ts';
 

@@ -4,9 +4,9 @@
 	// of its own. hovering a row lights its chips, the way hovering a hint does.
 	import { fade, scale } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
-	import { subjectById } from '$lib/data';
+	import { subjectById } from '$lib/curriculum/data';
 	import { usePlan } from '$lib/planner/context';
-	import { reducedMotion } from '$lib/transitions';
+	import { reducedMotion } from '$lib/ui/transitions';
 	import Keys from './Keys.svelte';
 
 	const plan = usePlan();

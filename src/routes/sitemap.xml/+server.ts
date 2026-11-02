@@ -1,5 +1,5 @@
 import { courseCodes, lecturerIds, programmeIndex } from '$lib/server/site';
-import { COURSES } from '$lib/data';
+import { COURSES } from '$lib/curriculum/data';
 import type { RequestHandler } from './$types';
 
 export const prerender = true;

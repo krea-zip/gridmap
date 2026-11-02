@@ -32,7 +32,7 @@ the app working; tick a phase off when its checks pass.
 curriculum:build` compiles the scrape and `src/lib/data/requirement-sets/**`;
    `curriculum:push` imports it (secret key); tests prove an exact round trip.
 3. **Curriculum runtime** — done. `src/lib/curriculum/compiler.ts` holds every
-   source correction; `src/lib/data.ts` only indexes the snapshot. Builds pull
+   source correction; `src/lib/curriculum/data.ts` only indexes the snapshot. Builds pull
    the current release (`curriculum:pull`, in `prebuild`); publishing should
    trigger a rebuild through a Vercel deploy hook.
 4. **Public pages** — done. `/courses`, `/courses/[code]`, `/programmes`,

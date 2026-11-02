@@ -7,7 +7,7 @@
 	// a later batch): what they've taken that still counts, what they've
 	// planned that wouldn't, what the new degree still needs and where it
 	// could go, and whether it all still fits in time.
-	import { programmesFor, type Picks } from '$lib/plan.svelte';
+	import { programmesFor, type Picks } from '$lib/planner/plan.svelte';
 	import type { StructureKind } from '$lib/types';
 	import {
 		MAJOR_SUBJECTS,
@@ -17,8 +17,8 @@
 		PROGRAMME_SUBJECTS,
 		byCode,
 		subjectById
-	} from '$lib/data';
-	import type { Verdict } from '$lib/boardViews';
+	} from '$lib/curriculum/data';
+	import type { Verdict } from '$lib/planner/boardViews';
 
 	let { verdict }: { verdict: Verdict | null } = $props();
 	const plan = usePlan();

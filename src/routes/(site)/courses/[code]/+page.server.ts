@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { hasCode } from '$lib/data';
+import { hasCode } from '$lib/curriculum/data';
 import { courseCodes, coursePage } from '$lib/server/site';
 import type { EntryGenerator, PageServerLoad } from './$types';
 

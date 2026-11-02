@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
 	import CloudPlansPanel from '$lib/features/plans/CloudPlansPanel.svelte';
-	import { settings, TEXT_SIZES, type ThemeChoice } from '$lib/settings.svelte';
+	import { settings, TEXT_SIZES, type ThemeChoice } from '$lib/ui/settings.svelte';
 	import { savedPlans, MAX_SAVES } from '$lib/features/plans/local-plans.svelte';
 	import { shareLink } from '$lib/features/plans/share';
-	import { byCode, subjectById } from '$lib/data';
+	import { byCode, subjectById } from '$lib/curriculum/data';
 	import Modal from './Modal.svelte';
 	import FeedbackForm from './FeedbackForm.svelte';
 	import PixelIcon from './PixelIcon.svelte';

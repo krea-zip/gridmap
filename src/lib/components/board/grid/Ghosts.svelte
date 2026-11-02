@@ -7,7 +7,7 @@
 	// plus what's missing".
 	import { flip } from 'svelte/animate';
 	import { usePlan } from '$lib/planner/context';
-	import { courseShift } from '$lib/transitions';
+	import { courseShift } from '$lib/ui/transitions';
 	import type { TrimNum } from '$lib/types';
 	import { useBoard } from '../boardState.svelte';
 

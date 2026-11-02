@@ -4,7 +4,7 @@
 // because some broken plans (a prerequisite after its course) can't be made
 // by dragging, yet still arrive from old saves and shared links.
 import { beforeEach, describe, expect, test } from 'vitest';
-import { Plan } from '$lib/plan.svelte';
+import { Plan } from '$lib/planner/plan.svelte';
 import {
 	byCode,
 	COURSES,
@@ -16,7 +16,7 @@ import {
 	TRIM_STANDARD_MAX,
 	Y1_CORE_MAX,
 	CORE_COURSES
-} from '$lib/data';
+} from '$lib/curriculum/data';
 import type { TrimNum } from '$lib/types';
 
 // 4-credit courses open to years 2 to 4 with no prerequisites, so a

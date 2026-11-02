@@ -1,5 +1,5 @@
-import { COURSES, byCode, facultySearchText } from './data';
-import type { Course, CourseType, TrimNum } from './types';
+import { COURSES, byCode, facultySearchText } from '$lib/curriculum/data';
+import type { Course, CourseType, TrimNum } from '$lib/types';
 
 const ranks: Record<CourseType, number> = { core: 0, required: 1, elective: 2, other: 3 };
 const searchIndex = new WeakMap<Course, string>();

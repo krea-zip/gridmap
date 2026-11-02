@@ -15,12 +15,12 @@
 		TRIM_MIN,
 		TRIM_NORMAL_MAX,
 		byCode
-	} from '$lib/data';
-	import { AID_MIN_CGPA, EXIT_CGPA, GRAD_MIN_CGPA } from '$lib/grades';
+	} from '$lib/curriculum/data';
+	import { AID_MIN_CGPA, EXIT_CGPA, GRAD_MIN_CGPA } from '$lib/planner/grades';
 	import Modal from '../Modal.svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import { reducedMotion } from '$lib/transitions';
+	import { reducedMotion } from '$lib/ui/transitions';
 
 	let { onclose }: { onclose: () => void } = $props();
 	const plan = usePlan();

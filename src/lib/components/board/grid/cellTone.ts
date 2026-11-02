@@ -1,4 +1,4 @@
-import type { Plan } from '$lib/plan.svelte';
+import type { Plan } from '$lib/planner/plan.svelte';
 
 // a cell takes the colours of its courses, weighted by count (4 psychology +
 // 2 environmental studies → ⅔ psych, ⅓ env), so a trimester's subject mix

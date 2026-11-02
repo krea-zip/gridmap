@@ -4,13 +4,13 @@
 // ─────────────────────────────────────────────
 
 import { browser } from '$app/environment';
-import { restoreBoard, saveBoard } from './features/plans/autosave';
+import { restoreBoard, saveBoard } from '$lib/features/plans/autosave';
 // the board's motion is a plan concern: only the plan knows when a change is
 // one course moving (worth watching fly) and when it is a whole-board redraw
-import { quietRedraw } from './transitions';
-import { selectCatalogue } from './catalogue';
-import { mergeCanvasCourses } from './canvasImport';
-import { guessNow, slotAt, slotOrder, trimName, trimSpelled, type Here, type TrimNaming } from './calendar';
+import { quietRedraw } from '$lib/ui/transitions';
+import { selectCatalogue } from '$lib/planner/catalogue';
+import { mergeCanvasCourses } from '$lib/features/plans/canvas-import';
+import { guessNow, slotAt, slotOrder, trimName, trimSpelled, type Here, type TrimNaming } from '$lib/planner/calendar';
 import {
 	CORE_COURSES,
 	CORE_CREDITS,
@@ -48,10 +48,10 @@ import {
 	batchRuleFor,
 	satisfiedBy,
 	subjectById
-} from './data';
-import { GRADE_POINTS, isGradeLetter, isGradeMark, recovery, weightedGpa, type GradeMark } from './grades';
-import { planHints } from './planner/rules';
-import { recommendedElectives, recommendedPath } from './planner/recommended';
+} from '$lib/curriculum/data';
+import { GRADE_POINTS, isGradeLetter, isGradeMark, recovery, weightedGpa, type GradeMark } from '$lib/planner/grades';
+import { planHints } from '$lib/planner/rules';
+import { recommendedElectives, recommendedPath } from '$lib/planner/recommended';
 import {
 	slotKey,
 	parseSlot,
@@ -65,7 +65,7 @@ import {
 	type SlotKey,
 	type StructureKind,
 	type TrimNum
-} from './types';
+} from '$lib/types';
 
 // bump only when the saved shape changes in a way applySave can't read
 const SAVE_VERSION = 1;

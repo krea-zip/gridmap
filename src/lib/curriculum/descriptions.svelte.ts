@@ -7,7 +7,7 @@
 // ─────────────────────────────────────────────
 
 import { browser } from '$app/environment';
-import { previewSnapshot } from './curriculum/preview';
+import { previewSnapshot } from '$lib/curriculum/preview';
 
 let descriptions = $state<Record<string, string> | null>(null);
 let started = false;
@@ -19,7 +19,7 @@ export function loadDescriptions() {
 	if (started || !browser) return;
 	started = true;
 	if (previewed) return void (descriptions = previewed);
-	import('./data/course-descriptions.json').then((m) => (descriptions = m.default)).catch(() => (started = false)); // offline / chunk 404 → try again next time
+	import('$lib/data/course-descriptions.json').then((m) => (descriptions = m.default)).catch(() => (started = false)); // offline / chunk 404 → try again next time
 }
 
 export const descriptionOf = (code: string): string | undefined => descriptions?.[code] || undefined;

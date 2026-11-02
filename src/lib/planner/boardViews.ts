@@ -16,10 +16,10 @@ import {
 	ranIn,
 	satisfiedBy,
 	termLabel
-} from './data';
-import { MAX_YEARS, type BreakKind, type Plan } from './plan.svelte';
-import { slotAt, slotOrder, type Here } from './calendar';
-import type { TrimNum } from './types';
+} from '$lib/curriculum/data';
+import { MAX_YEARS, type BreakKind, type Plan } from '$lib/planner/plan.svelte';
+import { slotAt, slotOrder, type Here } from '$lib/planner/calendar';
+import type { TrimNum } from '$lib/types';
 
 // ── will it run? ──
 

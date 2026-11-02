@@ -2,8 +2,8 @@
 	// a trimester's footer: through the degree, its number on the left; its
 	// load and credits on the right. in a narrow trimester the meter gives way
 	// first, so nothing runs into anything.
-	import { academicYear } from '$lib/calendar';
-	import { TRIM_HARD_MAX, TRIM_NORMAL_MAX } from '$lib/data';
+	import { academicYear } from '$lib/planner/calendar';
+	import { TRIM_HARD_MAX, TRIM_NORMAL_MAX } from '$lib/curriculum/data';
 	import { usePlan } from '$lib/planner/context';
 	import type { TrimNum } from '$lib/types';
 

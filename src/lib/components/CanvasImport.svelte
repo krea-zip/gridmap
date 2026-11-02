@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
-	import { ALL_COURSES, byCode, isCore } from '$lib/data';
+	import { ALL_COURSES, byCode, isCore } from '$lib/curriculum/data';
 	import {
 		CANVAS_IMPORT_LIMIT,
 		groupCanvasCourses,
@@ -8,7 +8,7 @@
 		parseCourseImport,
 		type CanvasImport,
 		type CourseImport
-	} from '$lib/canvasImport';
+	} from '$lib/features/plans/canvas-import';
 	import type { TrimNum } from '$lib/types';
 	import Modal from './Modal.svelte';
 	import ExamImportPanel from '$lib/features/plans/ExamImportPanel.svelte';

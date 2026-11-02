@@ -5,7 +5,7 @@
 	// trimester or later. Measured off the chips themselves, and measured
 	// again whenever the grid moves or a chip settles after moving.
 	import { tick } from 'svelte';
-	import type { Chain } from '$lib/boardViews';
+	import type { Chain } from '$lib/planner/boardViews';
 
 	let { grid, edges, version }: { grid: HTMLElement; edges: Chain['edges']; version: string } = $props();
 

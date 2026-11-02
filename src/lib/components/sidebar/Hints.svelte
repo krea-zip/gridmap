@@ -6,9 +6,9 @@
 	import { tick, untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import { reducedMotion } from '$lib/transitions';
+	import { reducedMotion } from '$lib/ui/transitions';
 	import type { Hint } from '$lib/types';
-	import { byCode, hasCode } from '$lib/data';
+	import { byCode, hasCode } from '$lib/curriculum/data';
 	import ReferencePath from '$lib/components/board/ReferencePath.svelte';
 
 	const plan = usePlan();

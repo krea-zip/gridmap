@@ -4,8 +4,8 @@
 	// what the view shows, its key, and what it lets you do (try a programme,
 	// pick a lecturer). Plan and grades have none; grades keeps its own
 	// first-visit note.
-	import { RECORDED_TERMS } from '$lib/data';
-	import { EXIT_AWARDS, lecturersOnPlan, planEnd, runRecord, type Chain, type Verdict } from '$lib/boardViews';
+	import { RECORDED_TERMS } from '$lib/curriculum/data';
+	import { EXIT_AWARDS, lecturersOnPlan, planEnd, runRecord, type Chain, type Verdict } from '$lib/planner/boardViews';
 	import WhatIfBar from './WhatIfBar.svelte';
 
 	let { chain, verdict }: { chain: Chain | null; verdict: Verdict | null } = $props();

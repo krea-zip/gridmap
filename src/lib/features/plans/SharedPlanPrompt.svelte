@@ -2,7 +2,7 @@
 	// A plan someone shared (#plan=…), waiting for the student's say-so: it is
 	// opened as a copy, never a silent overwrite of their own board.
 	import Modal from '$lib/components/Modal.svelte';
-	import { hasCode } from '$lib/data';
+	import { hasCode } from '$lib/curriculum/data';
 	import { usePlan } from '$lib/planner/context';
 	import { readSharedPlan } from './share';
 	import { savedPlans } from './local-plans.svelte';

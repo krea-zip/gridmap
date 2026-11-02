@@ -1,4 +1,4 @@
-import { isGradeMark, type GradeMark } from '../../grades.ts';
+import { isGradeMark, type GradeMark } from '$lib/planner/grades';
 
 export const EXAM_ORIGIN = 'https://oe.krea.edu.in';
 export type ExamCourse = {

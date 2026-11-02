@@ -2,7 +2,7 @@
 // course page's "plan this course"), a shared plan (#plan=…), or a course list
 // from the Canvas extension (#canvas-import=…). Each is read once and taken
 // off the URL so a reload doesn't bring it back.
-import { parseCourseImport, type CourseImport } from '$lib/canvasImport';
+import { parseCourseImport, type CourseImport } from '$lib/features/plans/canvas-import';
 import { sharedPlanIn } from '$lib/features/plans/share';
 
 export type Incoming = {

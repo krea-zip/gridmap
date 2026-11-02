@@ -1,7 +1,7 @@
 // The planner's keyboard: Esc puts the sidebar away; ⌘Z / Ctrl+Z undoes a
 // planning step and ⇧⌘Z / Ctrl+Y redoes it, except while typing in a field,
 // where the browser's own undo belongs.
-import type { Plan } from '$lib/plan.svelte';
+import type { Plan } from '$lib/planner/plan.svelte';
 
 export function plannerKeys(plan: Plan) {
 	return (e: KeyboardEvent) => {

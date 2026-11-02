@@ -1,4 +1,4 @@
-import { parseExamImport, type ExamImport } from './features/plans/exam-import.ts';
+import { parseExamImport, type ExamImport } from '$lib/features/plans/exam-import';
 
 export type CourseImport = CanvasImport | ExamImport;
 export function parseCourseImport(text: string): CourseImport {

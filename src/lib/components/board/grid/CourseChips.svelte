@@ -3,10 +3,10 @@
 	// per chip because animate:flip only works directly inside a keyed each;
 	// the chips render straight into the cell, which lays them out.
 	import { flip } from 'svelte/animate';
-	import { byCode, isAttemptId, isCore } from '$lib/data';
-	import { runRecord, runText, teacherOf } from '$lib/boardViews';
+	import { byCode, isAttemptId, isCore } from '$lib/curriculum/data';
+	import { runRecord, runText, teacherOf } from '$lib/planner/boardViews';
 	import { usePlan } from '$lib/planner/context';
-	import { courseIn, courseOut, courseShift } from '$lib/transitions';
+	import { courseIn, courseOut, courseShift } from '$lib/ui/transitions';
 	import type { TrimNum } from '$lib/types';
 	import { useBoard } from '../boardState.svelte';
 

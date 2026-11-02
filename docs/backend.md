@@ -36,28 +36,48 @@ protect reads and writes. Updates/deletes match the last observed revision; stal
 writes fail visibly. The database validates names, document shape and size.
 
 All authenticated accounts may save private plans. Public reviews retain their
-separate verified Krea Google eligibility policy. Curriculum JSON is a versioned
-build artifact; the `/admin` pages edit local drafts and export them for
-the data pipeline. They do not grant access to other users or publish database changes.
+separate verified Krea Google eligibility policy.
 
-`/admin` is a home page of jobs plus a sidebar: courses (including descriptions and
-who teaches them), faculty, departments, cross-listing, degree requirements, batch
-overrides, university rules and the prerequisite map. Every editor saves to its own
-`kcal-*-edits` localStorage key and `data.ts` lays the edits over the snapshot at
-load. The Changes page (`/admin/changes`, `src/lib/adminBundle.ts`) counts, lists,
-exports, imports and discards all of them as one JSON file. The new editors'
-storage lives in `src/lib/adminEdits.ts`; programme edits replace a programme's
-course lists and credits but never its choose-N pools or suggested pathway.
+## The academic office (`/admin`)
+
+The office is the one place the curriculum is edited. It is server-rendered:
+`src/routes/admin/+layout.server.ts` reads the signed-in staff member, their role
+(`office_staff`) and the shared draft (`office_workspace`) on the server, so every
+office page arrives rendered. It needs Supabase; without it the office explains
+that instead of opening.
+
+The whole curriculum is one draft document (`src/lib/features/office/model.ts`).
+Staff edit it in the browser and save it whole (`POST /api/admin/workspace`, with
+the revision they started from, so nobody overwrites anyone). It then moves through
+review on `/admin/changes`: send for approval, approve, publish. Those steps, staff
+access, history and department requests are SvelteKit form actions backed by
+`src/lib/server/office.ts`.
+
+Publishing (`office_publish`) builds the public release in the database, so office
+notes never leave it, and then calls the Vercel deploy hook (`VERCEL_DEPLOY_HOOK`).
+The build pulls the current release (`npm run curriculum:pull`), so students see it
+once the deploy finishes. "Student preview" opens the planner with
+`?admin-preview=1` and the unsaved draft, in that tab only.
+
+Roles: admin (everything, including staff access), publisher, reviewer, editor,
+and department contributor (sends requests only). Row-level security enforces them;
+the server checks give staff a clear message first.
+
+To test the office on a Vercel preview, give the Preview environment the Supabase
+variables and add `https://kcal-git-*-<team>.vercel.app/**` to Supabase Auth's
+redirect URLs.
 
 ## Development checks
 
 ```sh
-npm run check
-npm test
+npm run check        # types and a11y (svelte-check)
+npm run lint         # formatting (prettier)
+npm test             # vitest: planner rules, office, storage, database
 npm run build
-npm run test:browser
-npm run test:cloud
+npm run test:browser # playwright
 ```
+
+CI (`.github/workflows/check.yml`) runs check, lint and test on every push.
 
 Database tests run the actual migrations in PGlite, including ownership, anonymous
 access, constraints, stale revisions and account deletion. Cloud browser tests use

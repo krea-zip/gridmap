@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
 	import type { Course } from '$lib/types';
-	import { facultyOf, isCore, taughtBy, termLabel } from '$lib/data';
-	import { reducedMotion } from '$lib/transitions';
+	import { facultyOf, isCore, taughtBy, termLabel } from '$lib/curriculum/data';
+	import { reducedMotion } from '$lib/ui/transitions';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	let { course: c }: { course: Course } = $props();

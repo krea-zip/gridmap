@@ -3,9 +3,9 @@
 	// and a bar per programme that opens onto what's still owed
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import { subjectById } from '$lib/data';
+	import { subjectById } from '$lib/curriculum/data';
 	import { usePlan } from '$lib/planner/context';
-	import { reducedMotion } from '$lib/transitions';
+	import { reducedMotion } from '$lib/ui/transitions';
 	import Progress from './Progress.svelte';
 
 	const plan = usePlan();

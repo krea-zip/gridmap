@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
-	import { ALL_COURSES, byCode, isCore } from '$lib/data';
+	import { ALL_COURSES, byCode, isCore } from '$lib/curriculum/data';
 	import Modal from '$lib/components/Modal.svelte';
 	import { untrack } from 'svelte';
 	import { examSlot, latestExamChoices, matchExamCourse, type ExamImport } from './exam-import';

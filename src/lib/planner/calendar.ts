@@ -4,7 +4,7 @@
 // from the batch and the date; the student can always correct it.
 // ─────────────────────────────────────────────
 
-import type { TrimNum } from './types';
+import type { TrimNum } from '$lib/types';
 
 export type Here = { year: number; trim: TrimNum };
 

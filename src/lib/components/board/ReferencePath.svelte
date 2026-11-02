@@ -11,9 +11,9 @@
 	// that can overwrite your work, and it shows your plan against it: each
 	// course is ticked if you already have it, dashed if you don't.
 	// ─────────────────────────────────────────────
-	import { byCode, subjectById } from '$lib/data';
+	import { byCode, subjectById } from '$lib/curriculum/data';
 	import type { TrimNum } from '$lib/types';
-	import { termMonthsShort } from '$lib/calendar';
+	import { termMonthsShort } from '$lib/planner/calendar';
 	import Modal from '../Modal.svelte';
 
 	let { onclose }: { onclose: () => void } = $props();

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
 	import type { Course, CourseType } from '$lib/types';
-	import { codeFor } from '$lib/data';
-	import { courseIn, courseOut } from '$lib/transitions';
+	import { codeFor } from '$lib/curriculum/data';
+	import { courseIn, courseOut } from '$lib/ui/transitions';
 
 	let {
 		course,

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
-	import { BREAK_KINDS, type BreakKind } from '$lib/plan.svelte';
-	import { TRIM_HARD_MAX, TRIM_MIN, byCode, isAttemptId } from '$lib/data';
+	import { BREAK_KINDS, type BreakKind } from '$lib/planner/plan.svelte';
+	import { TRIM_HARD_MAX, TRIM_MIN, byCode, isAttemptId } from '$lib/curriculum/data';
 	import { flip } from 'svelte/animate';
-	import { courseIn, courseOut, courseShift } from '$lib/transitions';
-	import { academicYear, termMonths } from '$lib/calendar';
+	import { courseIn, courseOut, courseShift } from '$lib/ui/transitions';
+	import { academicYear, termMonths } from '$lib/planner/calendar';
 
 	let { touchLayout = false }: { touchLayout?: boolean } = $props();
 	const plan = usePlan();

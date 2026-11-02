@@ -7,7 +7,7 @@
 	// target changes (3-year ⇄ 4-year, a new major) instead of the bar
 	// being rebuilt.
 	import { fade } from 'svelte/transition';
-	import { reducedMotion } from '$lib/transitions';
+	import { reducedMotion } from '$lib/ui/transitions';
 
 	type Part = { done: number; needed: number };
 

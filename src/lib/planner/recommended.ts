@@ -1,7 +1,7 @@
 // the department's suggested path for the chosen programmes: what the
 // grid is seeded with on a first visit and what the dashed ghosts show
 // afterwards. plain functions of the plan, derived by the store.
-import type { Plan } from '$lib/plan.svelte';
+import type { Plan } from '$lib/planner/plan.svelte';
 import {
 	byCode,
 	CORE_COURSES,
@@ -13,7 +13,7 @@ import {
 	satisfiedBy,
 	TRIM_NORMAL_MAX,
 	Y1_CORE_MAX
-} from '$lib/data';
+} from '$lib/curriculum/data';
 import { slotKey, TRIMS, type SlotKey, type TrimNum } from '$lib/types';
 
 /**

@@ -8,11 +8,11 @@
 	// like the colour key beside it.
 	import { fade, scale } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
-	import { reducedMotion } from '$lib/transitions';
-	import { BOARD_VIEWS, type BoardView } from '$lib/plan.svelte';
-	import { COURSES, byCode, hasCode, isCore, satisfiedBy } from '$lib/data';
-	import { isGradeLetter } from '$lib/grades';
-	import { milestones, runRecord, teacherOf } from '$lib/boardViews';
+	import { reducedMotion } from '$lib/ui/transitions';
+	import { BOARD_VIEWS, type BoardView } from '$lib/planner/plan.svelte';
+	import { COURSES, byCode, hasCode, isCore, satisfiedBy } from '$lib/curriculum/data';
+	import { isGradeLetter } from '$lib/planner/grades';
+	import { milestones, runRecord, teacherOf } from '$lib/planner/boardViews';
 	import type { TrimNum } from '$lib/types';
 
 	let { onpick }: { onpick: (view: BoardView) => void } = $props();

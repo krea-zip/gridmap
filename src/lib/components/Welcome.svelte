@@ -4,7 +4,7 @@
 	// the grid behind opens on their own department's suggested path instead
 	// of someone else's example. The grid re-lays itself out live as they
 	// answer, and every answer is also in the sidebar, nothing here is final.
-	import { MAJOR_SUBJECTS } from '$lib/data';
+	import { MAJOR_SUBJECTS } from '$lib/curriculum/data';
 	import Modal from './Modal.svelte';
 
 	let { ondone }: { ondone: () => void } = $props();

@@ -6,7 +6,7 @@ import {
 	matchExamCourse,
 	latestExamChoices
 } from '../src/lib/features/plans/exam-import.ts';
-import { parseCourseImport } from '../src/lib/canvasImport.ts';
+import { parseCourseImport } from '../src/lib/features/plans/canvas-import.ts';
 import { destinationUrl } from '../extensions/canvas-import/transfer.js';
 
 const course = { code: 'MATH201', title: 'Analysis-I', term: 4, grade: 'U', credits: 4 };

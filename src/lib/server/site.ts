@@ -24,7 +24,7 @@ import {
 	termLabel,
 	termsOffered,
 	type Professor
-} from '$lib/data';
+} from '$lib/curriculum/data';
 import type { Course, ProgrammeRole, Subject } from '$lib/types';
 
 // ── shared shapes ──

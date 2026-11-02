@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
 	import PixelIcon from '../PixelIcon.svelte';
-	import { MAJOR_SUBJECTS } from '$lib/data';
+	import { MAJOR_SUBJECTS } from '$lib/curriculum/data';
 	import Settings from '$lib/components/Settings.svelte';
 
 	let { ontour, onimport }: { ontour: () => void; onimport: () => void } = $props();

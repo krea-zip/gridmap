@@ -2,8 +2,8 @@
 	// a row's heading: the year, and the academic year it falls in from the
 	// batch. in grade view the year carries its gpa on a little glossy readout
 	// that opens the grades window on just that year.
-	import { academicYear } from '$lib/calendar';
-	import { GRAD_MIN_CGPA } from '$lib/grades';
+	import { academicYear } from '$lib/planner/calendar';
+	import { GRAD_MIN_CGPA } from '$lib/planner/grades';
 	import { usePlan } from '$lib/planner/context';
 	import Rolling from '$lib/components/Rolling.svelte';
 	import { useBoard } from '../boardState.svelte';

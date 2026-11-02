@@ -74,22 +74,26 @@ See [backend setup](docs/backend.md) and [application architecture](docs/archite
 ```
 src/
 ├─ routes/
-│  ├─ +layout.svelte          # global stylesheet
-│  └─ +page.svelte            # the four-column app shell
+│  ├─ (planner)/              # the planner: +layout (grid shell, plan context), +page (the board)
+│  ├─ (site)/                 # public course, lecturer and programme pages
+│  ├─ admin/                  # the academic office (server-rendered, Supabase)
+│  └─ api/admin/workspace/    # saving the office draft
 ├─ lib/
-│  ├─ features/               # auth, plans and reviews: state, validation, repositories
-│  ├─ infrastructure/supabase/ # shared typed client and schema contract
-│  ├─ plan.svelte.ts          # scheduling state and curriculum rules
-│  ├─ data.ts                 # typed access to the generated data + programme/requirement logic
-│  ├─ types.ts                # shared types
-│  ├─ transitions.ts          # the shared catalogue⇄grid crossfade
-│  ├─ data/                   # generated JSON (courses, requirements, department, programme)
+│  ├─ planner/                # plan store, rules → hints, suggested path, calendar, grades, context
+│  ├─ curriculum/             # runtime catalogue (data.ts), snapshot types, compiler, office preview
+│  ├─ features/               # auth, plans (saves, sharing, imports), reviews, office draft model
+│  ├─ server/                 # supabase per request, office access, review and publishing
+│  ├─ infrastructure/supabase/ # the browser's client and schema contract
 │  ├─ components/
-│  │  ├─ sidebar/             # Sidebar (programme pickers), HintsPanel (stats · choices · hints), ExportBar
-│  │  ├─ catalogue/           # Catalogue (search + filters), CatalogueCard
-│  │  ├─ board/               # OverviewGrid (the year×trimester grid), TrimesterZoom
-│  │  └─ details/             # DetailsPanel (selected-course info)
-│  └─ styles/                 # _variables (design tokens), _mixins, _reset
+│  │  ├─ board/               # OverviewGrid, bar/ (BoardBar, Keys, …), grid/ (PlanGrid, TrimesterCell, …)
+│  │  ├─ sidebar/             # Sidebar, DegreeProgress, ChoicePools, Hints
+│  │  ├─ catalogue/ details/  # the catalogue and the course panel
+│  │  ├─ layout/              # resizers, onboarding, flash, phone navigation
+│  │  └─ admin/               # office frame and shared office components
+│  ├─ ui/                     # motion, drag, focus, breakpoints, display settings
+│  ├─ data/                   # generated JSON (the curriculum release and its sources)
+│  ├─ styles/                 # _variables (design tokens), _mixins, _reset
+│  └─ types.ts                # shared types
 └─ app.scss / app.html
 misc/                          # the data pipeline (see below)
 ```

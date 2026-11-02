@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { DATA_UPDATED } from '$lib/data';
+	import { DATA_UPDATED } from '$lib/curriculum/data';
 	import type { Snippet } from 'svelte';
 
 	let { children }: { children: Snippet } = $props();

@@ -2,8 +2,8 @@
 	import { usePlan } from '$lib/planner/context';
 	import PixelIcon from '../PixelIcon.svelte';
 	import { tick } from 'svelte';
-	import { COURSES, SUBJECTS, subjectById } from '$lib/data';
-	import { offeredIn } from '$lib/calendar';
+	import { COURSES, SUBJECTS, subjectById } from '$lib/curriculum/data';
+	import { offeredIn } from '$lib/planner/calendar';
 	import CatalogueCard from './CatalogueCard.svelte';
 
 	let { mobile = false }: { mobile?: boolean } = $props();

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
-	import { byCode, hasCode, isAttemptId } from '$lib/data';
+	import { byCode, hasCode, isAttemptId } from '$lib/curriculum/data';
 	import { slide } from 'svelte/transition';
 	import {
 		GRADE_POINTS,
@@ -13,7 +13,7 @@
 		gradMinCredits,
 		GRAD_MIN_CGPA,
 		type GradeMark
-	} from '$lib/grades';
+	} from '$lib/planner/grades';
 	import Modal from '../Modal.svelte';
 
 	// `year` narrows the window to one year's courses, opened from that

@@ -2,7 +2,7 @@
 	// one trimester on the grid. the cell is tinted by its courses, ringed by
 	// its state (now, a warning, a drag's fit) and opens the trimester view
 	// when clicked anywhere that isn't a course.
-	import { slotOrder, termMonths } from '$lib/calendar';
+	import { slotOrder, termMonths } from '$lib/planner/calendar';
 	import { usePlan } from '$lib/planner/context';
 	import type { TrimNum } from '$lib/types';
 	import { useBoard } from '../boardState.svelte';

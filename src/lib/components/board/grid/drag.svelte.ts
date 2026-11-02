@@ -2,9 +2,9 @@
 // the cell under the pointer, so letting go in the gap between cells still
 // lands the course in the nearest slot instead of snapping it back.
 import { tick } from 'svelte';
-import { isCore } from '$lib/data';
-import { reducedMotion } from '$lib/transitions';
-import type { Plan } from '$lib/plan.svelte';
+import { isCore } from '$lib/curriculum/data';
+import { reducedMotion } from '$lib/ui/transitions';
+import type { Plan } from '$lib/planner/plan.svelte';
 import type { TrimNum } from '$lib/types';
 
 type Slot = { year: number; trim: TrimNum };

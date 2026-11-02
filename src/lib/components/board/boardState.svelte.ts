@@ -3,9 +3,9 @@
 // per board, handed down by context so the bar, the strip and the grid stay
 // in step without threading props through every cell and chip.
 import { createContext } from 'svelte';
-import { milestones, planEnd, prereqChain, whatIfVerdict } from '$lib/boardViews';
-import { slotOrder } from '$lib/calendar';
-import type { BoardView, Plan } from '$lib/plan.svelte';
+import { milestones, planEnd, prereqChain, whatIfVerdict } from '$lib/planner/boardViews';
+import { slotOrder } from '$lib/planner/calendar';
+import type { BoardView, Plan } from '$lib/planner/plan.svelte';
 import type { TrimNum } from '$lib/types';
 import { GridDrag } from './grid/drag.svelte';
 

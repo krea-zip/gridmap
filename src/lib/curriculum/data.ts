@@ -6,8 +6,8 @@
 // the draft being previewed (curriculum/preview.ts).
 // ─────────────────────────────────────────────
 
-import snapshotData from './data/curriculum.json';
-import { previewSnapshot } from './curriculum/preview';
+import snapshotData from '$lib/data/curriculum.json';
+import { previewSnapshot } from '$lib/curriculum/preview';
 import {
 	variantOf,
 	type ChoiceGroup,
@@ -18,10 +18,10 @@ import {
 	type RequirementSet,
 	type SnapshotCourse,
 	type Variant
-} from './curriculum/snapshot';
-import type { Course, ProgrammeRole, Subject, TrimNum } from './types';
+} from '$lib/curriculum/snapshot';
+import type { Course, ProgrammeRole, Subject, TrimNum } from '$lib/types';
 
-export type { ChoiceCourse, ChoiceGroup } from './curriculum/snapshot';
+export type { ChoiceCourse, ChoiceGroup } from '$lib/curriculum/snapshot';
 
 const snapshot: CurriculumSnapshot = previewSnapshot() ?? (snapshotData as unknown as CurriculumSnapshot);
 export const PREVIEWING = snapshot !== (snapshotData as unknown);

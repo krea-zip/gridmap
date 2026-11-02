@@ -13,15 +13,15 @@
 		ranIn,
 		satisfiedBy,
 		termsOffered
-	} from '$lib/data';
-	import { runText } from '$lib/boardViews';
-	import { reducedMotion } from '$lib/transitions';
+	} from '$lib/curriculum/data';
+	import { runText } from '$lib/planner/boardViews';
+	import { reducedMotion } from '$lib/ui/transitions';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import type { TrimNum } from '$lib/types';
-	import { academicYear, slotOrder, termMonthsShort } from '$lib/calendar';
-	import { descriptionOf, loadDescriptions } from '$lib/descriptions.svelte';
-	import { GRADE_SCALE, OTHER_MARKS, type GradeMark } from '$lib/grades';
+	import { academicYear, slotOrder, termMonthsShort } from '$lib/planner/calendar';
+	import { descriptionOf, loadDescriptions } from '$lib/curriculum/descriptions.svelte';
+	import { GRADE_SCALE, OTHER_MARKS, type GradeMark } from '$lib/planner/grades';
 
 	const plan = usePlan();
 

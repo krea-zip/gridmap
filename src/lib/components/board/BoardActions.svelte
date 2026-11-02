@@ -6,7 +6,7 @@
 	// adding first, taking away after; emptying sits apart at the far end.
 	import { fade } from 'svelte/transition';
 	import { usePlan } from '$lib/planner/context';
-	import { reducedMotion } from '$lib/transitions';
+	import { reducedMotion } from '$lib/ui/transitions';
 	import { armed } from './grid/armed.svelte';
 
 	const plan = usePlan();

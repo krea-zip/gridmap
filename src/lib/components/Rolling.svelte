@@ -2,7 +2,7 @@
 	// a changing label rolls over like a mechanical counter, so the eye sees
 	// it change instead of the text just snapping (kcal's motion language).
 	// old and new share one grid cell so they cross instead of stacking.
-	import { roll } from '$lib/transitions';
+	import { roll } from '$lib/ui/transitions';
 
 	let { value }: { value: string | number } = $props();
 </script>
