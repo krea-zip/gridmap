@@ -26,15 +26,13 @@ export async function POST(event: RequestEvent) {
 	} else {
 		const request = String(b.request ?? '').trim();
 		if (!request || request.length > 12000) error(400, 'Describe the requested change in 12,000 characters or fewer.');
-		const { error: problem } = await db
-			.from('office_submissions')
-			.insert({
-				author: user.id,
-				department: String(b.department ?? ''),
-				course: String(b.course ?? ''),
-				term: String(b.term ?? ''),
-				request
-			});
+		const { error: problem } = await db.from('office_submissions').insert({
+			author: user.id,
+			department: String(b.department ?? ''),
+			course: String(b.course ?? ''),
+			term: String(b.term ?? ''),
+			request
+		});
 		databaseError(problem);
 	}
 	return json({ ok: true });

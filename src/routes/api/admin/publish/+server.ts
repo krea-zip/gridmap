@@ -15,7 +15,7 @@ export async function POST(event: RequestEvent) {
 	} else {
 		const { data, error: problem } = await db.from('office_workspace').select('document,revision').single();
 		databaseError(problem);
-		if (data?.revision !== b.revision) error(409, 'The draft changed. Reload it before publishing.');
+		if (!data || data.revision !== b.revision) error(409, 'The draft changed. Reload it before publishing.');
 		const issues = validateOffice(data.document).filter((i) => i.severity === 'error');
 		if (issues.length) error(400, `Resolve ${issues.length} errors before publishing.`);
 		const result = await db.rpc('office_publish', { p_revision: b.revision });

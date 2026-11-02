@@ -89,7 +89,8 @@ export type AcademicPolicies = {
 };
 export type OfficeDocument = {
 	format: 1;
-	curriculum: CurriculumSnapshot & {
+	// Omit first: intersecting two `courses` types would keep the narrower one
+	curriculum: Omit<CurriculumSnapshot, 'courses'> & {
 		courses: OfficeCourse[];
 		creditSharing?: 'one' | 'all';
 		policies?: AcademicPolicies;

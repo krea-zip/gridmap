@@ -243,7 +243,7 @@ export async function previewImport(
 		offering.approval = 'draft';
 		offering.sourceRow = i + 1;
 		if (!blank(get('faculty'))) offering.facultyText = get('faculty');
-		const emails =
+		const emails: string[] =
 			(get('email') + ' ' + get('faculty')).toLowerCase().match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/g) ?? [];
 		if (emails.length)
 			offering.faculty = doc.curriculum.lecturers
