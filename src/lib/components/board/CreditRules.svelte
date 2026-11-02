@@ -1,10 +1,10 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	// The credit rules the ERP drop form imposes, checked against the plan
 	// that's actually on the grid, so "20 credits, twice in your tenure"
 	// arrives as "you've used 1 of 2" instead of as a paragraph to re-read.
 	// Below them, the standing and progression rules from the SIAS Exams &
 	// Assessments Manual, checked against whatever grades are entered.
-	import type { Plan } from '$lib/plan.svelte';
 	import { trimesterName, type TrimNum } from '$lib/types';
 	import {
 		AUDIT_LIMIT,
@@ -22,7 +22,8 @@
 	import { cubicOut } from 'svelte/easing';
 	import { reducedMotion } from '$lib/transitions';
 
-	let { plan, onclose }: { plan: Plan; onclose: () => void } = $props();
+	let { onclose }: { onclose: () => void } = $props();
+	const plan = usePlan();
 
 	type Slot = { y: number; t: TrimNum; credits: number };
 

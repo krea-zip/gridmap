@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	// The what-if view's bar: try a change to the degree from where you are,
 	// and see what it means before anything on the plan moves. Built for the
 	// student rescheduling mid-degree (a third-year double major swapping
@@ -6,7 +7,7 @@
 	// a later batch): what they've taken that still counts, what they've
 	// planned that wouldn't, what the new degree still needs and where it
 	// could go, and whether it all still fits in time.
-	import { programmesFor, type Picks, type Plan } from '$lib/plan.svelte';
+	import { programmesFor, type Picks } from '$lib/plan.svelte';
 	import type { StructureKind } from '$lib/types';
 	import {
 		MAJOR_SUBJECTS,
@@ -20,7 +21,8 @@
 	import type { Verdict } from '$lib/boardViews';
 	import { degreeTrim } from '$lib/calendar';
 
-	let { plan, verdict }: { plan: Plan; verdict: Verdict | null } = $props();
+	let { verdict }: { verdict: Verdict | null } = $props();
+	const plan = usePlan();
 
 	let tried = $derived(plan.whatIf!);
 

@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	import { ALL_COURSES, byCode, isCore } from '$lib/data';
 	import { CANVAS_IMPORT_LIMIT, groupCanvasCourses, matchCanvasCourse, parseCourseImport, type CanvasImport, type CourseImport } from '$lib/canvasImport';
-	import type { Plan } from '$lib/plan.svelte';
 	import type { TrimNum } from '$lib/types';
 	import Modal from './Modal.svelte';
 	import ExamImportPanel from '$lib/features/plans/ExamImportPanel.svelte';
@@ -10,9 +10,10 @@
 
 	// opened from settings, or straight away when the extension hands a course
 	// list over in the URL fragment
-	let { plan, open = $bindable(false), initial = null, initialError = '' }: {
-		plan: Plan; open?: boolean; initial?: CourseImport | null; initialError?: string;
+	let { open = $bindable(false), initial = null, initialError = '' }: {
+		open?: boolean; initial?: CourseImport | null; initialError?: string;
 	} = $props();
+	const plan = usePlan();
 	let payload = $state<CanvasImport | null>(null);
 	let examPayload = $state<ExamImport | null>(null);
 	let choices = $state<string[]>([]);
@@ -93,7 +94,7 @@
 </script>
 
 {#if open && examPayload}
-	<ExamImportPanel {plan} data={examPayload} onclose={() => open = false} onback={() => examPayload = null} />
+	<ExamImportPanel data={examPayload} onclose={() => open = false} onback={() => examPayload = null} />
 {:else if open}
 	<Modal title="import courses & grades" width="76rem" onclose={() => (open = false)}>
 		<div class="importer">

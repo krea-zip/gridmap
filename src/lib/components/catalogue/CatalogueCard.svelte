@@ -1,24 +1,23 @@
 <script lang="ts">
-	import type { Plan } from '$lib/plan.svelte';
+	import { usePlan } from '$lib/planner/context';
 	import type { Course, CourseType } from '$lib/types';
 	import { codeFor } from '$lib/data';
 	import { courseIn, courseOut } from '$lib/transitions';
 
 	let {
-		plan,
 		course,
 		type,
 		placed = false,
 		mobile = false,
 		contextSubject = undefined
 	}: {
-		plan: Plan;
 		course: Course;
 		type: CourseType;
 		placed?: boolean;
 		mobile?: boolean;
 		contextSubject?: string;
 	} = $props();
+	const plan = usePlan();
 
 	// the code this course goes by in the subject you're browsing (HIST235
 	// under history), and the other departments it's cross-listed with

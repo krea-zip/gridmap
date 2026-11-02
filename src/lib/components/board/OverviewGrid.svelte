@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	import PixelIcon from '../PixelIcon.svelte';
-	import { BOARD_VIEWS, type BoardView, type Plan } from '$lib/plan.svelte';
+	import { BOARD_VIEWS, type BoardView } from '$lib/plan.svelte';
 	import { trimesterName, type TrimNum } from '$lib/types';
 	import { TRIM_HARD_MAX, TRIM_NORMAL_MAX, byCode, isAttemptId, isCore, subjectById } from '$lib/data';
 	import { flip } from 'svelte/animate';
@@ -18,7 +19,8 @@
 	import CreditRules from './CreditRules.svelte';
 	import GradesPanel from '../grades/GradesPanel.svelte';
 
-	let { plan, touchLayout = false }: { plan: Plan; touchLayout?: boolean } = $props();
+	let { touchLayout = false }: { touchLayout?: boolean } = $props();
+	const plan = usePlan();
 
 	// state, not a plain binding: the prerequisite arrows wait for it to exist
 	let gridEl = $state() as HTMLDivElement;
@@ -349,7 +351,7 @@
 			</button>
 		</div>
 		{#if viewOpen}
-			<ViewMenu {plan} onpick={setView} />
+			<ViewMenu onpick={setView} />
 		{/if}
 	</div>
 
@@ -459,7 +461,7 @@
 	{/if}
 </div>
 
-<ViewStrip {plan} {chain} {verdict} />
+<ViewStrip {chain} {verdict} />
 
 {#if showGradeHint}
 	<div class="grade-hint" transition:fly={{ y: -8, duration: 180 }}>
@@ -476,12 +478,12 @@
 {/if}
 
 {#if showCredits}
-	<CreditRules {plan} onclose={() => (showCredits = false)} />
+	<CreditRules onclose={() => (showCredits = false)} />
 {/if}
 
 
 {#if showGrades && plan.gradeMode}
-	<GradesPanel {plan} year={gradesYear} onclose={() => (showGrades = false)} />
+	<GradesPanel year={gradesYear} onclose={() => (showGrades = false)} />
 {/if}
 
 {#if !plan.touched && plan.view === 'plan'}

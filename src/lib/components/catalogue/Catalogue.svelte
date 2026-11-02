@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	import PixelIcon from '../PixelIcon.svelte';
 	import { tick } from 'svelte';
-	import type { Plan } from '$lib/plan.svelte';
 	import { COURSES, SUBJECTS, subjectById } from '$lib/data';
 	import CatalogueCard from './CatalogueCard.svelte';
 
-	let { plan, mobile = false }: { plan: Plan; mobile?: boolean } = $props();
+	let { mobile = false }: { mobile?: boolean } = $props();
+	const plan = usePlan();
 
 	let catalogueEl: HTMLDivElement;
 	$effect(() => {
@@ -171,7 +172,6 @@
 						: Math.max(1, course.credits)};"
 				>
 					<CatalogueCard
-						{plan}
 						{mobile}
 						{course}
 						type={plan.courseType(course.code)}

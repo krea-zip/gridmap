@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	// ─────────────────────────────────────────────
 	// The recommended path, whole.
 	//
@@ -10,12 +11,12 @@
 	// that can overwrite your work, and it shows your plan against it: each
 	// course is ticked if you already have it, dashed if you don't.
 	// ─────────────────────────────────────────────
-	import type { Plan } from '$lib/plan.svelte';
 	import { byCode, subjectById } from '$lib/data';
 	import type { TrimNum } from '$lib/types';
 	import Modal from '../Modal.svelte';
 
-	let { plan, onclose }: { plan: Plan; onclose: () => void } = $props();
+	let { onclose }: { onclose: () => void } = $props();
+	const plan = usePlan();
 
 	const at = (year: number, trim: TrimNum) => plan.recommended[`${year}-${trim}`] ?? [];
 	let degree = $derived(

@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { usePlan } from '$lib/planner/context';
   import { ALL_COURSES, byCode, isCore } from "$lib/data";
-  import type { Plan } from "$lib/plan.svelte";
   import Modal from "$lib/components/Modal.svelte";
   import { untrack } from "svelte";
   import {
@@ -12,12 +12,12 @@
   import { examRecord } from "./exam-record.svelte";
 
   let {
-    plan,
     data,
     onclose,
     onback,
-  }: { plan: Plan; data: ExamImport; onclose: () => void; onback: () => void } =
+  }: { data: ExamImport; onclose: () => void; onback: () => void } =
     $props();
+  const plan = usePlan();
   const catalogue = [...ALL_COURSES]
     .filter((c) => !c.retired)
     .sort((a, b) => a.code.localeCompare(b.code));

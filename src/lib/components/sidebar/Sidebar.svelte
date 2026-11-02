@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	import PixelIcon from '../PixelIcon.svelte';
-	import type { Plan } from '$lib/plan.svelte';
 	import { MAJOR_SUBJECTS } from '$lib/data';
 	import Settings from '$lib/components/Settings.svelte';
 
-	let { plan, ontour, onimport }: { plan: Plan; ontour: () => void; onimport: () => void } = $props();
+	let { ontour, onimport }: { ontour: () => void; onimport: () => void } = $props();
+	const plan = usePlan();
 
 	let showSettings = $state(false);
 
@@ -28,7 +29,6 @@
 
 {#if showSettings}
 	<Settings
-		{plan}
 		onclose={() => (showSettings = false)}
 		ontour={() => {
 			showSettings = false;

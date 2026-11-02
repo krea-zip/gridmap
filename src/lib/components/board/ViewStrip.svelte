@@ -1,14 +1,15 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	// The bar under the board's toolbar for whichever view is on: one line on
 	// what the view shows, its key, and what it lets you do (try a programme,
 	// pick a lecturer). Plan and grades have none; grades keeps its own
 	// first-visit note.
-	import type { Plan } from '$lib/plan.svelte';
 	import { RECORDED_TERMS } from '$lib/data';
 	import { EXIT_AWARDS, lecturersOnPlan, planEnd, runRecord, type Chain, type Verdict } from '$lib/boardViews';
 	import WhatIfBar from './WhatIfBar.svelte';
 
-	let { plan, chain, verdict }: { plan: Plan; chain: Chain | null; verdict: Verdict | null } = $props();
+	let { chain, verdict }: { chain: Chain | null; verdict: Verdict | null } = $props();
+	const plan = usePlan();
 
 	const years = (terms: string[]) => terms.map((t) => `20${t.split('_')[0]}`).join(', ') || 'none';
 
@@ -98,7 +99,7 @@
 	</section>
 {:else if plan.view === 'whatif' && plan.whatIf}
 	<section class="view-strip" aria-label="what-if view">
-		<WhatIfBar {plan} {verdict} />
+		<WhatIfBar {verdict} />
 	</section>
 {:else if plan.view === 'faculty'}
 	<section class="view-strip" aria-label="faculty view">

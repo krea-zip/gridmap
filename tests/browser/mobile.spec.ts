@@ -22,7 +22,7 @@ test.describe('phone planner', () => {
 		const search = page.getByRole('searchbox');
 		await search.fill('MATH201');
 		await page.locator('.catalogue [data-course="MATH201"] button.card').tap();
-		await expect(page.locator('.rightbar')).toBeVisible();
+		await expect(page.locator('[data-panel="details"]')).toBeVisible();
 		await page.getByLabel('trimester to put MATH201 in').selectOption('2-1');
 		await page.getByRole('button', { name: 'add to plan', exact: true }).tap();
 		await expect(page.locator('.d-place-where')).toContainText('Year 2 · Trimester 1');
@@ -35,7 +35,7 @@ test.describe('phone planner', () => {
 		await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true');
 		await search.fill('MATH201');
 		await page.locator('[data-course="MATH201"] .placed-open').tap();
-		await expect(page.locator('.rightbar .d-place')).toBeVisible();
+		await expect(page.locator('[data-panel="details"] .d-place')).toBeVisible();
 		await page.screenshot({ path: '/tmp/kcal-mobile-after-tap.png' });
 		expect(errors).toEqual([]);
 		await expect(page.locator('.d-place-where')).toContainText('Year 2 · Trimester 2');
@@ -79,8 +79,8 @@ test.describe('phone planner', () => {
 
 	test('course and Canvas deep links open above the active tab', async ({ page }) => {
 		await page.goto('/?course=MATH201');
-		await expect(page.locator('.rightbar .d-place')).toBeVisible();
-		await expect(page.locator('.rightbar')).toBeVisible();
+		await expect(page.locator('[data-panel="details"] .d-place')).toBeVisible();
+		await expect(page.locator('[data-panel="details"]')).toBeVisible();
 		// the course link is consumed, so a refresh doesn't reopen it
 		await expect(page).toHaveURL('/');
 		// an import always arrives in a fresh tab, from the extension
@@ -142,7 +142,7 @@ test.describe('phone planner', () => {
 				const overflow = await page.evaluate(() => {
 					const nodes = [
 						document.documentElement,
-						...document.querySelectorAll<HTMLElement>('.rail, .board, .catalogue-panel')
+						...document.querySelectorAll<HTMLElement>('.rail, .board, [data-panel="catalogue"]')
 					];
 					return nodes
 						.filter((el) => el.getClientRects().length)
@@ -151,10 +151,10 @@ test.describe('phone planner', () => {
 				for (const item of overflow) expect(item.overflow, item.name).toBeLessThanOrEqual(1);
 			}
 			await page.goto('/?course=MATH201');
-			await expect(page.locator('.rightbar .d-place')).toBeVisible();
+			await expect(page.locator('[data-panel="details"] .d-place')).toBeVisible();
 			if (width === 390) await page.screenshot({ path: '/tmp/kcal-mobile-details.png' });
 			expect(
-				await page.locator('.rightbar').evaluate((el) => el.scrollWidth - el.clientWidth)
+				await page.locator('[data-panel="details"]').evaluate((el) => el.scrollWidth - el.clientWidth)
 			).toBeLessThanOrEqual(1);
 		});
 	}
@@ -215,13 +215,13 @@ test.describe('tablet planner', () => {
 		await page.goto('/');
 		await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true');
 		await expect(page.getByRole('navigation', { name: 'main navigation' })).not.toBeVisible();
-		for (const panel of ['.rail', '.catalogue-panel', '.board']) await expect(page.locator(panel)).toBeVisible();
-		await expect(page.locator('.rightbar')).not.toBeVisible();
+		for (const panel of ['.rail', '[data-panel="catalogue"]', '.board']) await expect(page.locator(panel)).toBeVisible();
+		await expect(page.locator('[data-panel="details"]')).not.toBeVisible();
 		await page.getByRole('searchbox').fill('MATH201');
 		await page.locator('[data-course="MATH201"] button.card').tap();
-		await expect(page.locator('.rightbar .d-place')).toBeVisible();
+		await expect(page.locator('[data-panel="details"] .d-place')).toBeVisible();
 		await page.locator('.scrim').click({ position: { x: 400, y: 400 } });
-		await expect(page.locator('.rightbar')).not.toBeVisible();
+		await expect(page.locator('[data-panel="details"]')).not.toBeVisible();
 	});
 
 	test('upright folds the sidebar to a strip that slides it in', async ({ page }) => {

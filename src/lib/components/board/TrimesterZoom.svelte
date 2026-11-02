@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { BREAK_KINDS, type BreakKind, type Plan } from '$lib/plan.svelte';
+	import { usePlan } from '$lib/planner/context';
+	import { BREAK_KINDS, type BreakKind } from '$lib/plan.svelte';
 	import { TRIM_HARD_MAX, TRIM_MIN, byCode, isAttemptId } from '$lib/data';
 		import { flip } from 'svelte/animate';
 	import { courseIn, courseOut, courseShift } from '$lib/transitions';
 	import { academicYear, degreeTrim } from '$lib/calendar';
 
-	let { plan, touchLayout = false }: { plan: Plan; touchLayout?: boolean } = $props();
+	let { touchLayout = false }: { touchLayout?: boolean } = $props();
+	const plan = usePlan();
 
 	// zoom is guaranteed non-null while this component is mounted
 	let year = $derived(plan.zoom!.year);

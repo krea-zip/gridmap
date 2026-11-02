@@ -1,15 +1,15 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	import { tick, untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { reducedMotion } from '$lib/transitions';
 	import type { Hint } from '$lib/types';
-	import type { Plan } from '$lib/plan.svelte';
 	import { byCode, hasCode, subjectById } from '$lib/data';
 	import ReferencePath from '$lib/components/board/ReferencePath.svelte';
 	import Progress from './Progress.svelte';
 
-	let { plan }: { plan: Plan } = $props();
+	const plan = usePlan();
 
 	let showPath = $state(false);
 	// one programme's breakdown open at a time
@@ -397,7 +397,7 @@
 </div>
 
 {#if showPath}
-	<ReferencePath {plan} onclose={() => (showPath = false)} />
+	<ReferencePath onclose={() => (showPath = false)} />
 {/if}
 
 <style lang="scss">

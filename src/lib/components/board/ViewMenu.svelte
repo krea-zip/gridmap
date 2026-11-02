@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	// The board's view menu, drawn with the board's own parts. Every view is
 	// shown by what it does to one of YOUR courses: the same chip the grid
 	// draws, wearing the same mark that view adds (its grade, how often it
@@ -8,13 +9,14 @@
 	import { fade, scale } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
 	import { reducedMotion } from '$lib/transitions';
-	import { BOARD_VIEWS, type BoardView, type Plan } from '$lib/plan.svelte';
+	import { BOARD_VIEWS, type BoardView } from '$lib/plan.svelte';
 	import { COURSES, byCode, hasCode, isCore, satisfiedBy } from '$lib/data';
 	import { isGradeLetter } from '$lib/grades';
 	import { milestones, runRecord, teacherOf } from '$lib/boardViews';
 	import type { TrimNum } from '$lib/types';
 
-	let { plan, onpick }: { plan: Plan; onpick: (view: BoardView) => void } = $props();
+	let { onpick }: { onpick: (view: BoardView) => void } = $props();
+	const plan = usePlan();
 
 	const GROUPS = [
 		{ id: 'yours', label: 'your plan' },

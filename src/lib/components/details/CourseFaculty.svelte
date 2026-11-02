@@ -1,11 +1,12 @@
 <script lang="ts">
-  import type { Plan } from "$lib/plan.svelte";
+  import { usePlan } from '$lib/planner/context';
   import type { Course } from "$lib/types";
   import { facultyOf, isCore, taughtBy, termLabel } from "$lib/data";
   import { reducedMotion } from "$lib/transitions";
   import { slide } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
-  let { plan, course: c }: { plan: Plan; course: Course } = $props();
+  let { course: c }: { course: Course } = $props();
+  const plan = usePlan();
   let profs = $derived(facultyOf(c.code));
   // "01-Jan-19" → "2019"
   const joinedYear = (date?: string) => {

@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	import CloudPlansPanel from '$lib/features/plans/CloudPlansPanel.svelte';
-	import type { Plan } from '$lib/plan.svelte';
 	import { settings, TEXT_SIZES, type ThemeChoice } from '$lib/settings.svelte';
 	import { savedPlans, MAX_SAVES } from '$lib/features/plans/local-plans.svelte';
 	import { shareLink } from '$lib/features/plans/share';
@@ -11,11 +11,11 @@
 	import PixelIcon from './PixelIcon.svelte';
 
 	let {
-		plan,
 		onclose,
 		ontour,
 		onimport
-	}: { plan: Plan; onclose: () => void; ontour: () => void; onimport: () => void } = $props();
+	}: { onclose: () => void; ontour: () => void; onimport: () => void } = $props();
+	const plan = usePlan();
 
 	const THEMES: { id: ThemeChoice; label: string }[] = [
 		{ id: 'light', label: 'light' },
@@ -140,7 +140,7 @@
 </script>
 
 <Modal title="settings" {onclose}>
-	<CloudPlansPanel {plan} {suggestedName} />
+	<CloudPlansPanel {suggestedName} />
 	<section>
 		<h3>appearance</h3>
 
@@ -181,7 +181,7 @@
 
 	<section>
 		<h3>feedback</h3>
-		<FeedbackForm {plan} />
+		<FeedbackForm />
 	</section>
 
 	<section>

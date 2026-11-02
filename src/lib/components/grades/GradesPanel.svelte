@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Plan } from '$lib/plan.svelte';
+	import { usePlan } from '$lib/planner/context';
 	import { byCode, hasCode, isAttemptId } from '$lib/data';
 	import { slide } from 'svelte/transition';
 	import {
@@ -18,7 +18,8 @@
 
 	// `year` narrows the window to one year's courses, opened from that
 	// year's GPA capsule on the grid, to grade just those
-	let { plan, onclose, year = undefined }: { plan: Plan; onclose: () => void; year?: number } = $props();
+	let { onclose, year = undefined }: { onclose: () => void; year?: number } = $props();
+	const plan = usePlan();
 
 	type Term = { year: number; trim: number; codes: string[] };
 

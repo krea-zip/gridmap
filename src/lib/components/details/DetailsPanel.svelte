@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Plan } from '$lib/plan.svelte';
+	import { usePlan } from '$lib/planner/context';
 	import CourseFaculty from './CourseFaculty.svelte';
 	import {
 		baseCode,
@@ -23,7 +23,7 @@
 	import { descriptionOf, loadDescriptions } from '$lib/descriptions.svelte';
 	import { GRADE_SCALE, OTHER_MARKS, type GradeMark } from '$lib/grades';
 
-	let { plan }: { plan: Plan } = $props();
+	const plan = usePlan();
 
 	// only jump to codes that exist in the catalogue; others stay plain text
 	function jump(code: string) {
@@ -498,7 +498,7 @@
 			</div>
 		{/if}
 
-		<CourseFaculty {plan} course={c} />
+		<CourseFaculty course={c} />
 		</section>
 		{/if}
 	</div>

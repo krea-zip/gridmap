@@ -1,13 +1,14 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	import { untrack } from 'svelte';
 	import { account } from '$lib/features/auth/account.svelte';
 	import { supabaseConfigured } from '$lib/infrastructure/supabase/config';
-	import type { Plan } from '$lib/plan.svelte';
 	import { CloudPlans } from './cloud-plans.svelte';
 	import { PLAN_NAME_LIMIT } from './document';
 	import type { CloudPlan } from './repository';
 
-	let { plan, suggestedName }: { plan: Plan; suggestedName: string } = $props();
+	let { suggestedName }: { suggestedName: string } = $props();
+	const plan = usePlan();
 	const cloud = new CloudPlans();
 	let name = $state('');
 	let confirmation = $state<{ action: 'load' | 'update' | 'delete'; plan: CloudPlan } | null>(null);

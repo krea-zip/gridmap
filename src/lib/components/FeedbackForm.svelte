@@ -1,12 +1,13 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	// The one feedback form, in settings, and in the window a course, a hint
 	// or the footer opens (pre-filled with what it's about). Posts to the
 	// netlify form declared in app.html, no server of our own, submissions
 	// land in the netlify dashboard. Whatever plan the student is on rides
 	// along, since "the grid is wrong" needs the grid to make sense.
-	import type { Plan } from '$lib/plan.svelte';
 
-	let { plan, prefill = '', onsent }: { plan: Plan; prefill?: string; onsent?: () => void } = $props();
+	let { prefill = '', onsent }: { prefill?: string; onsent?: () => void } = $props();
+	const plan = usePlan();
 
 	// the form is created fresh each time it opens, so taking the pre-fill once
 	// is the point, later edits are the student's

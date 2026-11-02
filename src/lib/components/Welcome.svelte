@@ -1,13 +1,14 @@
 <script lang="ts">
+	import { usePlan } from '$lib/planner/context';
 	// The first thing a new visitor sees: two questions about their degree, so
 	// the grid behind opens on their own department's suggested path instead
 	// of someone else's example. The grid re-lays itself out live as they
 	// answer, and every answer is also in the sidebar, nothing here is final.
-	import type { Plan } from '$lib/plan.svelte';
 	import { MAJOR_SUBJECTS } from '$lib/data';
 	import Modal from './Modal.svelte';
 
-	let { plan, ondone }: { plan: Plan; ondone: () => void } = $props();
+	let { ondone }: { ondone: () => void } = $props();
+	const plan = usePlan();
 
 	const changed = () => plan.programmeChanged();
 	const BATCHES = [2022, 2023, 2024, 2025, 2026];
