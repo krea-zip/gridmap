@@ -1,13 +1,42 @@
 <script lang="ts">
-	// a programme's "any three of the following" pools: what to pick and how
-	// far along the plan is, one block per programme
+	// a programme's "any three of the following" pools: a short rule, pips
+	// for how many are picked, and the courses, the picked ones first with
+	// where they sit. a pool that's complete folds to one line
+	import { slide } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
+	import { byCode } from '$lib/curriculum/data';
 	import { usePlan } from '$lib/planner/context';
 	import { viewport } from '$lib/planner/viewport.svelte';
+	import { reducedMotion } from '$lib/ui/transitions';
 
 	const plan = usePlan();
 	// a phone has no codes / titles switches, so it shows both
 	let showCode = $derived(plan.showCodes || !viewport.desktop);
 	let showTitle = $derived(plan.showTitles || !viewport.desktop);
+
+	// where each placed course sits, "y3 t2"
+	let where = $derived(new Map(plan.placed.map((p) => [p.code, plan.trimName(p.year, p.trim)])));
+	const placedAt = (code: string) => where.get(code) ?? where.get(byCode(code).code);
+
+	// complete pools are folded; these are the ones unfolded by hand
+	let unfolded = $state<string[]>([]);
+	const toggle = (key: string) =>
+		(unfolded = unfolded.includes(key) ? unfolded.filter((k) => k !== key) : [...unfolded, key]);
+
+	// "Any four of the following courses" → "pick 4", keeping what kind
+	// ("Any three methodology courses" → "pick 3 methodology"); other rules
+	// stay as written
+	const NUMBERS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 };
+	function shortRule(rule: string) {
+		const m = rule.match(/^any (\w+) (?:of the following )?(.*?)\s*courses?$/i);
+		const n = m && (NUMBERS[m[1].toLowerCase()] ?? Number(m[1]));
+		return m && n ? `pick ${n}${m[2] ? ` ${m[2]}` : ''}` : rule;
+	}
+
+	// picked first, then what's on offer, then what's never been taught
+	type Option = { code?: string | null; title: string };
+	const rank = (c: Option) => (c.code ? (placedAt(c.code) ? 0 : 1) : 2);
+	const ordered = <T extends Option>(courses: T[]) => [...courses].sort((a, b) => rank(a) - rank(b));
 </script>
 
 {#if plan.choices.length}
@@ -19,39 +48,53 @@
 				<div class="prog">
 					<div class="prog-name">{prog.label} · {prog.role}</div>
 					{#each prog.groups as group, gi (group.rule + gi)}
+						{@const key = `${prog.role}:${prog.label}:${gi}`}
 						{@const done = group.chosen >= group.pick}
-						<!-- courses you can take first; the ones not in the catalogue
-						     yet trail behind, dimmed -->
-						{@const courses = [...group.courses].sort((a, b) => Number(!a.code) - Number(!b.code))}
-						<div class="choice" class:done>
-							<div class="rule">
-								<span>{group.rule}</span>
-								<span class="count">{done ? '✓ done' : `${group.chosen} of ${group.pick}`}</span>
-							</div>
-							{#if group.counts !== 'required'}
-								<div class="note">counts toward {group.counts} credits</div>
+						{@const open = !done || unfolded.includes(key)}
+						{@const courses = ordered(group.courses)}
+						<div class="choice" class:done class:open>
+							{#snippet ruleLine()}
+								<span class="rule-text">{shortRule(group.rule)}</span>
+								<span class="pips" role="img" aria-label="{Math.min(group.chosen, group.pick)} of {group.pick} picked">
+									{#each { length: group.pick } as _, k (k)}<i class:on={k < group.chosen}></i>{/each}
+								</span>
+								{#if done}<span class="done-mark">✓ done</span><span class="chev" aria-hidden="true"></span>{/if}
+							{/snippet}
+							<!-- a complete pool's rule is its fold toggle -->
+							{#if done}
+								<button class="rule" title={group.rule} aria-expanded={open} onclick={() => toggle(key)}
+									>{@render ruleLine()}</button
+								>
+							{:else}
+								<div class="rule" title={group.rule}>{@render ruleLine()}</div>
 							{/if}
-							{#if courses.length}
-								<ul>
-									{#each courses as course (course.title)}
-										<li
-											class:missing={!course.code}
-											class:done={course.code && plan.placedCodes.has(course.code)}
-											title={course.title}
-										>
-											<!-- labelled like the grid (the codes / titles switches); a
-											     click finds the course in the catalogue -->
-											{#if course.code}
-												{@const code = course.code}
-												<button onclick={() => plan.revealCourse(code)}>
-													{#if showCode}<b>{plan.shownCode(code)}</b>{/if}{showCode && showTitle
-														? ' '
-														: ''}{#if showTitle}{course.title}{/if}
-												</button>
-											{:else}{course.title} <em>· not offered yet</em>{/if}
-										</li>
-									{/each}
-								</ul>
+
+							{#if open}
+								<div transition:slide={{ duration: reducedMotion() ? 0 : 210, easing: cubicOut }}>
+									{#if group.counts !== 'required'}
+										<div class="note">counts toward {group.counts} credits</div>
+									{/if}
+									{#if courses.length}
+										<ul>
+											{#each courses as course (course.title)}
+												{@const at = course.code ? placedAt(course.code) : undefined}
+												<li class:missing={!course.code} class:picked={!!at} title={course.title}>
+													<!-- labelled like the grid (the codes / titles switches); a
+													     click finds the course in the catalogue -->
+													{#if course.code}
+														{@const code = course.code}
+														<button onclick={() => plan.revealCourse(code)}>
+															{#if showCode}<b>{plan.shownCode(code)}</b>{/if}{showCode && showTitle
+																? ' '
+																: ''}{#if showTitle}{course.title}{/if}
+														</button>
+														{#if at}<span class="at">{at}</span>{/if}
+													{:else}<span class="name">{course.title} <em>· not offered yet</em></span>{/if}
+												</li>
+											{/each}
+										</ul>
+									{/if}
+								</div>
 							{/if}
 						</div>
 					{/each}
@@ -91,31 +134,70 @@
 		@include section-label;
 	}
 
+	// the short rule, its pips at the far end; a button once the pool is done
 	.rule {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 0.2rem 0.8rem;
+		align-items: center;
+		gap: 0.8rem;
+		width: 100%;
+		padding: 0;
+		font: inherit;
 		font-size: var(--text-body);
 		font-weight: 700;
+		text-align: left;
 		color: var(--color-text);
+		background: none;
+		border: 0;
 	}
 
-	// how far along a pool is, at the end of its rule
-	.count {
-		flex: none;
-		font-size: 1.15rem;
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
-		color: var(--color-text-muted);
+	button.rule {
+		cursor: pointer;
+	}
 
-		.done & {
-			color: var(--color-hint-good-deep);
+	.rule-text {
+		flex: 1;
+		min-width: 0;
+	}
+
+	// one pip per course to pick: filled once picked, a dotted ring until then
+	.pips {
+		display: flex;
+		flex: none;
+		gap: 0.3rem;
+
+		i {
+			width: 0.75rem;
+			height: 0.75rem;
+			border: 1px dotted var(--color-text-muted);
+			border-radius: 50%;
+			transition:
+				background-color 0.2s ease,
+				border-color 0.2s ease;
+
+			&.on {
+				background-color: var(--color-text);
+				border: 1px solid var(--color-text);
+			}
+		}
+
+		.done & i.on {
+			background-color: var(--color-hint-good-deep);
+			border-color: var(--color-hint-good-deep);
 		}
 	}
 
+	.done-mark {
+		flex: none;
+		font-size: 1.15rem;
+		color: var(--color-hint-good-deep);
+	}
+
+	.chev {
+		@include fold-chevron;
+	}
+
 	.note {
+		margin-top: 0.4rem;
 		font-size: var(--text-body);
 		line-height: 1.4;
 		color: var(--color-text-muted);
@@ -128,19 +210,19 @@
 		padding-left: 0;
 		font-size: var(--text-body);
 		line-height: 1.5;
-		color: var(--color-text);
+		color: var(--color-text-muted);
 	}
 
 	li {
 		position: relative;
+		display: flex;
+		align-items: baseline;
+		gap: 0.8rem;
 		padding-left: 1.6rem;
 		list-style: none;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 
-		// its own bullet, so a course already on the grid can swap it for a
-		// tick and the pool reads "3 chosen, 2 to go" at a glance
+		// its own bullet, so a picked course can swap it for a tick and the
+		// pool reads "3 chosen, 2 to go" at a glance
 		&::before {
 			content: '•';
 			position: absolute;
@@ -150,27 +232,42 @@
 			color: var(--color-text-muted);
 		}
 
-		&.done::before {
-			content: '✓';
-			left: 0.1rem;
-			font-size: 1.1rem;
-			font-weight: 700;
-			color: var(--color-hint-good-deep);
+		// picked: a tick, full ink, and where it sits on the plan
+		&.picked {
+			color: var(--color-text);
+
+			&::before {
+				content: '✓';
+				left: 0.1rem;
+				font-size: 1.1rem;
+				font-weight: 700;
+				color: var(--color-hint-good-deep);
+			}
 		}
 
 		// listed by the university but never taught yet: "on paper, not on the plan"
-		&.missing {
-			color: var(--color-text-muted);
-
-			em {
-				font-size: 1.1rem;
-			}
+		&.missing em {
+			font-size: 1.1rem;
 		}
 	}
 
-	button {
-		display: block;
-		width: 100%;
+	.name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.at {
+		flex: none;
+		margin-left: auto;
+		font-size: 1.15rem;
+		font-variant-numeric: tabular-nums;
+		color: var(--color-text-muted);
+	}
+
+	li button {
+		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -193,6 +290,10 @@
 	@include mobile {
 		li button {
 			min-height: 3.4rem;
+		}
+
+		button.rule {
+			min-height: 4rem;
 		}
 	}
 </style>
