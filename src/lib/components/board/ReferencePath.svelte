@@ -8,8 +8,9 @@
 	// editing. It isn't a plan, it is a DOCUMENT, the department's suggested
 	// order, so it lives where the app's other documents live, in a panel you
 	// open and close (see CreditRules). Nothing to switch back from, nothing
-	// that can overwrite your work, and it shows your plan against it: each
-	// course is ticked if you already have it, dashed if you don't.
+	// that can overwrite your work, and it shows your plan against it: what
+	// you already have is quiet grey, ticked; what's missing is the only thing
+	// in colour, so the eye goes straight to it.
 	// ─────────────────────────────────────────────
 	import { byCode, subjectById } from '$lib/curriculum/data';
 	import type { TrimNum } from '$lib/types';
@@ -45,9 +46,9 @@
 
 <Modal title="suggested path" width="62rem" {onclose}>
 	<p class="lead">
-		{degree}, {total} courses in the order the department suggests, ticked where they're already on your plan.{#if plan.recommendedElectiveCredits}
-			The dashed boxes are the <b>{plan.recommendedElectiveCredits} elective credits</b> the degree leaves you to choose for
-			yourself.{/if}
+		{degree}, {total} courses in the order the department suggests. The ones in colour aren't on your plan yet; click one
+		to add it.{#if plan.recommendedElectiveCredits}{' '}The dashed lines are the
+			<b>{plan.recommendedElectiveCredits} elective credits</b> the degree leaves you to choose for yourself.{/if}
 	</p>
 
 	<div class="path" style="--cols: {plan.trims.length}">
@@ -68,21 +69,26 @@
 							class:have
 							data-type={plan.courseType(code)}
 							style:--hue={plan.hueOf(code)}
-							title={have ? `${plan.courseLabel(code)} is on your plan` : `add ${plan.courseLabel(code)} to your plan`}
+							title={have
+								? `${plan.shownCode(code)} ${byCode(code).title} is on your plan`
+								: `add ${plan.shownCode(code)} ${byCode(code).title} to your plan`}
 							onclick={() => (have ? (plan.selected = byCode(code)) : plan.acceptSuggestion(code))}
 						>
 							<span class="rc-mark" aria-hidden="true">{have ? '✓' : '+'}</span>
-							{#if plan.showCodes}<span class="rc-code">{plan.shownCode(code)}</span>{/if}
-							<span class="rc-title">{byCode(code).title}</span>
+							<span class="rc-label"
+								><b>{plan.shownCode(code)}</b>
+								{byCode(code).title}</span
+							>
 						</button>
 					{/each}
 
 					<!-- the room the degree leaves you: credits the path doesn't
 					     spend on required courses, which you fill with electives
 					     of your own choosing -->
-					{#each { length: plan.electivesFor(y, t) } as _, i (i)}
-						<span class="elective">elective</span>
-					{/each}
+					{#if plan.electivesFor(y, t)}
+						{@const n = plan.electivesFor(y, t)}
+						<span class="elective">{n} elective{n === 1 ? '' : 's'}</span>
+					{/if}
 
 					{#if !codes.length && !plan.electivesFor(y, t)}
 						<span class="none">–</span>
@@ -134,7 +140,9 @@
 
 	.path {
 		display: grid;
-		grid-template-columns: 2.6rem repeat(var(--cols), 1fr);
+		// minmax(0, …): a long title shortens with an ellipsis instead of
+		// stretching its column off the panel
+		grid-template-columns: 2.6rem repeat(var(--cols), minmax(0, 1fr));
 		gap: 0.5rem;
 	}
 
@@ -161,75 +169,74 @@
 		border-radius: 6px;
 	}
 
-	// each course wears its type colour, so the panel reads in the same
-	// language as the board it describes
+	// one line per course. on your plan already: grey text and a tick, no
+	// fill, it needs nothing from you
 	.rc {
-		display: grid;
-		grid-template-columns: 1.2rem 1fr;
-		grid-template-rows: auto auto;
-		gap: 0 0.4rem;
-		padding: 0.4rem 0.5rem;
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+		min-width: 0;
+		padding: 0.3rem 0.5rem;
 		font: inherit;
+		font-size: 1.15rem;
 		text-align: left;
+		color: var(--color-text-muted);
+		background: none;
+		border: 1px solid transparent;
 		border-radius: 4px;
 		cursor: pointer;
-		opacity: 0.55;
-		border: 1px dashed var(--color-border-card);
-		background: none;
-		transition: opacity 0.15s ease;
-
-		&:hover {
-			opacity: 1;
-		}
-
-		// already on the plan: solid, in its type colour, ticked
-		&.have {
-			opacity: 1;
-			border-style: solid;
-			@include course-type-fill(false);
-		}
+		transition:
+			transform 0.15s ease,
+			box-shadow 0.15s ease;
 
 		.rc-mark {
-			grid-row: span 2;
-			align-self: center;
-			font-size: 1.1rem;
+			flex: none;
 			font-weight: 700;
-			color: var(--color-text-muted);
 		}
 
 		&.have .rc-mark {
 			color: var(--color-hint-good-deep);
 		}
 
-		.rc-code {
-			font-size: 1.15rem;
-			font-weight: 700;
-			color: var(--color-text);
+		.rc-label {
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+
+			b {
+				font-weight: 650;
+			}
 		}
 
-		.rc-title {
-			overflow: hidden;
-			font-size: 1.05rem;
-			line-height: 1.25;
-			color: var(--color-text-muted);
-			display: -webkit-box;
-			-webkit-line-clamp: 2;
-			line-clamp: 2;
-			-webkit-box-orient: vertical;
+		&.have:hover .rc-label {
+			color: var(--color-text);
+			text-decoration: underline;
+			text-underline-offset: 0.2em;
+		}
+
+		// not on your plan: the one thing in colour, the board's own chip
+		&:not(.have) {
+			color: var(--color-text);
+			@include course-type-fill(false);
+			@include card-shine;
+
+			&:hover {
+				transform: translateY(-1px);
+				@include card-shine-hover;
+			}
 		}
 	}
 
-	// not a course, the space the degree leaves open. Wears the elective
-	// colour so it reads as "a course of this kind goes here", and carries no
-	// action, because there is nothing to add until the student picks one.
+	// not a course, the room the degree leaves open: one quiet dashed line a
+	// trimester, with no action, there's nothing to add until you pick one
 	.elective {
-		padding: 0.55rem 0.5rem;
+		padding: 0.25rem 0.5rem;
 		font-size: 1.1rem;
 		font-style: italic;
 		text-align: center;
 		color: var(--color-text-muted);
-		background: var(--color-course-elective);
-		border: 1px dashed var(--color-course-elective-deep);
+		border: 1px dashed color-mix(in srgb, var(--color-text-muted) 45%, transparent);
 		border-radius: 4px;
 	}
 
