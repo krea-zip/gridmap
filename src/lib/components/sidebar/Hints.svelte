@@ -51,8 +51,32 @@
 	// press clears this one before its click lights the new one.
 	function clickAway(e: PointerEvent) {
 		if (!pinned) return;
-		if ((e.target as Element | null)?.closest('.hint-detail li.lit .jump')) return;
+		if ((e.target as Element | null)?.closest('.hint-detail li.lit :is(.jump, .code)')) return;
 		unpin();
+	}
+	// a course named in a hint, clicked: it opens in the details and the
+	// catalogue, and the line's courses light on the grid, scrolled to this
+	// one when it's on the plan
+	function openCourse(code: string, lineKey: string, hint: Hint) {
+		plan.revealCourse(code);
+		pinned = lineKey;
+		pinnedLit = hint;
+		light(hint);
+		if (plan.placedCodes.has(byCode(code).code)) focusOnGrid(code);
+	}
+	// a hint's sentence cut into plain text and the course codes in it
+	const CODE = /\b[A-Z]{3,5}\d{3}[A-Z]?\b/g;
+	function segments(text: string): { text: string; code?: string }[] {
+		const out: { text: string; code?: string }[] = [];
+		let last = 0;
+		for (const m of text.matchAll(CODE)) {
+			if (!hasCode(m[0])) continue;
+			if (m.index > last) out.push({ text: text.slice(last, m.index) });
+			out.push({ text: m[0], code: m[0] });
+			last = m.index + m[0].length;
+		}
+		if (last < text.length) out.push({ text: text.slice(last) });
+		return out;
 	}
 	const preview = (hint: Hint) => light(hint);
 	const restoreHighlight = () => light(pinnedLit);
@@ -206,11 +230,24 @@
 					     line clicked keeps its courses lit on the grid -->
 					<li class:here={names(hint, plan.selected?.code)} class:lit={pinned === lineKey}>
 						<div class="line">
-							{#if hint.codes.some(hasCode) || hint.slots?.length}
+							{#if hint.codes.some(hasCode)}
+								<!-- each course in the sentence is its own link; pointing at the
+								     line previews its courses on the grid -->
+								<!-- svelte-ignore a11y_no_static_element_interactions -->
+								<p class="chip-text" onmouseenter={() => preview(hint)} onmouseleave={restoreHighlight}>
+									{#each segments(hint.text) as part, k (k)}{#if part.code}{@const c = part.code}<button
+												class="code"
+												title="{byCode(c).title}, open it"
+												onclick={() => openCourse(c, lineKey, hint)}
+												onfocus={() => preview(hint)}
+												onblur={restoreHighlight}>{part.text}</button
+											>{:else}{part.text}{/if}{/each}
+								</p>
+							{:else if hint.slots?.length}
 								<button
 									class="chip-text jump"
 									aria-pressed={pinned === lineKey}
-									title="show {hint.codes.some(hasCode) ? 'these courses' : 'these trimesters'} on the grid"
+									title="show these trimesters on the grid"
 									onclick={() => pin(lineKey, hint)}
 									onmouseenter={() => preview(hint)}
 									onmouseleave={restoreHighlight}
@@ -240,13 +277,14 @@
 						</div>
 						<!-- a red hint states a rule the registry enforces, not us, and
 						     waivers, one-off offerings and year exemptions are ordinary.
-						     So it can be crossed off, and stops counting against the plan. -->
+						     So it can be crossed off, and stops counting against the plan;
+						     the link says so in words, an × read as "remove the course" -->
 						{#if hint.id}
 							<button
 								class="waive"
-								title="cross this off, e.g. you have a waiver for it"
-								aria-label="cross off: {hint.text}"
-								onclick={() => plan.waiveHint(hint.id!)}>×</button
+								title="cross this off if you have a waiver for it"
+								aria-label="cross off, I have a waiver: {hint.text}"
+								onclick={() => plan.waiveHint(hint.id!)}>waived?</button
 							>
 						{/if}
 					</li>
@@ -582,20 +620,67 @@
 			text-decoration: underline;
 		}
 
-		// only ever on a warn chip, the rules a student can hold a waiver for
-		.waive {
-			flex: none;
-			padding: 0 0.2rem;
-			font-size: 1.4rem;
-			line-height: 1.4;
+		// a course in a hint's sentence: a step darker than the words around
+		// it, underlined when pointed at, like the choices list
+		.code {
+			padding: 0;
+			font: inherit;
+			font-weight: 650;
 			color: var(--color-text);
 			background: none;
 			border: 0;
 			cursor: pointer;
-			opacity: 0.5;
 
-			&:hover {
-				opacity: 1;
+			&:hover,
+			&:focus-visible {
+				text-decoration: underline;
+				text-underline-offset: 0.2em;
+			}
+		}
+
+		// only ever on a warn chip, the rules a student can hold a waiver for.
+		// faint until the line is pointed at, then a quiet link; fades, never pops
+		.waive {
+			flex: none;
+			padding: 0;
+			font: inherit;
+			font-size: 1.1rem;
+			white-space: nowrap;
+			color: var(--color-text-muted);
+			background: none;
+			border: 0;
+			cursor: pointer;
+			opacity: 0;
+			transition:
+				opacity 0.18s ease,
+				color 0.15s ease;
+
+			&:hover,
+			&:focus-visible {
+				color: var(--color-text);
+				text-decoration: underline;
+				text-underline-offset: 0.2em;
+			}
+		}
+
+		.hint-detail > li:hover .waive,
+		.hint-detail > li:focus-within .waive {
+			opacity: 0.85;
+		}
+
+		// no hover on a phone: always there, quietly
+		@include touch {
+			.waive {
+				opacity: 0.6;
+			}
+		}
+
+		// a phone's 44px touch floor is for standalone buttons, not words in a sentence
+		@include mobile {
+			.code,
+			.waive {
+				min-width: 0;
+				min-height: 0;
 			}
 		}
 	}

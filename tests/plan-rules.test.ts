@@ -97,14 +97,15 @@ describe('prerequisites', () => {
 	test('missing, in the same trimester, and after: each raises the same waivable rule', () => {
 		const id = 'prereq:MATH341:MATH304';
 
+		// each says where the prerequisite is, which is the fix
 		plan.placements = { '3-2': ['MATH341'] };
-		expect(hint(plan, id)?.text).toMatch(/MATH341 needs MATH304 first/);
+		expect(hint(plan, id)?.text).toBe('MATH341 needs MATH304 first, not on your plan yet');
 
 		plan.placements = { '3-2': ['MATH341', 'MATH304'] };
-		expect(hint(plan, id)?.text).toMatch(/both are in y3 t2/);
+		expect(hint(plan, id)?.text).toBe('MATH341 needs MATH304 first, both are in y3 t2');
 
 		plan.placements = { '3-2': ['MATH341'], '4-1': ['MATH304'] };
-		expect(hint(plan, id)?.text).toBe('MATH304 must come before MATH341');
+		expect(hint(plan, id)?.text).toBe("MATH341 needs MATH304 first, but it's in y4 t1");
 		expect(hint(plan, id)?.kind).toBe('warn');
 	});
 

@@ -119,22 +119,27 @@ export function planHints(plan: Plan): Hint[] {
 			// the REQUIREMENT (COMP321's MATH191), so crossing it off stays
 			// crossed off however the student then shuffles the two courses
 			const id = `prereq:${p.code}:${pre}`;
+			// each line ends with where the prerequisite is, which is the fix
+			const needs = `${code(p.code)} needs ${code(pre)} first${subs.length ? ` (or ${subs.map((sub) => code(sub)).join(' / ')})` : ''}`;
 			if (!prePos) {
-				hints.push({
-					kind: 'warn',
-					id,
-					text: `${code(p.code)} needs ${code(pre)} first${subs.length ? ` (or ${subs.map((sub) => code(sub)).join(' / ')})` : ''}`,
-					codes: [p.code, pre]
-				});
+				hints.push({ kind: 'warn', id, text: `${needs}, not on your plan yet`, codes: [p.code, pre] });
 			} else if (prePos.order === p.year * 10 + p.trim) {
 				hints.push({
 					kind: 'warn',
 					id,
-					text: `${code(pre)} before ${code(p.code)}, both are in ${plan.trimName(p.year, p.trim)}`,
+					text: `${needs}, both are in ${plan.trimName(p.year, p.trim)}`,
 					codes: [p.code, pre]
 				});
 			} else if (prePos.order > p.year * 10 + p.trim) {
-				hints.push({ kind: 'warn', id, text: `${code(pre)} must come before ${code(p.code)}`, codes: [p.code, pre] });
+				// a substitute may be the one placed: name that one, not "it"
+				const placed = [pre, ...subs].find((c) => pos.get(c) === prePos) ?? pre;
+				const where = plan.trimName(prePos.year, prePos.trim);
+				hints.push({
+					kind: 'warn',
+					id,
+					text: `${needs}, but ${placed === pre ? "it's" : `${code(placed)} is`} in ${where}`,
+					codes: [p.code, pre]
+				});
 			}
 		}
 	}
