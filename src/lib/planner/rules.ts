@@ -32,7 +32,8 @@ import { slotKey, TRIMS, type Hint, type TrimNum } from '$lib/types';
 export function planHints(plan: Plan): Hint[] {
 	// a hint names courses the way the codes / titles switches say, like
 	// the grid and the catalogue, so the two never disagree
-	const code = (c: string) => (hasCode(c) ? plan.courseLabel(c) : c);
+	// hints name courses by code alone, titles on or off; the chips they point at carry the rest
+	const code = (c: string) => (hasCode(c) ? plan.shownCode(c) : c);
 	const hints: Hint[] = [];
 	const pos = new Map<string, { year: number; trim: TrimNum; order: number }>();
 	for (const p of plan.placed) pos.set(p.code, { year: p.year, trim: p.trim, order: p.year * 10 + p.trim });
