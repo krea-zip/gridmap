@@ -15,13 +15,19 @@ body {
 	height: 100%;
 	width: 100%;
 	overflow: auto;
-	// Responsive rem base, floored at 10px: below that the 1.1–1.2rem labels
-	// fell to 8–9px on a 1280px laptop, most students' screen, which is too
-	// small to read. Above ~1920px wide it grows to an 11px cap. The board
-	// makes room for the floor: course details slide over it instead of taking
-	// a permanent column. The text-size setting multiplies this via
-	// --text-scale (default 1).
-	font-size: calc(clamp(10px, 0.52vw, 11px) * var(--text-scale, 1));
+	// Responsive rem base: 9px on a 1366px laptop, rising to 10px at 1920,
+	// then on to an 11px cap. at 10px a 1366×768 screen fit only two years of
+	// the board, and 9px still reads fine there; 10px is right once there's
+	// room for it. phones keep 10px (below). The text-size setting multiplies
+	// this via --text-scale (default 1).
+	font-size: calc(
+		clamp(9px, max(9px + (100vw - 1366px) / 554, 0.52vw), 11px) * var(--text-scale, 1)
+	);
+
+	// a phone shows one panel at a time, so there's no squeeze to make room for
+	@media (max-width: 767px) {
+		font-size: calc(10px * var(--text-scale, 1));
+	}
 	color: var(--color-text);
 	// so nothing behind the app's own panels flashes the default white
 	background: var(--color-bg);
