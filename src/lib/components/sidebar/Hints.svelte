@@ -205,24 +205,39 @@
 					<!-- the line about the course open on the right stands out; the
 					     line clicked keeps its courses lit on the grid -->
 					<li class:here={names(hint, plan.selected?.code)} class:lit={pinned === lineKey}>
-						{#if hint.codes.some(hasCode) || hint.slots?.length}
-							<button
-								class="chip-text jump"
-								aria-pressed={pinned === lineKey}
-								title="show {hint.codes.some(hasCode) ? 'these courses' : 'these trimesters'} on the grid"
-								onclick={() => pin(lineKey, hint)}
-								onmouseenter={() => preview(hint)}
-								onmouseleave={restoreHighlight}
-								onfocus={() => preview(hint)}
-								onblur={restoreHighlight}
-							>
-								{hint.text}
-							</button>
-						{:else}
-							<!-- a click here folds the group back up, rather than starting
+						<div class="line">
+							{#if hint.codes.some(hasCode) || hint.slots?.length}
+								<button
+									class="chip-text jump"
+									aria-pressed={pinned === lineKey}
+									title="show {hint.codes.some(hasCode) ? 'these courses' : 'these trimesters'} on the grid"
+									onclick={() => pin(lineKey, hint)}
+									onmouseenter={() => preview(hint)}
+									onmouseleave={restoreHighlight}
+									onfocus={() => preview(hint)}
+									onblur={restoreHighlight}
+								>
+									{hint.text}
+								</button>
+							{:else}
+								<!-- a click here folds the group back up, rather than starting
 							     a text selection on a line that does nothing -->
-							<button class="chip-text" onclick={() => toggle(group.key)}>{hint.text}</button>
-						{/if}
+								<button class="chip-text" onclick={() => toggle(group.key)}>{hint.text}</button>
+							{/if}
+							<!-- courses not on the plan yet: each one opens in the catalogue -->
+							{#if hint.toPlace?.length}
+								<ul class="to-place">
+									{#each hint.toPlace as code (code)}
+										<li>
+											<button
+												title="{byCode(code).title}, find it in the catalogue"
+												onclick={() => plan.revealCourse(code)}>{plan.shownCode(code)}</button
+											>
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						</div>
 						<!-- a red hint states a rule the registry enforces, not us, and
 						     waivers, one-off offerings and year exemptions are ordinary.
 						     So it can be crossed off, and stops counting against the plan. -->
@@ -432,6 +447,56 @@
 
 	// an open group's hints read as subtext under its heading, no box,
 	// muted, indented to start where the heading's words do
+	// a hint's sentence, with its course list under it
+	.line {
+		flex: 1;
+		min-width: 0;
+	}
+
+	// the courses still to place, one per line on a small bullet
+	.to-place {
+		margin: 0.4rem 0 0;
+		padding: 0;
+		list-style: none;
+
+		li {
+			position: relative;
+			padding-left: 1.2rem;
+
+			&::before {
+				content: '•';
+				position: absolute;
+				left: 0.2rem;
+				top: 50%;
+				translate: 0 -50%;
+				color: var(--color-text-muted);
+			}
+		}
+
+		button {
+			padding: 0;
+			font: inherit;
+			font-size: 1.2rem;
+			font-weight: 650;
+			line-height: 1.7;
+			color: var(--color-text);
+			background: none;
+			border: 0;
+			cursor: pointer;
+
+			&:hover,
+			&:focus-visible {
+				text-decoration: underline;
+				text-underline-offset: 0.2em;
+			}
+
+			// a phone's 44px touch floor would space a short list of codes far apart
+			@include mobile {
+				min-height: 3.4rem;
+			}
+		}
+	}
+
 	.hint-detail {
 		display: flex;
 		flex-direction: column;
@@ -441,13 +506,13 @@
 		padding: 0 1.6rem 1rem 3.2rem;
 		list-style: none;
 
-		li {
+		> li {
 			display: flex;
 			align-items: flex-start;
 			gap: 0.6rem;
 		}
 
-		li + li {
+		> li + li {
 			padding-top: 0.4rem;
 		}
 

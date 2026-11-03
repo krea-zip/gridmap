@@ -79,10 +79,9 @@ export function planHints(plan: Plan): Hint[] {
 	if (missingCore.length) {
 		hints.push({
 			kind: 'caution',
-			text: `${missingCore.length} foundation course${missingCore.length === 1 ? '' : 's'} still to place: ${missingCore
-				.map((c) => code(c.code))
-				.join(', ')}`,
-			codes: missingCore.map((c) => c.code)
+			text: `${missingCore.length} foundation course${missingCore.length === 1 ? '' : 's'} still to place`,
+			codes: missingCore.map((c) => c.code),
+			toPlace: missingCore.map((c) => c.code)
 		});
 	} else {
 		hints.push({ kind: 'good', text: 'all foundation courses are on the plan', codes: [] });
@@ -233,11 +232,11 @@ export function planHints(plan: Plan): Hint[] {
 			.sort();
 		if (!missing.length) continue;
 		const label = subjectById(prog.subject).label;
-		const shown = missing.slice(0, 8);
 		hints.push({
 			kind: 'caution',
-			text: `${label} ${prog.role}: ${missing.length} required course${missing.length === 1 ? '' : 's'} to place, ${shown.map((c) => code(c)).join(', ')}${missing.length > shown.length ? `, +${missing.length - shown.length} more` : ''}`,
-			codes: missing
+			text: `${label} ${prog.role}: ${missing.length} required course${missing.length === 1 ? '' : 's'} to place`,
+			codes: missing,
+			toPlace: missing
 		});
 	}
 
