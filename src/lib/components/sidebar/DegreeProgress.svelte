@@ -50,7 +50,7 @@
 						required={{ done: s.requiredDone, needed: s.requiredNeeded }}
 						elective={{ done: s.electiveDone, needed: s.electiveNeeded }}
 						electiveLabel={electives}
-						hue={subjectById(s.subject).hue}
+						hue={plan.hueFor(s.subject)}
 					/>
 				</button>
 				{#if open}

@@ -295,8 +295,9 @@
 // programmes (untinted); an audit is a separate student-set flag layered on
 // top (see .is-audit).
 @mixin course-type-fill($audits: true) {
-	// text, dot and × all in the card's ink (see --color-course-ink)
-	--course-ink: var(--color-course-ink);
+	// text, dot and × all in the card's ink: resolved here, where --hue is
+	// the course's own, so every subject's text gets its own deep shade
+	--course-ink: oklch(var(--tone-text-l) var(--tone-text-c) var(--hue, 300));
 	color: var(--course-ink);
 
 	&[data-type='required'] {
@@ -306,6 +307,7 @@
 	// the KCCS foundation core — its own colour so the twelve university-wide
 	// requirements never read as one of your programme's courses
 	&[data-type='core'] {
+		--course-ink: oklch(var(--tone-text-l) var(--tone-text-c) 25); // the blush's own hue
 		background: var(--color-course-core);
 		border: 1px solid var(--color-course-core-deep);
 	}

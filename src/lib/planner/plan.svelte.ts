@@ -51,6 +51,7 @@ import {
 } from '$lib/curriculum/data';
 import { GRADE_POINTS, isGradeLetter, isGradeMark, recovery, weightedGpa, type GradeMark } from '$lib/planner/grades';
 import { planHints } from '$lib/planner/rules';
+import { distinctHues } from '$lib/planner/hues';
 import { recommendedElectives, recommendedPath } from '$lib/planner/recommended';
 import {
 	slotKey,
@@ -819,6 +820,13 @@ export class Plan {
 		return this.#typeIn(code, this.whatIfSets);
 	}
 
+	#whatIfHues = $derived(
+		distinctHues(
+			this.whatIfSets.map((s) => s.subject),
+			(s) => subjectById(s).hue
+		)
+	);
+
 	/** the hue a course would wear under the tried degree */
 	whatIfHue(code: string): number | undefined {
 		const c = byCode(code);
@@ -827,7 +835,7 @@ export class Plan {
 				c.codes.some((x) => s.required.has(x) || s.pick.has(x) || s.elective.has(x)) ||
 				c.subjects.includes(s.subject)
 			)
-				return s.subject === 'open' ? undefined : subjectById(s.subject).hue;
+				return s.subject === 'open' ? undefined : this.#whatIfHues.get(s.subject);
 		return undefined;
 	}
 
@@ -1023,11 +1031,23 @@ export class Plan {
 		return out;
 	}
 
-	/** the hue a chip/card wears: its programme's subject's fixed hue
+	/** each programme's colour on this plan, kept apart when two subjects'
+	 *  own hues are too close to tell apart (planner/hues.ts) */
+	hues = $derived(
+		distinctHues(
+			this.programmes.map((p) => p.subject),
+			(s) => subjectById(s).hue
+		)
+	);
+	hueFor(subject: string): number | undefined {
+		return this.hues.get(subject);
+	}
+
+	/** the hue a chip/card wears: its programme's colour on this plan
 	 *  (undefined for KCCS, other-dept. courses and the open minor) */
 	hueOf(code: string): number | undefined {
 		const i = this.programmeOf(code);
-		return i >= 0 ? subjectById(this.programmes[i].subject).hue : undefined;
+		return i >= 0 ? this.hueFor(this.programmes[i].subject) : undefined;
 	}
 
 	isAudit(code: string): boolean {

@@ -41,11 +41,7 @@
 />
 
 <!-- the type rows wear the major's hue, the colour you'll see most -->
-<div
-	class="colour-key"
-	bind:this={root}
-	style:--hue={plan.programmes[0] && subjectById(plan.programmes[0].subject).hue}
->
+<div class="colour-key" bind:this={root} style:--hue={plan.programmes[0] && plan.hueFor(plan.programmes[0].subject)}>
 	<Keys plain>
 		<button class:active={open} aria-expanded={open} aria-controls="colour-key" onclick={() => setOpen(!open)}>
 			<!-- just the essentials on its face: a square per subject, then
@@ -53,7 +49,7 @@
 			{#if subjects.length}
 				<span class="swatches" aria-hidden="true">
 					{#each subjects as s (s.role + s.subject)}
-						<i data-type="required" style:--hue={subjectById(s.subject).hue}></i>
+						<i data-type="required" style:--hue={plan.hueFor(s.subject)}></i>
 					{/each}
 				</span>
 			{/if}
@@ -89,7 +85,7 @@
 							onmouseenter={() => light((c) => plan.programmeOf(c) === s.i)}
 							onmouseleave={() => (plan.highlight = [])}
 						>
-							<i data-type="required" style:--hue={subjectById(s.subject).hue}></i>{subjectById(s.subject).label}<em
+							<i data-type="required" style:--hue={plan.hueFor(s.subject)}></i>{subjectById(s.subject).label}<em
 								>{s.role}</em
 							>
 						</li>

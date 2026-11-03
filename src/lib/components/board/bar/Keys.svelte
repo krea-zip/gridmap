@@ -60,21 +60,23 @@
 		&:hover {
 			background-color: color-mix(in srgb, var(--bar-key) 88%, var(--bar-key-on));
 		}
+	}
 
-		&:global(.active) {
-			color: var(--bar-key-on-text);
-			text-shadow: 0 -1px 0 rgba(60, 10, 35, 0.45);
-			background-color: var(--bar-key-on);
-			background-image: linear-gradient(
-				rgba(255, 255, 255, 0.24),
-				rgba(255, 255, 255, 0.07) 50%,
-				rgba(60, 10, 35, 0.1) 50%,
-				rgba(60, 10, 35, 0)
-			);
-			box-shadow:
-				inset 0 1px 3px rgba(60, 10, 35, 0.5),
-				inset 0 0 0 1px rgba(60, 10, 35, 0.12);
-		}
+	// the pressed segment: dark pink and sunk in. its own rule, a nested
+	// :global(.active) doesn't survive the :global(button) around it
+	.keys :global(button.active) {
+		color: var(--bar-key-on-text);
+		text-shadow: 0 -1px 0 rgba(60, 10, 35, 0.45);
+		background-color: var(--bar-key-on);
+		background-image: linear-gradient(
+			rgba(255, 255, 255, 0.24),
+			rgba(255, 255, 255, 0.07) 50%,
+			rgba(60, 10, 35, 0.1) 50%,
+			rgba(60, 10, 35, 0)
+		);
+		box-shadow:
+			inset 0 1px 3px rgba(60, 10, 35, 0.5),
+			inset 0 0 0 1px rgba(60, 10, 35, 0.12);
 	}
 
 	// a hairline groove between segments, lit on its right side

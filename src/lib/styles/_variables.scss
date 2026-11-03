@@ -167,7 +167,13 @@
 	--tone-cell-c: 0.016;
 	// the text and marks on a course card: translucent black, so over each
 	// fill it reads as a darker shade of that fill rather than a flat grey
-	--color-course-ink: rgb(0 0 0 / 0.6);
+	// course text: one perceptual lightness (oklch L) for every subject,
+	// tinted toward the course's own hue (see course-type-fill), so the
+	// contrast is the same on every fill. a flat black overlay reads heavier
+	// on warm hues than cool ones
+	--tone-text-l: 0.34;
+	--tone-text-c: 0.05;
+	--color-course-ink: oklch(var(--tone-text-l) var(--tone-text-c) 300);
 
 	// the same depths in lavender, for anything not tied to one subject
 	// (the reference plan's open slots, the credit rules, admin pages)
@@ -308,6 +314,8 @@
 	--tone-ink-c: 0.065;
 	--tone-cell-l: 0.26;
 	--tone-cell-c: 0.014;
+	--tone-text-l: 0.93;
+	--tone-text-c: 0.025;
 	--color-course-ink: rgb(255 255 255 / 0.78); // a lighter shade of a dark fill
 	--color-course-audit: #2b2f35;
 	--color-border-audit: #515963;
