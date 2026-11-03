@@ -33,7 +33,6 @@
 				document.documentElement.dataset.theme = t;
 				var scales = { small: 0.9, normal: 1, large: 1.1, huge: 1.2 };
 				document.documentElement.style.setProperty('--text-scale', scales[s.textSize] || 1);
-				document.documentElement.style.fontSize = 'calc(clamp(10px, 0.52vw, 11px) * var(--text-scale, 1))';
 			} catch (e) {
 				document.documentElement.dataset.theme = 'light';
 			}
