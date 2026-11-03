@@ -1,3 +1,5 @@
+import { carried } from './courseDrag';
+
 /** Native drop semantics with a cursor-tethered, damped preview. */
 export function dragMotion(root: HTMLElement) {
 	let ghost: HTMLElement | null = null;
@@ -85,7 +87,7 @@ export function dragMotion(root: HTMLElement) {
 	function start(e: DragEvent) {
 		clear();
 		// Reduced-motion uses the platform's stationary drag image.
-		if (reduced.matches || !e.dataTransfer?.getData('text/plain')) return;
+		if (reduced.matches || !e.dataTransfer || !carried(e)) return;
 		const source = (e.target as HTMLElement).closest<HTMLElement>('[draggable="true"]');
 		if (!source) return;
 		sourceNode = source;

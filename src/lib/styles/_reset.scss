@@ -16,7 +16,7 @@ body {
 	width: 100%;
 	overflow: auto;
 	// Responsive rem base, floored at 10px: below that the 1.1–1.2rem labels
-	// fell to 8–9px on a 1280px laptop — most students' screen — which is too
+	// fell to 8–9px on a 1280px laptop, most students' screen, which is too
 	// small to read. Above ~1920px wide it grows to an 11px cap. The board
 	// makes room for the floor: course details slide over it instead of taking
 	// a permanent column. The text-size setting multiplies this via
@@ -28,7 +28,7 @@ body {
 	font-family: 'Ubuntu Sans', sans-serif;
 }
 
-// Thin, consistent scrollbars — Windows / Firefox default bars are chunky next
+// Thin, consistent scrollbars, Windows / Firefox default bars are chunky next
 // to macOS's slim overlay ones, so pin a slim styled bar everywhere.
 * {
 	scrollbar-width: thin;

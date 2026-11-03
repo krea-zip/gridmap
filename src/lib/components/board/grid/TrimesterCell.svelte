@@ -44,7 +44,8 @@
 	class:fresh={year === board.freshYear}
 	class:core-slot={coreSlot}
 	class:problem={plan.slotHasProblem(year, trim)}
-	class:lit={plan.highlight.length > 0 && codes.some((c) => plan.highlight.includes(c))}
+	class:lit={(plan.highlight.length > 0 && codes.some((c) => plan.highlight.includes(c))) ||
+		plan.highlightSlots.includes(key)}
 	class:drop-target={dragging !== null && board.drag.target === key}
 	class:can-drop={dragging !== null && plan.canDrop(dragging, year, trim)}
 	class:no-fit={dragging !== null && !plan.canDrop(dragging, year, trim)}
@@ -81,13 +82,6 @@
 			<b>{off.kind === 'away' ? 'away' : off.kind === 'suspension' ? 'suspended' : 'on a break'}</b>
 			{#if off.kind === 'away'}<span>{off.credits ?? 0} cr from elsewhere</span>{/if}
 		</span>
-	{/if}
-
-	{#if now || (whatIf && order === board.hereAt)}
-		<span
-			class="here-tag"
-			title="the trimester you're in now, from your batch and today's date (you can change it in what-if)">now</span
-		>
 	{/if}
 
 	<!-- named only while the cell is empty; once courses are in, the core tint
@@ -153,10 +147,33 @@
 				inset 0 0 0 100vmax rgba(0, 0, 0, 0.1);
 		}
 
-		// a straight rule where the others are dashed
+		// a straight rule where the others are dashed, in the student's own
+		// colour. an outline can't take a gradient, so the ring is drawn by
+		// ::after (a double major's two colours run round it); the outline
+		// stays, unseen, for a later state to recolour, and then the ring
+		// steps aside
 		&.now {
-			outline: 2px solid color-mix(in srgb, var(--color-accent) 70%, transparent);
+			outline: 2px solid transparent;
 			outline-offset: -3px;
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 1px;
+				padding: 2px;
+				border-radius: 7px;
+				background: linear-gradient(135deg, var(--color-now), var(--color-now-end));
+				mask:
+					linear-gradient(#000 0 0) content-box exclude,
+					linear-gradient(#000 0 0);
+				opacity: 0.5; // a quiet ring: it marks where you are, it isn't a warning
+				pointer-events: none;
+				transition: opacity 0.25s ease;
+			}
+
+			&:is(.drop-target, .problem, .can-drop, .lit)::after {
+				opacity: 0;
+			}
 		}
 
 		// year 1's t1/t2 are reserved for the foundation core, tinted like the
@@ -216,20 +233,6 @@
 
 	.phone-term {
 		display: none;
-	}
-
-	.here-tag {
-		position: absolute;
-		top: -0.9rem;
-		left: 0.8rem;
-		z-index: 1;
-		padding: 0 0.6rem;
-		font-size: 1.05rem;
-		font-weight: 650;
-		line-height: 1.6;
-		color: var(--color-on-accent);
-		background: var(--color-accent);
-		border-radius: 999px;
 	}
 
 	.core-note {
@@ -315,9 +318,9 @@
 		.cell {
 			grid-column: 1;
 			min-width: 0;
-			min-height: 13rem;
-			padding: 1.4rem 1.4rem 4.8rem;
-			gap: 0.8rem;
+			min-height: 0;
+			padding: 0.8rem 1rem;
+			gap: 0.4rem;
 		}
 
 		.phone-term {
@@ -327,8 +330,9 @@
 			justify-content: space-between;
 			gap: 1rem;
 			width: 100%;
-			padding: 0 0 0.8rem;
-			font-size: 1.5rem;
+			min-height: 3.6rem;
+			padding: 0;
+			font-size: 1.4rem;
 			font-weight: 600;
 			text-align: left;
 			color: var(--color-text);

@@ -16,7 +16,7 @@
 	box-shadow: var(--shadow-inset-hover), var(--shadow-card-hover);
 }
 
-// A pushable, lit button face. Put it LAST in a rule — it paints a
+// A pushable, lit button face. Put it LAST in a rule, it paints a
 // background-image over whatever background-color the caller set, and a
 // later `background:` shorthand would wipe it.
 @mixin glossy {
@@ -56,7 +56,7 @@
 }
 
 // Segmented control: one continuous rounded bar, segments flush against
-// each other with a hairline between them — no gaps, no inner corners. The
+// each other with a hairline between them, no gaps, no inner corners. The
 // live segment is the lit plum face. Apply to the container.
 @mixin segmented {
 	display: flex;
@@ -81,7 +81,7 @@
 			background-color 0.15s ease,
 			color 0.15s ease;
 
-		// the hairline divider — the bar's own border does the outside
+		// the hairline divider, the bar's own border does the outside
 		& + button {
 			border-left: 1px solid var(--color-control-deep);
 		}
@@ -101,7 +101,7 @@
 // A small secondary button, App Store price-tag style: a soft vertical
 // gradient over the light fill, a hairline border, a lit top edge and
 // embossed text. Pressing sinks it into its own shadow. $armable: it can be
-// armed (.confirming) — a destructive button waiting for its second click.
+// armed (.confirming), a destructive button waiting for its second click.
 @mixin store-button($armable: false) {
 	color: var(--color-text);
 	text-shadow: var(--emboss);
@@ -125,7 +125,7 @@
 		transition-duration: 0.07s;
 	}
 
-	// armed: red — and it stays red under the cursor, a shade deeper, rather
+	// armed: red, and it stays red under the cursor, a shade deeper, rather
 	// than the hover above washing it back to white
 	@if $armable {
 		&.confirming {
@@ -143,8 +143,8 @@
 
 // A progress bar as an iOS 6 slider track, minus the knob: the track is a
 // white capsule set into the surface, shaded along its top inside edge; the
-// fill (progress-fill) is a glossy bar of the caller's colour — set it as
-// background-color — lit at the top and deepening toward the bottom. Its
+// fill (progress-fill) is a glossy bar of the caller's colour, set it as
+// background-color, lit at the top and deepening toward the bottom. Its
 // leading edge is cut straight; only the track's own ends are rounded.
 @mixin progress-track {
 	overflow: hidden; // rounds the fill's left end to the capsule
@@ -174,7 +174,7 @@
 	@include card-shine;
 }
 
-// Page header bar (matches sidebar header style) — shared with kreabot
+// Page header bar (matches sidebar header style), shared with kreabot
 @mixin card-header {
 	display: flex;
 	align-items: center;
@@ -190,7 +190,7 @@
 
 // The one tick box, used by every switch in the app (4yup, catalogue
 // filters, the grid's label switches, the audit tick). Checked = the accent
-// plum with a drawn checkmark — one control colour instead of the three
+// plum with a drawn checkmark, one control colour instead of the three
 // different reds these used to be.
 @mixin tick($size: 1.6rem) {
 	appearance: none;
@@ -224,7 +224,7 @@
 		border-color: var(--color-control-deep);
 	}
 
-	// the checkmark — a chunky pixel-art tick, cut out of the on-accent
+	// the checkmark, a chunky pixel-art tick, cut out of the on-accent
 	// colour with a mask so it follows the theme. The viewBox spans the box's
 	// inner face, so at the default text size every block lands on a whole
 	// pixel. It draws in left to right a few pixels at a time (app.scss).
@@ -249,7 +249,7 @@
 	letter-spacing: 0.05em;
 }
 
-// Label → value info row — shared with kreabot
+// Label → value info row, shared with kreabot
 @mixin info-row($label-width: 15.6rem) {
 	display: grid;
 	grid-template-columns: $label-width 1fr;
@@ -265,7 +265,7 @@
 	font-style: italic;
 }
 
-// Sidebar nav link — shared with kreabot
+// Sidebar nav link, shared with kreabot
 @mixin nav-link {
 	padding: 0.5rem 1.6rem;
 	color: var(--color-text);
@@ -285,12 +285,12 @@
 }
 
 // A subject colour at one of the shared depths (see Course colours in
-// _variables), in the element's own --hue — lavender when it has none
+// _variables), in the element's own --hue, lavender when it has none
 @function subject-tone($depth) {
 	@return oklch(var(--tone-#{$depth}-l) var(--tone-#{$depth}-c) var(--hue, 300));
 }
 
-// Course card fill by type — apply on an element with data-type attr and,
+// Course card fill by type, apply on an element with data-type attr and,
 // for required/elective, a --hue. 'other' = anything outside your
 // programmes (untinted); an audit is a separate student-set flag layered on
 // top (see .is-audit).
@@ -304,14 +304,14 @@
 		background: subject-tone(required);
 		border: 1px solid subject-tone(required-deep);
 	}
-	// the KCCS foundation core — its own colour so the twelve university-wide
+	// the KCCS foundation core, its own colour so the twelve university-wide
 	// requirements never read as one of your programme's courses
 	&[data-type='core'] {
 		--course-ink: oklch(var(--tone-text-l) var(--tone-text-c) 25); // the blush's own hue
 		background: var(--color-course-core);
 		border: 1px solid var(--color-course-core-deep);
 	}
-	// an elective: a pale card edged in its subject's colour — outlined where
+	// an elective: a pale card edged in its subject's colour, outlined where
 	// a required course is filled
 	&[data-type='elective'] {
 		background: subject-tone(elective);
@@ -355,7 +355,7 @@ $mark-size: 0.8rem;
 
 // Severity markers: how bad a hint is, told by its mark's shape as well
 // as its colour. A triangle for a broken rule, a square for a caution,
-// a star for a note, a circle when all's well — the note's star rather
+// a star for a note, a circle when all's well, the note's star rather
 // than anything rounder, which at chip size blurs into the circle.
 // The same mark leads the hint in the sidebar and the course chips it
 // names, so the two read as one. Drawn as masks, so they take the colour.
@@ -387,8 +387,7 @@ $shape-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 	}
 }
 
-// a small chevron that turns down as its row opens, on the app's spring —
-// the row takes .open while it's open
+// a small chevron that turns down as its row opens, on the app's spring, // the row takes .open while it's open
 @mixin fold-chevron {
 	flex: none;
 	width: 0.7rem;
@@ -403,7 +402,7 @@ $shape-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 	}
 }
 
-// The layouts — keep these queries aligned with lib/layout.ts.
+// The layouts, keep these queries aligned with lib/layout.ts.
 // Phones get one panel at a time, behind tabs.
 @mixin mobile {
 	@media (max-width: 767px) {
@@ -411,12 +410,10 @@ $shape-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 	}
 }
 
-// Tablets and narrow windows keep the desktop columns, but the course details
-// slide in over the board instead of docking beside it (a touch screen wants
-// the board roomier, so an iPad switches over sooner)…
+// Tablets and laptops under 1500px keep the desktop columns, but the course
+// details slide in over the board instead of docking beside it…
 @mixin details-overlay {
-	@media (min-width: 768px) and (max-width: 1279px),
-		(min-width: 768px) and (max-width: 1400px) and (any-pointer: coarse) {
+	@media (min-width: 768px) and (max-width: 1499px) {
 		@content;
 	}
 }

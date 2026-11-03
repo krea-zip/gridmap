@@ -26,7 +26,7 @@
 
 	.grade-hint {
 		position: relative;
-		margin: 1.6rem 3.2rem 0;
+		margin: 1.6rem var(--board-gutter, 3.2rem) 0;
 		padding: 1.2rem 3rem 1.4rem 1.6rem;
 		background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg-light));
 		border: 1px solid var(--color-control);

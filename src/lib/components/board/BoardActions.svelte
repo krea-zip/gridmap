@@ -3,7 +3,7 @@
 	// the new recommendation shows as ghosts, and these bring the grid in line
 	// with it all at once. each shows only while it has work and says what it
 	// will move in plain words: greyed-out buttons reading "0" confused people.
-	// adding first, taking away after; emptying sits apart at the far end.
+	// filling in first, taking away after; emptying sits apart at the far end.
 	import { fade } from 'svelte/transition';
 	import { usePlan } from '$lib/planner/context';
 	import { reducedMotion } from '$lib/ui/transitions';
@@ -13,27 +13,18 @@
 	const empty = armed(() => plan.clearPlan());
 
 	const count = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`;
-	const appear = () => ({ duration: reducedMotion() ? 0 : 150 });
+	const appear = () => ({ duration: reducedMotion() ? 0 : 260 });
 	let others = $derived(plan.otherPlacedCodes.length);
 </script>
 
 {#if plan.view === 'plan' && !plan.welcoming}
 	<div class="acts-row" data-tour="board-actions">
-		{#if plan.missingRequiredCodes.length}
+		{#if plan.fillCount}
 			<button
 				class="fill"
-				title="place each required course of your programmes in its usual trimester"
-				onclick={() => plan.addRequiredCourses()}
-				transition:fade={appear()}>+ add {count(plan.missingRequiredCodes.length, 'required course')}</button
-			>
-		{/if}
-
-		{#if plan.suggestionCount}
-			<button
-				class="strip"
-				title="take every dotted suggestion on the grid"
-				onclick={() => plan.acceptAllSuggestions()}
-				transition:fade={appear()}>+ accept {count(plan.suggestionCount, 'suggestion')}</button
+				title="add every dashed suggestion where it sits, and fit in any required course the suggestions leave out"
+				onclick={() => plan.fillIn()}
+				transition:fade={appear()}>+ fill in {count(plan.fillCount, 'course')}</button
 			>
 		{/if}
 
@@ -69,7 +60,7 @@
 		align-items: center;
 		gap: 0.8rem;
 		margin: 1.6rem 0 2.4rem;
-		padding: 0 8.2rem;
+		padding: 0 calc(var(--board-gutter, 3.2rem) + 7rem); // in line with the trimesters, past the year labels
 	}
 
 	.fill,

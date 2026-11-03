@@ -144,14 +144,14 @@ describe('trimester loads', () => {
 
 	test(`a trimester under ${TRIM_MIN} credits is named`, () => {
 		fill(plan, { ...allNine(3), '2-1': 2 });
-		expect(texts(plan)).toContain(`y2 t1 is under the ${TRIM_MIN}-credit minimum (8/${TRIM_MIN})`);
+		expect(texts(plan)).toContain(`y2 t1 has 8 of the ${TRIM_MIN} credits it needs`);
 	});
 
 	test('many thin trimesters fold into one hint', () => {
 		fill(plan, allNine(1));
-		const thin = plan.hints.filter((h) => h.text.includes('-credit minimum'));
+		const thin = plan.hints.filter((h) => /^(under \d+ credits|.* credits it needs)/.test(h.text));
 		expect(thin).toHaveLength(1);
-		expect(thin[0].text).toMatch(/^9 trimesters are under/);
+		expect(thin[0].text).toMatch(/^under \d+ credits: (y\d t\d \d+( · |$)){9}/);
 	});
 
 	test(`over ${TRIM_HARD_MAX} credits is over the cap`, () => {

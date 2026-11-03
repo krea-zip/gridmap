@@ -21,22 +21,29 @@
 	// A heading only unfolds. A hint's own line, clicked, lights its courses
 	// on the grid and brings them into view; pointing at a line previews them.
 	let pinned = $state<string | null>(null); // the line whose courses stay lit
-	let pinnedCodes: string[] = [];
+	let pinnedLit: Pick<Hint, 'codes' | 'slots'> = { codes: [] };
 	function toggle(key: string) {
 		openKey = openKey === key ? null : key;
 		unpin();
 	}
 	function unpin() {
 		pinned = null;
-		pinnedCodes = [];
-		plan.highlight = [];
+		pinnedLit = { codes: [] };
+		light(pinnedLit);
 	}
-	function pin(lineKey: string, codes: string[]) {
+	function pin(lineKey: string, hint: Hint) {
 		if (pinned === lineKey) return unpin();
 		pinned = lineKey;
-		pinnedCodes = codes.filter(hasCode);
-		plan.highlight = pinnedCodes;
-		if (pinnedCodes.length) focusOnGrid(pinnedCodes[0]);
+		pinnedLit = hint;
+		light(hint);
+		const first = hint.codes.find(hasCode);
+		if (first) focusOnGrid(first);
+	}
+	// a hint lights its courses on the grid, or, when it's about trimesters
+	// rather than courses (too few credits), those trimesters
+	function light({ codes, slots = [] }: Pick<Hint, 'codes' | 'slots'>) {
+		plan.highlight = codes.filter(hasCode);
+		plan.highlightSlots = slots;
 	}
 	// the lit courses hold until a click anywhere else: the grid, the
 	// background, another hint. The lit line's own button is left alone so a
@@ -47,8 +54,8 @@
 		if ((e.target as Element | null)?.closest('.hint-detail li.lit .jump')) return;
 		unpin();
 	}
-	const preview = (codes: string[]) => (plan.highlight = codes.filter(hasCode));
-	const restoreHighlight = () => (plan.highlight = pinnedCodes);
+	const preview = (hint: Hint) => light(hint);
+	const restoreHighlight = () => light(pinnedLit);
 	/** bring a course's chip into view on the grid */
 	function focusOnGrid(code: string) {
 		tick().then(() =>
@@ -64,7 +71,7 @@
 		if (/earlier|prerequisite|before|needs .+ first/.test(text)) return 'prerequisites first';
 		if (/usually open|not year|only.*year/.test(text)) return 'wrong year';
 		if (/required courses?.*place/.test(text)) return 'required courses missing';
-		if (/credit.*minimum|under.*credit/.test(text)) return 'too few credits';
+		if (/credit.*minimum|under.*credit|credits it needs/.test(text)) return 'too few credits';
 		if (/credit.*max|over.*credit|ceiling|exceed/.test(text)) return 'too many credits';
 		if (/interchangeable|you can switch/.test(text)) return 'you only need one';
 		if (/foundation/.test(text)) return 'foundation courses';
@@ -198,15 +205,15 @@
 					<!-- the line about the course open on the right stands out; the
 					     line clicked keeps its courses lit on the grid -->
 					<li class:here={names(hint, plan.selected?.code)} class:lit={pinned === lineKey}>
-						{#if hint.codes.some(hasCode)}
+						{#if hint.codes.some(hasCode) || hint.slots?.length}
 							<button
 								class="chip-text jump"
 								aria-pressed={pinned === lineKey}
-								title="show these courses on the grid"
-								onclick={() => pin(lineKey, hint.codes)}
-								onmouseenter={() => preview(hint.codes)}
+								title="show {hint.codes.some(hasCode) ? 'these courses' : 'these trimesters'} on the grid"
+								onclick={() => pin(lineKey, hint)}
+								onmouseenter={() => preview(hint)}
 								onmouseleave={restoreHighlight}
-								onfocus={() => preview(hint.codes)}
+								onfocus={() => preview(hint)}
 								onblur={restoreHighlight}
 							>
 								{hint.text}

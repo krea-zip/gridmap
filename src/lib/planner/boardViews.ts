@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────
 // What the board's views read off the plan: how often a course ran in its
-// trimester, a course's prerequisite chain, who teaches what, and where the
-// student stands at the end of each year. The views themselves are picked
+// trimester, a course's prerequisite chain and what another degree would
+// make of the plan. The views themselves are picked
 // at the top of the board (Plan.view); this is the arithmetic behind them,
 // kept out of the plan store so it stays about the plan.
 // ─────────────────────────────────────────────
@@ -10,14 +10,13 @@ import {
 	RECORDED_TERMS,
 	TRIM_STANDARD_MAX,
 	byCode,
-	facultyOf,
 	hasCode,
 	isCore,
 	ranIn,
 	satisfiedBy,
 	termLabel
 } from '$lib/curriculum/data';
-import { MAX_YEARS, type BreakKind, type Plan } from '$lib/planner/plan.svelte';
+import { MAX_YEARS, type Plan } from '$lib/planner/plan.svelte';
 import { slotAt, slotOrder, type Here } from '$lib/planner/calendar';
 import type { TrimNum } from '$lib/types';
 
@@ -122,80 +121,6 @@ export function prereqChain(plan: Plan, root: string): Chain {
 		}
 	}
 	return { root, nodes, edges, missing, before, after };
-}
-
-// ── faculty ──
-
-/** the lecturer a course lists first, by name, or the timetable's text */
-export const teacherOf = (code: string): string => facultyOf(code)[0]?.name ?? byCode(code).faculty ?? '';
-
-/** every lecturer teaching something on the plan, with those courses, the
- *  busiest first */
-export function lecturersOnPlan(plan: Plan): { id: string; name: string; codes: string[] }[] {
-	const by = new Map<string, { id: string; name: string; codes: string[] }>();
-	for (const { code } of plan.placed) {
-		if (isCore(code)) continue; // the foundation core rotates through everyone
-		for (const prof of facultyOf(code)) {
-			const entry = by.get(prof.id) ?? { id: prof.id, name: prof.name, codes: [] };
-			if (!entry.codes.includes(code)) entry.codes.push(code);
-			by.set(prof.id, entry);
-		}
-	}
-	return [...by.values()].sort((a, b) => b.codes.length - a.codes.length || a.name.localeCompare(b.name));
-}
-
-// ── milestones ──
-
-/** What a student can leave with at the end of each year, by the credit lines
- *  of UGC's Curriculum and Credit Framework for undergraduate programmes.
- *  Krea's own exit rules aren't in this app's data; check them with the
- *  Academic Office. 120 / 160 match the degree minimums used elsewhere. */
-export const EXIT_AWARDS = [
-	{ year: 1, credits: 40, award: 'UG certificate' },
-	{ year: 2, credits: 80, award: 'UG diploma' },
-	{ year: 3, credits: 120, award: "3-year bachelor's degree" },
-	{ year: 4, credits: 160, award: '4-year honours degree' }
-] as const;
-
-export type Milestone = {
-	year: number;
-	/** credits placed up to the end of this year (audits earn none; a term
-	 *  away's credits count) */
-	credits: number;
-	/** credits placed in this year alone */
-	inYear: number;
-	/** this year's trimesters spent on a break, a suspension or away */
-	off: { trim: TrimNum; kind: BreakKind }[];
-	exit?: (typeof EXIT_AWARDS)[number];
-	met: boolean;
-	short: number;
-};
-
-export function milestones(plan: Plan): Milestone[] {
-	let running = 0;
-	return plan.years.map((year) => {
-		const off = ([1, 2, 3] as TrimNum[]).flatMap((trim) => {
-			const b = plan.breakAt(year, trim);
-			return b ? [{ trim, kind: b.kind, credits: b.credits ?? 0 }] : [];
-		});
-		const inYear =
-			plan.placed
-				.filter((p) => p.year === year && !plan.isAudit(p.code))
-				.reduce((sum, p) => sum + byCode(p.code).credits, 0) +
-			off.reduce((sum, o) => sum + (o.kind === 'away' ? o.credits : 0), 0);
-		running += inYear;
-		const exit = EXIT_AWARDS.find((e) => e.year === year);
-		const short = exit ? Math.max(0, exit.credits - running) : 0;
-		return {
-			year,
-			credits: running,
-			inYear,
-			off: off.map(({ trim, kind }) => ({ trim, kind })),
-			exit,
-			met: !!exit && short === 0,
-			short
-		};
-	});
 }
 
 /** the last trimester the plan uses, a course or a break, and the n + 2

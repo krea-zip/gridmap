@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PlannerGuide from './PlannerGuide.svelte';
+	import UpdateLog from './UpdateLog.svelte';
 	import { usePlan } from '$lib/planner/context';
 	import CourseFaculty from './CourseFaculty.svelte';
 	import {
@@ -22,6 +22,7 @@
 	import type { TrimNum } from '$lib/types';
 	import { academicYear, slotOrder, termMonthsShort } from '$lib/planner/calendar';
 	import { descriptionOf, loadDescriptions } from '$lib/curriculum/descriptions.svelte';
+	import { viewport } from '$lib/planner/viewport.svelte';
 	import { GRADE_SCALE, OTHER_MARKS, type GradeMark } from '$lib/planner/grades';
 
 	const plan = usePlan();
@@ -51,6 +52,29 @@
 	let attemptsHere = $derived(plan.selected ? plan.attemptsOf(plan.selected.code) : []);
 	let failed = $derived(plan.gradeOf(sid) === 'U');
 	let roles = $derived(plan.selected ? plan.rolesIn(plan.selected.code) : []);
+
+	// separate courses that stand in for this one or it for them; never the
+	// same course under another code, which is cross-listing
+	let swaps = $derived.by(() => {
+		const c = plan.selected;
+		if (!c) return [];
+		const others = c.substitutes?.length === 1 ? 'the other' : 'the others';
+		return [
+			{
+				label: 'either one counts',
+				codes: c.substitutes ?? [],
+				why: `separate courses, not one cross-listed course: take any one and you won't need ${others}`
+			},
+			{
+				label: 'counts for',
+				codes: c.covers ?? [],
+				why: "taking this clears these too, so you won't need them as well"
+			},
+			{ label: 'or instead', codes: c.coveredBy ?? [], why: 'any of these clears this one' }
+		]
+			.map((s) => ({ ...s, codes: s.codes.filter(hasCode) }))
+			.filter((s) => s.codes.length);
+	});
 	// worth spelling out only when the departments disagree
 	// who teaches it, shown under "about the course" (never for the KCCS core)
 	let hasTeachers = $derived(
@@ -372,6 +396,10 @@
 								<p class="d-no-audit">this course can't be taken as an audit</p>
 							{/if}
 
+							{#if !viewport.desktop}
+								<p class="d-no-audit">grades and your CGPA are on a laptop.</p>
+							{/if}
+
 							<!-- failing, grade view or not: this attempt stays on the grid, faded,
 			     as a record (a U), and the course is free to place again, the copy -->
 							<fieldset class="d-fail" disabled={plan.isAudit(sid)}>
@@ -421,10 +449,27 @@
 		</section>
 
 		<!-- how it counts is the type tile's job (a cross-listed course's other
-		     role sits under it); this is only what comes before and after -->
-		{#if c.prereqs.length || c.unlocks.some(hasCode)}
+		     role sits under it); this is what stands in for it, and what comes
+		     before and after -->
+		{#if c.prereqs.length || c.unlocks.some(hasCode) || swaps.length}
 			<section class="d-section" aria-labelledby="d-sec-degree">
 				<h3 class="d-section-title" id="d-sec-degree">in your degree</h3>
+
+				<!-- not the same course under another code (that's cross-listing,
+				     under the title): different courses that clear each other's
+				     requirement, e.g. Proofs and Ideas for Discrete Mathematics -->
+				{#each swaps as swap (swap.label)}
+					<div class="label">{swap.label}</div>
+					<p class="d-swap-why">{swap.why}</p>
+					<div class="d-chips d-related">
+						{#each swap.codes as code (code)}
+							<button class="d-chip" onclick={() => jump(code)}>
+								<span>{plan.courseLabel(code)}</span>
+								{#if plan.onBoard(code)}<span class="d-chip-status">on your plan</span>{/if}
+							</button>
+						{/each}
+					</div>
+				{/each}
 
 				<!-- Keep prerequisites visible; related courses can be explored on demand. -->
 				{#if c.prereqs.length}
@@ -500,7 +545,7 @@
 		{/if}
 	</div>
 {:else}
-	<PlannerGuide />
+	<UpdateLog />
 {/if}
 
 <style lang="scss">
@@ -602,6 +647,13 @@
 		label {
 			@include section-label;
 		}
+	}
+
+	.d-swap-why {
+		margin: -0.2rem 0 0.6rem;
+		font-size: 1.2rem;
+		line-height: 1.4;
+		color: var(--color-text-muted);
 	}
 
 	.d-related .d-chip {
@@ -1073,14 +1125,11 @@
 			color: var(--color-text-muted);
 		}
 
+		// darkened toward the text so the small green reads at full strength
 		&[data-status='ok'] .d-chip-status,
 		&[data-status='done'] .d-chip-status {
-			color: var(--color-hint-good-deep);
-		}
-
-		// taken already: settled, so it steps back a little
-		&[data-status='done'] {
-			opacity: 0.8;
+			font-weight: 600;
+			color: color-mix(in srgb, var(--color-hint-good-deep) 75%, var(--color-text));
 		}
 
 		&[data-status='late'] {

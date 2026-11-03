@@ -1,15 +1,13 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
-	import CloudPlansPanel from '$lib/features/plans/CloudPlansPanel.svelte';
 	import { settings, TEXT_SIZES, type ThemeChoice } from '$lib/ui/settings.svelte';
 	import { savedPlans, MAX_SAVES } from '$lib/features/plans/local-plans.svelte';
 	import { shareLink } from '$lib/features/plans/share';
 	import { byCode, subjectById } from '$lib/curriculum/data';
 	import Modal from './Modal.svelte';
 	import FeedbackForm from './FeedbackForm.svelte';
-	import PixelIcon from './PixelIcon.svelte';
 
-	let { onclose, ontour, onimport }: { onclose: () => void; ontour: () => void; onimport: () => void } = $props();
+	let { onclose }: { onclose: () => void } = $props();
 	const plan = usePlan();
 
 	const THEMES: { id: ThemeChoice; label: string }[] = [
@@ -132,7 +130,6 @@
 </script>
 
 <Modal title="settings" {onclose}>
-	<CloudPlansPanel {suggestedName} />
 	<section>
 		<h3>appearance</h3>
 
@@ -161,11 +158,7 @@
 
 	<section>
 		<h3>help</h3>
-		<p class="note">a walk around the board, what each part does and where things live.</p>
-		<div class="actions">
-			<button onclick={ontour}><PixelIcon name="help" size="1.3rem" /> quick tour</button>
-		</div>
-		<p class="note browse">
+		<p class="note">
 			browse every <a href="/courses">course</a>, <a href="/programmes">programme</a> and
 			<a href="/lecturers">lecturer</a>.
 		</p>
@@ -174,29 +167,6 @@
 	<section>
 		<h3>feedback</h3>
 		<FeedbackForm />
-	</section>
-
-	<section>
-		<h3>import courses & grades</h3>
-		<div class="actions">
-			<button onclick={onimport}>import courses & grades</button>
-		</div>
-		<details class="more">
-			<summary>read more</summary>
-			<ol>
-				<li>
-					<a href="/downloads/kcal-canvas-extension.zip" download>download the extension</a> and unzip it.
-				</li>
-				<li>
-					chrome / edge: extensions → developer mode → load unpacked → pick the folder. firefox: about:debugging → this
-					firefox → load temporary add-on → manifest.json.
-				</li>
-				<li>
-					on Krea Exam, open My Mark List. click the extension, then “Read this page locally” and “review in kcal”.
-				</li>
-				<li>review your terms, grades and catalogue matches before saving. Canvas All Courses is also supported.</li>
-			</ol>
-		</details>
 	</section>
 
 	<section>
@@ -354,32 +324,6 @@
 
 	.note.warn {
 		color: var(--color-danger);
-	}
-
-	.more {
-		margin-top: 1rem;
-		font-size: 1.2rem;
-		line-height: 1.45;
-		color: var(--color-text-muted);
-
-		summary {
-			cursor: pointer;
-			width: fit-content;
-		}
-
-		ol {
-			margin-top: 0.6rem;
-			padding-left: 1.8rem;
-		}
-
-		li + li {
-			margin-top: 0.4rem;
-		}
-
-		a {
-			color: var(--color-accent);
-			text-decoration: underline;
-		}
 	}
 
 	.note.empty {

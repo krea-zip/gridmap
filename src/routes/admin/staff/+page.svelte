@@ -40,7 +40,7 @@
 		<label
 			>Department <span class="office-help">contributors</span>
 			<select name="department" value={m?.department ?? ''}>
-				<option value="">—</option>
+				<option value="">-</option>
 				{#each departments as d (d.id)}<option value={d.id}>{d.label}</option>{/each}
 			</select>
 		</label>

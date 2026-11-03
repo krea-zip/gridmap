@@ -39,8 +39,7 @@
 			title: 'Manage',
 			links: [
 				['changes', 'Review & publish'],
-				['history', 'Change history'],
-				['reports', 'Reports & downloads'],
+				['history', 'Past releases'],
 				['settings', 'Office fields'],
 				['staff', 'Staff access']
 			]

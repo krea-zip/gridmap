@@ -2,8 +2,12 @@
 	// a programme's "any three of the following" pools: what to pick and how
 	// far along the plan is, one block per programme
 	import { usePlan } from '$lib/planner/context';
+	import { viewport } from '$lib/planner/viewport.svelte';
 
 	const plan = usePlan();
+	// a phone has no codes / titles switches, so it shows both
+	let showCode = $derived(plan.showCodes || !viewport.desktop);
+	let showTitle = $derived(plan.showTitles || !viewport.desktop);
 </script>
 
 {#if plan.choices.length}
@@ -40,9 +44,9 @@
 											{#if course.code}
 												{@const code = course.code}
 												<button onclick={() => plan.revealCourse(code)}>
-													{#if plan.showCodes}<b>{plan.shownCode(code)}</b>{/if}{plan.showCodes && plan.showTitles
+													{#if showCode}<b>{plan.shownCode(code)}</b>{/if}{showCode && showTitle
 														? ' '
-														: ''}{#if plan.showTitles}{course.title}{/if}
+														: ''}{#if showTitle}{course.title}{/if}
 												</button>
 											{:else}{course.title} <em>· not offered yet</em>{/if}
 										</li>
@@ -140,6 +144,8 @@
 		&::before {
 			content: '•';
 			position: absolute;
+			top: 50%;
+			translate: 0 -50%;
 			left: 0.3rem;
 			color: var(--color-text-muted);
 		}
@@ -179,6 +185,14 @@
 		&:hover {
 			text-decoration: underline;
 			text-underline-offset: 0.2em;
+		}
+	}
+
+	// phones: the touch floor would make every row 44px; a list of codes
+	// reads better a little tighter
+	@include mobile {
+		li button {
+			min-height: 3.4rem;
 		}
 	}
 </style>

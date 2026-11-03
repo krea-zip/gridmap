@@ -7,7 +7,7 @@
 			"label": "arts",
 			"short": "arts",
 			"majorable": false,
-			"hue": 220
+			"hue": 310
 		},
 		{
 			"id": "core",
@@ -40,28 +40,28 @@
 			"label": "chemistry",
 			"short": "chem",
 			"majorable": true,
-			"hue": 310
+			"hue": 175
 		},
 		{
 			"id": "computer science",
 			"label": "computer science",
 			"short": "comp",
 			"majorable": true,
-			"hue": 325
+			"hue": 220
 		},
 		{
 			"id": "data science",
 			"label": "data science",
 			"short": "data",
 			"majorable": true,
-			"hue": 190
+			"hue": 115
 		},
 		{
 			"id": "economics",
 			"label": "economics",
 			"short": "econ",
 			"majorable": true,
-			"hue": 115
+			"hue": 160
 		},
 		{
 			"id": "environmental studies",
@@ -75,35 +75,35 @@
 			"label": "history",
 			"short": "hist",
 			"majorable": true,
-			"hue": 145
+			"hue": 190
 		},
 		{
 			"id": "literature",
 			"label": "literature",
 			"short": "litt",
 			"majorable": true,
-			"hue": 340
+			"hue": 145
 		},
 		{
 			"id": "mathematics",
 			"label": "mathematics",
 			"short": "math",
 			"majorable": true,
-			"hue": 250
+			"hue": 325
 		},
 		{
 			"id": "philosophy",
 			"label": "philosophy",
 			"short": "phil",
 			"majorable": false,
-			"hue": 160
+			"hue": 250
 		},
 		{
 			"id": "physics",
 			"label": "physics",
 			"short": "phys",
 			"majorable": true,
-			"hue": 175
+			"hue": 280
 		},
 		{
 			"id": "political science",
@@ -117,14 +117,14 @@
 			"label": "psychology",
 			"short": "psyc",
 			"majorable": true,
-			"hue": 280
+			"hue": 205
 		},
 		{
 			"id": "sociology",
 			"label": "sociology",
 			"short": "socl",
 			"majorable": true,
-			"hue": 205
+			"hue": 340
 		}
 	],
 	"rules": {
@@ -16696,8 +16696,7 @@
 			"codesBySubject": {
 				"business studies": "BUSI336"
 			},
-			"credits": 0,
-			"pendingCredits": true,
+			"credits": 4,
 			"required": false,
 			"offered": [
 				2
@@ -24622,9 +24621,10 @@
 			"id": "fyup-2024",
 			"name": "FYUP graduation requirements",
 			"batches": [
+				2022,
+				2023,
 				2024,
-				2025,
-				2026
+				2025
 			],
 			"programmes": [
 				{
@@ -31486,6 +31486,6913 @@
 					"pathway": []
 				}
 			]
+		},
+		{
+			"id": "website-2026",
+			"name": "FYUP documents, with 2026 website updates",
+			"batches": [
+				2026
+			],
+			"programmes": [
+				{
+					"subject": "arts",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 16,
+						"elective": 16
+					},
+					"required": [
+						"ARTS201",
+						"ARTS202"
+					],
+					"picks": [],
+					"electives": [
+						"ARTS205",
+						"ARTS223",
+						"ARTS225",
+						"ARTS228",
+						"ARTS229",
+						"ARTS231",
+						"ARTS241",
+						"ARTS242",
+						"ARTS243",
+						"ARTS315",
+						"ARTS330",
+						"ARTS333",
+						"ARTS336",
+						"ARTS338",
+						"ARTS340",
+						"COMP431",
+						"ENVS345",
+						"HIST342",
+						"LITT212",
+						"PHIL208",
+						"PHIL337",
+						"PHIL341",
+						"PHIL342",
+						"SOCL337",
+						"ARTS351"
+					],
+					"choices": [
+						{
+							"rule": "Also required, not in the catalogue yet",
+							"pick": 2,
+							"courses": [
+								{
+									"code": null,
+									"title": "Art, Design and New Media"
+								},
+								{
+									"code": null,
+									"title": "Arts Immersion (choice of practice)"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "arts",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 12,
+						"elective": 12
+					},
+					"required": [
+						"ARTS201",
+						"ARTS202"
+					],
+					"picks": [],
+					"electives": [
+						"ARTS205",
+						"ARTS223",
+						"ARTS225",
+						"ARTS228",
+						"ARTS229",
+						"ARTS231",
+						"ARTS241",
+						"ARTS242",
+						"ARTS243",
+						"ARTS315",
+						"ARTS330",
+						"ARTS333",
+						"ARTS336",
+						"ARTS338",
+						"ARTS340",
+						"COMP431",
+						"ENVS345",
+						"HIST342",
+						"LITT212",
+						"PHIL208",
+						"PHIL337",
+						"PHIL341",
+						"PHIL342",
+						"SOCL337",
+						"ARTS351"
+					],
+					"choices": [
+						{
+							"rule": "Also required, not in the catalogue yet",
+							"pick": 2,
+							"courses": [
+								{
+									"code": null,
+									"title": "Art, Design and New Media"
+								},
+								{
+									"code": null,
+									"title": "Arts Immersion (choice of practice)"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "arts",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 4,
+						"elective": 12
+					},
+					"required": [],
+					"picks": [
+						"ARTS201",
+						"ARTS202"
+					],
+					"electives": [
+						"ARTS205",
+						"ARTS223",
+						"ARTS225",
+						"ARTS228",
+						"ARTS229",
+						"ARTS231",
+						"ARTS241",
+						"ARTS242",
+						"ARTS243",
+						"ARTS315",
+						"ARTS330",
+						"ARTS333",
+						"ARTS336",
+						"ARTS338",
+						"ARTS340",
+						"COMP431",
+						"ENVS345",
+						"HIST342",
+						"LITT212",
+						"PHIL208",
+						"PHIL337",
+						"PHIL341",
+						"PHIL342",
+						"SOCL337",
+						"ARTS351"
+					],
+					"choices": [
+						{
+							"rule": "Any one required course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "ARTS201",
+									"title": "Exploring Art, Understanding Culture"
+								},
+								{
+									"code": "ARTS202",
+									"title": "Pathways in the Arts"
+								},
+								{
+									"code": null,
+									"title": "Art, Design and New Media"
+								},
+								{
+									"code": null,
+									"title": "Arts Immersion (choice of practice)"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "arts",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 4,
+						"elective": 12
+					},
+					"required": [],
+					"picks": [
+						"ARTS201",
+						"ARTS202"
+					],
+					"electives": [
+						"ARTS205",
+						"ARTS223",
+						"ARTS225",
+						"ARTS228",
+						"ARTS229",
+						"ARTS231",
+						"ARTS241",
+						"ARTS242",
+						"ARTS243",
+						"ARTS315",
+						"ARTS330",
+						"ARTS333",
+						"ARTS336",
+						"ARTS338",
+						"ARTS340",
+						"COMP431",
+						"ENVS345",
+						"HIST342",
+						"LITT212",
+						"PHIL208",
+						"PHIL337",
+						"PHIL341",
+						"PHIL342",
+						"SOCL337",
+						"ARTS351"
+					],
+					"choices": [
+						{
+							"rule": "Any one required course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "ARTS201",
+									"title": "Exploring Art, Understanding Culture"
+								},
+								{
+									"code": "ARTS202",
+									"title": "Pathways in the Arts"
+								},
+								{
+									"code": null,
+									"title": "Art, Design and New Media"
+								},
+								{
+									"code": null,
+									"title": "Arts Immersion (choice of practice)"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "open",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 24,
+						"required": null,
+						"elective": null
+					},
+					"required": [],
+					"picks": [],
+					"electives": [],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "open",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": null,
+						"elective": null
+					},
+					"required": [],
+					"picks": [],
+					"electives": [],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "biology",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 48,
+						"elective": 32
+					},
+					"required": [
+						"BIOS201",
+						"BIOS205",
+						"BIOS207",
+						"BIOS217",
+						"BIOS218",
+						"BIOS221",
+						"BIOS224",
+						"BIOS226",
+						"BIOS227",
+						"BIOS228",
+						"BIOS229",
+						"BIOS230",
+						"BIOS241"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS222",
+						"BIOS223",
+						"BIOS231",
+						"BIOS232",
+						"BIOS235",
+						"BIOS236",
+						"BIOS306",
+						"BIOS331",
+						"BIOS347",
+						"BIOS401",
+						"BIOS409",
+						"BIOS432",
+						"CHEM225"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "biology",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 64,
+						"required": 48,
+						"elective": 16
+					},
+					"required": [
+						"BIOS201",
+						"BIOS205",
+						"BIOS207",
+						"BIOS217",
+						"BIOS218",
+						"BIOS221",
+						"BIOS224",
+						"BIOS226",
+						"BIOS227",
+						"BIOS228",
+						"BIOS229",
+						"BIOS230",
+						"BIOS241"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS222",
+						"BIOS223",
+						"BIOS231",
+						"BIOS232",
+						"BIOS235",
+						"BIOS236",
+						"BIOS306",
+						"BIOS331",
+						"BIOS347",
+						"BIOS401",
+						"BIOS409",
+						"BIOS432",
+						"CHEM225"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "biology",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 64,
+						"required": 48,
+						"elective": 16
+					},
+					"required": [
+						"BIOS201",
+						"BIOS205",
+						"BIOS207",
+						"BIOS217",
+						"BIOS218",
+						"BIOS221",
+						"BIOS224",
+						"BIOS226",
+						"BIOS227",
+						"BIOS228",
+						"BIOS229",
+						"BIOS230",
+						"BIOS241"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS222",
+						"BIOS223",
+						"BIOS231",
+						"BIOS232",
+						"BIOS235",
+						"BIOS236",
+						"BIOS306",
+						"BIOS331",
+						"BIOS347",
+						"BIOS401",
+						"BIOS409",
+						"BIOS432",
+						"CHEM225"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "biology",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 48,
+						"elective": 0
+					},
+					"required": [
+						"BIOS201",
+						"BIOS205",
+						"BIOS207",
+						"BIOS217",
+						"BIOS218",
+						"BIOS221",
+						"BIOS224",
+						"BIOS226",
+						"BIOS227",
+						"BIOS228",
+						"BIOS229",
+						"BIOS230",
+						"BIOS241"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS222",
+						"BIOS223",
+						"BIOS231",
+						"BIOS232",
+						"BIOS235",
+						"BIOS236",
+						"BIOS306",
+						"BIOS331",
+						"BIOS347",
+						"BIOS401",
+						"BIOS409",
+						"BIOS432",
+						"CHEM225"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "biology",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 28,
+						"elective": 4
+					},
+					"required": [
+						"BIOS201",
+						"BIOS218",
+						"BIOS221",
+						"BIOS224",
+						"BIOS226",
+						"BIOS229",
+						"BIOS230"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS222",
+						"BIOS223",
+						"BIOS231",
+						"BIOS232",
+						"BIOS235",
+						"BIOS236",
+						"BIOS306",
+						"BIOS331",
+						"BIOS347",
+						"BIOS401",
+						"BIOS409",
+						"BIOS432",
+						"CHEM225"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "biology",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 20,
+						"elective": 4
+					},
+					"required": [
+						"BIOS201",
+						"BIOS218",
+						"BIOS221",
+						"BIOS224",
+						"BIOS226"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS222",
+						"BIOS223",
+						"BIOS231",
+						"BIOS232",
+						"BIOS235",
+						"BIOS236",
+						"BIOS306",
+						"BIOS331",
+						"BIOS347",
+						"BIOS401",
+						"BIOS409",
+						"BIOS432",
+						"CHEM225"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "biology",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 8,
+						"elective": 8
+					},
+					"required": [
+						"BIOS201",
+						"BIOS218"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS222",
+						"BIOS223",
+						"BIOS231",
+						"BIOS232",
+						"BIOS235",
+						"BIOS236",
+						"BIOS306",
+						"BIOS331",
+						"BIOS347",
+						"BIOS401",
+						"BIOS409",
+						"BIOS432",
+						"CHEM225"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "biology",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 8,
+						"elective": 8
+					},
+					"required": [
+						"BIOS201",
+						"BIOS218"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS222",
+						"BIOS223",
+						"BIOS231",
+						"BIOS232",
+						"BIOS235",
+						"BIOS236",
+						"BIOS306",
+						"BIOS331",
+						"BIOS347",
+						"BIOS401",
+						"BIOS409",
+						"BIOS432",
+						"CHEM225"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "business studies",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 24,
+						"elective": 8
+					},
+					"required": [
+						"BUSI201",
+						"BUSI202",
+						"BUSI203",
+						"BUSI205",
+						"BUSI206",
+						"BUSI336"
+					],
+					"picks": [
+						"BUSI211"
+					],
+					"electives": [
+						"ARTS225",
+						"BUSI231",
+						"BUSI301",
+						"BUSI302",
+						"BUSI316",
+						"BUSI317",
+						"BUSI318",
+						"BUSI320",
+						"BUSI321",
+						"BUSI322",
+						"BUSI332",
+						"BUSI333",
+						"BUSI334",
+						"BUSI341",
+						"BUSI435",
+						"BUSI436",
+						"DATA230",
+						"ECON330",
+						"BUSI335",
+						"BUSI331"
+					],
+					"choices": [
+						{
+							"rule": "Introduction to People Management or Organisational Behaviour",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "BUSI211",
+									"title": "Introduction to People Management"
+								},
+								{
+									"code": null,
+									"title": "Organisational Behaviour"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "business studies",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 24,
+						"elective": 0
+					},
+					"required": [
+						"BUSI201",
+						"BUSI202",
+						"BUSI203",
+						"BUSI205",
+						"BUSI206",
+						"BUSI336"
+					],
+					"picks": [
+						"BUSI211"
+					],
+					"electives": [
+						"ARTS225",
+						"BUSI231",
+						"BUSI301",
+						"BUSI302",
+						"BUSI316",
+						"BUSI317",
+						"BUSI318",
+						"BUSI320",
+						"BUSI321",
+						"BUSI322",
+						"BUSI332",
+						"BUSI333",
+						"BUSI334",
+						"BUSI341",
+						"BUSI435",
+						"BUSI436",
+						"DATA230",
+						"ECON330",
+						"BUSI335",
+						"BUSI331"
+					],
+					"choices": [
+						{
+							"rule": "Introduction to People Management or Organisational Behaviour",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "BUSI211",
+									"title": "Introduction to People Management"
+								},
+								{
+									"code": null,
+									"title": "Organisational Behaviour"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "business studies",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [],
+					"picks": [
+						"BUSI201",
+						"BUSI202",
+						"BUSI203",
+						"BUSI211",
+						"BUSI205",
+						"BUSI206",
+						"BUSI336"
+					],
+					"electives": [
+						"ARTS225",
+						"BUSI231",
+						"BUSI301",
+						"BUSI302",
+						"BUSI316",
+						"BUSI317",
+						"BUSI318",
+						"BUSI320",
+						"BUSI321",
+						"BUSI322",
+						"BUSI332",
+						"BUSI333",
+						"BUSI334",
+						"BUSI341",
+						"BUSI435",
+						"BUSI436",
+						"DATA230",
+						"ECON330",
+						"BUSI335",
+						"BUSI331"
+					],
+					"choices": [
+						{
+							"rule": "Any four of the required courses",
+							"pick": 4,
+							"courses": [
+								{
+									"code": "BUSI201",
+									"title": "Introduction to Accounting and Finance"
+								},
+								{
+									"code": "BUSI202",
+									"title": "Foundations of Marketing"
+								},
+								{
+									"code": "BUSI203",
+									"title": "Supply Chain Management"
+								},
+								{
+									"code": "BUSI211",
+									"title": "Introduction to People Management"
+								},
+								{
+									"code": "BUSI205",
+									"title": "Information Systems and Data Analytics"
+								},
+								{
+									"code": "BUSI206",
+									"title": "Strategy and Innovation"
+								},
+								{
+									"code": "BUSI336",
+									"title": "Foundations of Entrepreneurship"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "business studies",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [],
+					"picks": [
+						"BUSI201",
+						"BUSI202",
+						"BUSI203",
+						"BUSI211",
+						"BUSI205",
+						"BUSI206",
+						"BUSI336"
+					],
+					"electives": [
+						"ARTS225",
+						"BUSI231",
+						"BUSI301",
+						"BUSI302",
+						"BUSI316",
+						"BUSI317",
+						"BUSI318",
+						"BUSI320",
+						"BUSI321",
+						"BUSI322",
+						"BUSI332",
+						"BUSI333",
+						"BUSI334",
+						"BUSI341",
+						"BUSI435",
+						"BUSI436",
+						"DATA230",
+						"ECON330",
+						"BUSI335",
+						"BUSI331"
+					],
+					"choices": [
+						{
+							"rule": "Any four of the required courses",
+							"pick": 4,
+							"courses": [
+								{
+									"code": "BUSI201",
+									"title": "Introduction to Accounting and Finance"
+								},
+								{
+									"code": "BUSI202",
+									"title": "Foundations of Marketing"
+								},
+								{
+									"code": "BUSI203",
+									"title": "Supply Chain Management"
+								},
+								{
+									"code": "BUSI211",
+									"title": "Introduction to People Management"
+								},
+								{
+									"code": "BUSI205",
+									"title": "Information Systems and Data Analytics"
+								},
+								{
+									"code": "BUSI206",
+									"title": "Strategy and Innovation"
+								},
+								{
+									"code": "BUSI336",
+									"title": "Foundations of Entrepreneurship"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "chemistry",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 68,
+						"elective": 12
+					},
+					"required": [
+						"CHEM206",
+						"CHEM207",
+						"CHEM208",
+						"CHEM210",
+						"CHEM212",
+						"CHEM213",
+						"CHEM215",
+						"CHEM216",
+						"CHEM217",
+						"CHEM218",
+						"CHEM219",
+						"CHEM220",
+						"CHEM222",
+						"CHEM306",
+						"CHEM319",
+						"CHEM413",
+						"CHEM424",
+						"CHEM434"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"BIOS432",
+						"CHEM214",
+						"CHEM225",
+						"CHEM316",
+						"CHEM320",
+						"CHEM321",
+						"CHEM411",
+						"CHEM412",
+						"CHEM422",
+						"CHEM423",
+						"CHEM431",
+						"CHEM433"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "chemistry",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 60,
+						"required": 56,
+						"elective": 4
+					},
+					"required": [
+						"CHEM206",
+						"CHEM207",
+						"CHEM208",
+						"CHEM210",
+						"CHEM212",
+						"CHEM213",
+						"CHEM215",
+						"CHEM216",
+						"CHEM217",
+						"CHEM218",
+						"CHEM219",
+						"CHEM220",
+						"CHEM222",
+						"CHEM306",
+						"CHEM319",
+						"CHEM413",
+						"CHEM424",
+						"CHEM434"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"BIOS432",
+						"CHEM214",
+						"CHEM225",
+						"CHEM316",
+						"CHEM320",
+						"CHEM321",
+						"CHEM411",
+						"CHEM412",
+						"CHEM422",
+						"CHEM423",
+						"CHEM431",
+						"CHEM433"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "chemistry",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 58,
+						"required": 50,
+						"elective": 8
+					},
+					"required": [
+						"CHEM206",
+						"CHEM207",
+						"CHEM208",
+						"CHEM210",
+						"CHEM212",
+						"CHEM213",
+						"CHEM215",
+						"CHEM216",
+						"CHEM217",
+						"CHEM218",
+						"CHEM219",
+						"CHEM220",
+						"CHEM222",
+						"CHEM306",
+						"CHEM319"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"BIOS432",
+						"CHEM214",
+						"CHEM225",
+						"CHEM316",
+						"CHEM320",
+						"CHEM321",
+						"CHEM411",
+						"CHEM412",
+						"CHEM422",
+						"CHEM423",
+						"CHEM431",
+						"CHEM433"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "chemistry",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 40,
+						"elective": 8
+					},
+					"required": [
+						"CHEM206",
+						"CHEM207",
+						"CHEM208",
+						"CHEM210",
+						"CHEM212",
+						"CHEM213",
+						"CHEM215",
+						"CHEM216",
+						"CHEM217",
+						"CHEM218",
+						"CHEM219"
+					],
+					"picks": [],
+					"electives": [
+						"CHEM220",
+						"CHEM222",
+						"CHEM306",
+						"CHEM319",
+						"BIOS306",
+						"BIOS432",
+						"CHEM214",
+						"CHEM225",
+						"CHEM316",
+						"CHEM320",
+						"CHEM321",
+						"CHEM411",
+						"CHEM412",
+						"CHEM422",
+						"CHEM423",
+						"CHEM431",
+						"CHEM433"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "chemistry",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 24,
+						"elective": 8
+					},
+					"required": [
+						"CHEM206",
+						"CHEM207",
+						"CHEM208",
+						"CHEM212",
+						"CHEM215",
+						"CHEM216",
+						"CHEM217"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"BIOS432",
+						"CHEM214",
+						"CHEM225",
+						"CHEM316",
+						"CHEM320",
+						"CHEM321",
+						"CHEM411",
+						"CHEM412",
+						"CHEM422",
+						"CHEM423",
+						"CHEM431",
+						"CHEM433"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "chemistry",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 28,
+						"required": 24,
+						"elective": 4
+					},
+					"required": [
+						"CHEM206",
+						"CHEM207",
+						"CHEM208",
+						"CHEM212",
+						"CHEM215",
+						"CHEM216",
+						"CHEM217"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"BIOS432",
+						"CHEM214",
+						"CHEM225",
+						"CHEM316",
+						"CHEM320",
+						"CHEM321",
+						"CHEM411",
+						"CHEM412",
+						"CHEM422",
+						"CHEM423",
+						"CHEM431",
+						"CHEM433"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "chemistry",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 18,
+						"required": 18,
+						"elective": 0
+					},
+					"required": [
+						"CHEM206",
+						"CHEM207",
+						"CHEM208",
+						"CHEM216",
+						"CHEM217"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"BIOS432",
+						"CHEM214",
+						"CHEM225",
+						"CHEM316",
+						"CHEM320",
+						"CHEM321",
+						"CHEM411",
+						"CHEM412",
+						"CHEM422",
+						"CHEM423",
+						"CHEM431",
+						"CHEM433"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "chemistry",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 18,
+						"required": 18,
+						"elective": 0
+					},
+					"required": [
+						"CHEM206",
+						"CHEM207",
+						"CHEM208",
+						"CHEM216",
+						"CHEM217"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"BIOS432",
+						"CHEM214",
+						"CHEM225",
+						"CHEM316",
+						"CHEM320",
+						"CHEM321",
+						"CHEM411",
+						"CHEM412",
+						"CHEM422",
+						"CHEM423",
+						"CHEM431",
+						"CHEM433"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "computer science",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 52,
+						"elective": 28
+					},
+					"required": [
+						"COMP201",
+						"MATH203",
+						"COMP204",
+						"COMP205",
+						"COMP208",
+						"COMP210",
+						"COMP217",
+						"COMP305",
+						"COMP308",
+						"COMP312",
+						"COMP313",
+						"COMP321",
+						"COMP350"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS307",
+						"CHEM411",
+						"CHEM421",
+						"COMP121",
+						"COMP246",
+						"COMP306",
+						"COMP322",
+						"COMP330",
+						"COMP331",
+						"COMP332",
+						"COMP333",
+						"COMP334",
+						"COMP335",
+						"COMP336",
+						"COMP340",
+						"COMP341",
+						"COMP343",
+						"COMP344",
+						"COMP347",
+						"COMP401",
+						"COMP413",
+						"COMP422",
+						"COMP431",
+						"COMP433",
+						"DATA206",
+						"DATA231",
+						"DATA235",
+						"DATA239",
+						"DATA241",
+						"ECON327",
+						"MATH061",
+						"MATH066",
+						"MATH191",
+						"MATH256",
+						"MATH328",
+						"MATH342",
+						"MATH346",
+						"PHYS211",
+						"PHYS216",
+						"PHYS360",
+						"SOCL348",
+						"COMP337",
+						"COMP349",
+						"COMP351",
+						"DATA434"
+					],
+					"choices": [],
+					"pathway": [
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "COMP204"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "COMP201"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "COMP205"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "COMP208"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH203"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "COMP210"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "COMP217"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "COMP305"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "COMP350"
+						},
+						{
+							"year": 3,
+							"trim": 2,
+							"code": "COMP312"
+						},
+						{
+							"year": 3,
+							"trim": 2,
+							"code": "COMP313"
+						},
+						{
+							"year": 3,
+							"trim": 3,
+							"code": "COMP308"
+						},
+						{
+							"year": 3,
+							"trim": 3,
+							"code": "COMP321"
+						}
+					]
+				},
+				{
+					"subject": "computer science",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 68,
+						"required": 52,
+						"elective": 16
+					},
+					"required": [
+						"COMP201",
+						"MATH203",
+						"COMP204",
+						"COMP205",
+						"COMP208",
+						"COMP210",
+						"COMP217",
+						"COMP305",
+						"COMP308",
+						"COMP312",
+						"COMP313",
+						"COMP321",
+						"COMP350"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS307",
+						"CHEM411",
+						"CHEM421",
+						"COMP121",
+						"COMP246",
+						"COMP306",
+						"COMP322",
+						"COMP330",
+						"COMP331",
+						"COMP332",
+						"COMP333",
+						"COMP334",
+						"COMP335",
+						"COMP336",
+						"COMP340",
+						"COMP341",
+						"COMP343",
+						"COMP344",
+						"COMP347",
+						"COMP401",
+						"COMP413",
+						"COMP422",
+						"COMP431",
+						"COMP433",
+						"DATA206",
+						"DATA231",
+						"DATA235",
+						"DATA239",
+						"DATA241",
+						"ECON327",
+						"MATH061",
+						"MATH066",
+						"MATH191",
+						"MATH256",
+						"MATH328",
+						"MATH342",
+						"MATH346",
+						"PHYS211",
+						"PHYS216",
+						"PHYS360",
+						"SOCL348",
+						"COMP337",
+						"COMP349",
+						"COMP351",
+						"DATA434"
+					],
+					"choices": [],
+					"pathway": [
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "COMP204"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "COMP201"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "COMP205"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "COMP208"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH203"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "COMP210"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "COMP217"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "COMP305"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "COMP350"
+						},
+						{
+							"year": 3,
+							"trim": 2,
+							"code": "COMP312"
+						},
+						{
+							"year": 3,
+							"trim": 2,
+							"code": "COMP313"
+						},
+						{
+							"year": 3,
+							"trim": 3,
+							"code": "COMP308"
+						},
+						{
+							"year": 3,
+							"trim": 3,
+							"code": "COMP321"
+						}
+					]
+				},
+				{
+					"subject": "computer science",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 60,
+						"required": 52,
+						"elective": 8
+					},
+					"required": [
+						"COMP201",
+						"MATH203",
+						"COMP204",
+						"COMP205",
+						"COMP208",
+						"COMP210",
+						"COMP217",
+						"COMP305",
+						"COMP308",
+						"COMP312",
+						"COMP313",
+						"COMP321",
+						"COMP350"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS307",
+						"CHEM411",
+						"CHEM421",
+						"COMP121",
+						"COMP246",
+						"COMP306",
+						"COMP322",
+						"COMP330",
+						"COMP331",
+						"COMP332",
+						"COMP333",
+						"COMP334",
+						"COMP335",
+						"COMP336",
+						"COMP340",
+						"COMP341",
+						"COMP343",
+						"COMP344",
+						"COMP347",
+						"COMP401",
+						"COMP413",
+						"COMP422",
+						"COMP431",
+						"COMP433",
+						"DATA206",
+						"DATA231",
+						"DATA235",
+						"DATA239",
+						"DATA241",
+						"ECON327",
+						"MATH061",
+						"MATH066",
+						"MATH191",
+						"MATH256",
+						"MATH328",
+						"MATH342",
+						"MATH346",
+						"PHYS211",
+						"PHYS216",
+						"PHYS360",
+						"SOCL348",
+						"COMP337",
+						"COMP349",
+						"COMP351",
+						"DATA434"
+					],
+					"choices": [],
+					"pathway": [
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "COMP204"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "COMP201"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "COMP205"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "COMP208"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH203"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "COMP210"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "COMP217"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "COMP305"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "COMP350"
+						},
+						{
+							"year": 3,
+							"trim": 2,
+							"code": "COMP312"
+						},
+						{
+							"year": 3,
+							"trim": 2,
+							"code": "COMP313"
+						},
+						{
+							"year": 3,
+							"trim": 3,
+							"code": "COMP308"
+						},
+						{
+							"year": 3,
+							"trim": 3,
+							"code": "COMP321"
+						}
+					]
+				},
+				{
+					"subject": "computer science",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 44,
+						"elective": 4
+					},
+					"required": [
+						"COMP201",
+						"MATH203",
+						"COMP204",
+						"COMP205",
+						"COMP208",
+						"COMP210",
+						"COMP217",
+						"COMP305",
+						"COMP308",
+						"COMP312",
+						"COMP313"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS307",
+						"CHEM411",
+						"CHEM421",
+						"COMP121",
+						"COMP246",
+						"COMP306",
+						"COMP321",
+						"COMP322",
+						"COMP330",
+						"COMP331",
+						"COMP332",
+						"COMP333",
+						"COMP334",
+						"COMP335",
+						"COMP336",
+						"COMP340",
+						"COMP341",
+						"COMP343",
+						"COMP344",
+						"COMP347",
+						"COMP350",
+						"COMP401",
+						"COMP413",
+						"COMP422",
+						"COMP431",
+						"COMP433",
+						"DATA206",
+						"DATA231",
+						"DATA235",
+						"DATA239",
+						"DATA241",
+						"ECON327",
+						"MATH061",
+						"MATH066",
+						"MATH191",
+						"MATH256",
+						"MATH328",
+						"MATH342",
+						"MATH346",
+						"PHYS211",
+						"PHYS216",
+						"PHYS360",
+						"SOCL348",
+						"COMP337",
+						"COMP349",
+						"COMP351",
+						"DATA434"
+					],
+					"choices": [],
+					"pathway": [
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "COMP204"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "COMP201"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "COMP205"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "COMP208"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH203"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "COMP210"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "COMP217"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "COMP305"
+						},
+						{
+							"year": 3,
+							"trim": 2,
+							"code": "COMP312"
+						},
+						{
+							"year": 3,
+							"trim": 2,
+							"code": "COMP313"
+						},
+						{
+							"year": 3,
+							"trim": 3,
+							"code": "COMP308"
+						}
+					]
+				},
+				{
+					"subject": "computer science",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 24,
+						"elective": 8
+					},
+					"required": [
+						"COMP201",
+						"COMP204",
+						"COMP205",
+						"COMP208",
+						"COMP210",
+						"COMP217"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS307",
+						"CHEM411",
+						"CHEM421",
+						"COMP121",
+						"COMP246",
+						"COMP305",
+						"COMP306",
+						"COMP308",
+						"COMP312",
+						"COMP313",
+						"COMP321",
+						"COMP322",
+						"COMP330",
+						"COMP331",
+						"COMP332",
+						"COMP333",
+						"COMP334",
+						"COMP335",
+						"COMP336",
+						"COMP340",
+						"COMP341",
+						"COMP343",
+						"COMP344",
+						"COMP347",
+						"COMP350",
+						"COMP401",
+						"COMP413",
+						"COMP422",
+						"COMP431",
+						"COMP433",
+						"DATA206",
+						"DATA231",
+						"DATA235",
+						"DATA239",
+						"DATA241",
+						"ECON327",
+						"MATH061",
+						"MATH066",
+						"MATH191",
+						"MATH203",
+						"MATH256",
+						"MATH328",
+						"MATH342",
+						"MATH346",
+						"PHYS211",
+						"PHYS216",
+						"PHYS360",
+						"SOCL348",
+						"COMP337",
+						"COMP349",
+						"COMP351",
+						"DATA434"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "computer science",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 16,
+						"elective": 8
+					},
+					"required": [
+						"COMP201",
+						"COMP204",
+						"COMP205",
+						"COMP210"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS307",
+						"CHEM411",
+						"CHEM421",
+						"COMP121",
+						"COMP208",
+						"COMP217",
+						"COMP246",
+						"COMP305",
+						"COMP306",
+						"COMP308",
+						"COMP312",
+						"COMP313",
+						"COMP321",
+						"COMP322",
+						"COMP330",
+						"COMP331",
+						"COMP332",
+						"COMP333",
+						"COMP334",
+						"COMP335",
+						"COMP336",
+						"COMP340",
+						"COMP341",
+						"COMP343",
+						"COMP344",
+						"COMP347",
+						"COMP350",
+						"COMP401",
+						"COMP413",
+						"COMP422",
+						"COMP431",
+						"COMP433",
+						"DATA206",
+						"DATA231",
+						"DATA235",
+						"DATA239",
+						"DATA241",
+						"ECON327",
+						"MATH061",
+						"MATH066",
+						"MATH191",
+						"MATH203",
+						"MATH256",
+						"MATH328",
+						"MATH342",
+						"MATH346",
+						"PHYS211",
+						"PHYS216",
+						"PHYS360",
+						"SOCL348",
+						"COMP337",
+						"COMP349",
+						"COMP351",
+						"DATA434"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "computer science",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 20,
+						"required": 12,
+						"elective": 8
+					},
+					"required": [
+						"COMP201",
+						"COMP204",
+						"COMP205"
+					],
+					"picks": [
+						"COMP305",
+						"COMP308",
+						"COMP312",
+						"COMP313",
+						"COMP321",
+						"COMP350"
+					],
+					"electives": [
+						"COMP306",
+						"COMP322",
+						"COMP330",
+						"COMP331",
+						"COMP332",
+						"COMP334",
+						"COMP335",
+						"COMP340",
+						"COMP413",
+						"COMP422",
+						"COMP433",
+						"DATA231",
+						"DATA242",
+						"DATA303",
+						"ECON327",
+						"MATH342"
+					],
+					"choices": [
+						{
+							"rule": "Any 2 courses from the list below",
+							"pick": 2,
+							"courses": [
+								{
+									"code": null,
+									"title": "Calculus for Computing"
+								},
+								{
+									"code": "COMP305",
+									"title": "Applied Probability and Statistics"
+								},
+								{
+									"code": "COMP350",
+									"title": "Software Design Practical"
+								},
+								{
+									"code": "COMP313",
+									"title": "Introduction to Machine Learning"
+								},
+								{
+									"code": "COMP312",
+									"title": "Principles of Computer Systems"
+								},
+								{
+									"code": "COMP308",
+									"title": "Principles of Programming Languages"
+								},
+								{
+									"code": "COMP321",
+									"title": "Models of Computation"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "computer science",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 12,
+						"elective": 4
+					},
+					"required": [
+						"COMP201",
+						"COMP204",
+						"COMP205"
+					],
+					"picks": [
+						"COMP305",
+						"COMP308",
+						"COMP312",
+						"COMP313",
+						"COMP321",
+						"COMP350"
+					],
+					"electives": [
+						"COMP306",
+						"COMP322",
+						"COMP330",
+						"COMP331",
+						"COMP332",
+						"COMP334",
+						"COMP335",
+						"COMP340",
+						"COMP413",
+						"COMP422",
+						"COMP433",
+						"DATA231",
+						"DATA242",
+						"DATA303",
+						"ECON327",
+						"MATH342"
+					],
+					"choices": [
+						{
+							"rule": "Any 2 courses from the list below",
+							"pick": 2,
+							"courses": [
+								{
+									"code": null,
+									"title": "Calculus for Computing"
+								},
+								{
+									"code": "COMP305",
+									"title": "Applied Probability and Statistics"
+								},
+								{
+									"code": "COMP350",
+									"title": "Software Design Practical"
+								},
+								{
+									"code": "COMP313",
+									"title": "Introduction to Machine Learning"
+								},
+								{
+									"code": "COMP312",
+									"title": "Principles of Computer Systems"
+								},
+								{
+									"code": "COMP308",
+									"title": "Principles of Programming Languages"
+								},
+								{
+									"code": "COMP321",
+									"title": "Models of Computation"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "data science",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 44,
+						"elective": 36
+					},
+					"required": [
+						"DATA201",
+						"DATA202",
+						"DATA203",
+						"DATA204",
+						"DATA205",
+						"DATA206",
+						"COMP208",
+						"DATA233",
+						"COMP246",
+						"DATA301",
+						"DATA302"
+					],
+					"picks": [],
+					"electives": [
+						"COMP332",
+						"DATA236",
+						"DATA237",
+						"DATA238",
+						"DATA239",
+						"DATA242",
+						"DATA244"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "data science",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 64,
+						"required": 44,
+						"elective": 20
+					},
+					"required": [
+						"DATA201",
+						"DATA202",
+						"DATA203",
+						"DATA204",
+						"DATA205",
+						"DATA206",
+						"COMP208",
+						"DATA233",
+						"COMP246",
+						"DATA301",
+						"DATA302"
+					],
+					"picks": [],
+					"electives": [
+						"COMP332",
+						"DATA236",
+						"DATA237",
+						"DATA238",
+						"DATA239",
+						"DATA242",
+						"DATA244"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "data science",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 60,
+						"required": 44,
+						"elective": 16
+					},
+					"required": [
+						"DATA201",
+						"DATA202",
+						"DATA203",
+						"DATA204",
+						"DATA205",
+						"DATA206",
+						"COMP208",
+						"DATA233",
+						"COMP246",
+						"DATA301",
+						"DATA302"
+					],
+					"picks": [],
+					"electives": [
+						"COMP332",
+						"DATA236",
+						"DATA237",
+						"DATA238",
+						"DATA239",
+						"DATA242",
+						"DATA244"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "data science",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 44,
+						"elective": 4
+					},
+					"required": [
+						"DATA201",
+						"DATA202",
+						"DATA203",
+						"DATA204",
+						"DATA205",
+						"DATA206",
+						"COMP208",
+						"DATA233",
+						"COMP246",
+						"DATA301",
+						"DATA302"
+					],
+					"picks": [],
+					"electives": [
+						"COMP332",
+						"DATA236",
+						"DATA237",
+						"DATA238",
+						"DATA239",
+						"DATA242",
+						"DATA244"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "data science",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 28,
+						"elective": 4
+					},
+					"required": [
+						"DATA201",
+						"DATA203",
+						"DATA204",
+						"DATA205",
+						"COMP208",
+						"COMP246",
+						"DATA302"
+					],
+					"picks": [],
+					"electives": [
+						"COMP332",
+						"DATA236",
+						"DATA237",
+						"DATA238",
+						"DATA239",
+						"DATA242",
+						"DATA244"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "data science",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 24,
+						"elective": 0
+					},
+					"required": [
+						"DATA201",
+						"DATA203",
+						"DATA204",
+						"DATA205",
+						"COMP246",
+						"DATA302"
+					],
+					"picks": [],
+					"electives": [
+						"COMP332",
+						"DATA236",
+						"DATA237",
+						"DATA238",
+						"DATA239",
+						"DATA242",
+						"DATA244"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "data science",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [
+						"DATA201",
+						"DATA203",
+						"DATA204",
+						"DATA205"
+					],
+					"picks": [],
+					"electives": [
+						"COMP332",
+						"DATA236",
+						"DATA237",
+						"DATA238",
+						"DATA239",
+						"DATA242",
+						"DATA244"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "data science",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [
+						"DATA201",
+						"DATA203",
+						"DATA204",
+						"DATA205"
+					],
+					"picks": [],
+					"electives": [
+						"COMP332",
+						"DATA236",
+						"DATA237",
+						"DATA238",
+						"DATA239",
+						"DATA242",
+						"DATA244"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "economics",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 60,
+						"elective": 20
+					},
+					"required": [
+						"ECON201",
+						"ECON202",
+						"ECON203",
+						"ECON204",
+						"ECON206",
+						"ECON207",
+						"ECON209",
+						"ECON210",
+						"ECON211",
+						"ECON212",
+						"ECON223",
+						"ECON309",
+						"ECON310",
+						"ECON313",
+						"ECON334"
+					],
+					"picks": [],
+					"electives": [
+						"ECON311",
+						"ECON312",
+						"ECON321",
+						"ECON327",
+						"ECON328",
+						"ECON329",
+						"ECON330",
+						"ECON332",
+						"ECON333",
+						"ECON335",
+						"ECON336",
+						"SOCL205"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "economics",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 64,
+						"required": 52,
+						"elective": 12
+					},
+					"required": [
+						"ECON201",
+						"ECON202",
+						"ECON203",
+						"ECON204",
+						"ECON206",
+						"ECON207",
+						"ECON209",
+						"ECON210",
+						"ECON211",
+						"ECON212",
+						"ECON223"
+					],
+					"picks": [
+						"ECON334",
+						"ECON313",
+						"ECON310",
+						"ECON309"
+					],
+					"electives": [
+						"ECON311",
+						"ECON312",
+						"ECON321",
+						"ECON327",
+						"ECON328",
+						"ECON329",
+						"ECON330",
+						"ECON332",
+						"ECON333",
+						"ECON335",
+						"ECON336",
+						"SOCL205"
+					],
+					"choices": [
+						{
+							"rule": "Any two of the following courses",
+							"pick": 2,
+							"courses": [
+								{
+									"code": "ECON334",
+									"title": "Mathematical Methods for Economics II"
+								},
+								{
+									"code": "ECON313",
+									"title": "Econometrics - II"
+								},
+								{
+									"code": "ECON310",
+									"title": "Microeconomics - III"
+								},
+								{
+									"code": "ECON309",
+									"title": "Macroeconomics III"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "economics",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 60,
+						"required": 44,
+						"elective": 16
+					},
+					"required": [
+						"ECON201",
+						"ECON202",
+						"ECON203",
+						"ECON204",
+						"ECON206",
+						"ECON207",
+						"ECON209",
+						"ECON210",
+						"ECON211",
+						"ECON212",
+						"ECON223"
+					],
+					"picks": [],
+					"electives": [
+						"ECON311",
+						"ECON312",
+						"ECON321",
+						"ECON327",
+						"ECON328",
+						"ECON329",
+						"ECON330",
+						"ECON332",
+						"ECON333",
+						"ECON335",
+						"ECON336",
+						"SOCL205"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "economics",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 40,
+						"elective": 8
+					},
+					"required": [
+						"ECON201",
+						"ECON202",
+						"ECON203",
+						"ECON204",
+						"ECON209",
+						"ECON210",
+						"ECON211",
+						"ECON212",
+						"ECON223"
+					],
+					"picks": [
+						"ECON207",
+						"ECON206"
+					],
+					"electives": [
+						"ECON311",
+						"ECON312",
+						"ECON321",
+						"ECON327",
+						"ECON328",
+						"ECON329",
+						"ECON330",
+						"ECON332",
+						"ECON333",
+						"ECON335",
+						"ECON336",
+						"SOCL205"
+					],
+					"choices": [
+						{
+							"rule": "Indian Economy or History of Economic Thought",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "ECON207",
+									"title": "The Indian Economy"
+								},
+								{
+									"code": "ECON206",
+									"title": "History of Economic Thought"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "economics",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 32,
+						"elective": 0
+					},
+					"required": [
+						"ECON201",
+						"ECON202",
+						"ECON203",
+						"ECON209",
+						"ECON210",
+						"ECON211",
+						"ECON212"
+					],
+					"picks": [
+						"ECON207",
+						"ECON206"
+					],
+					"electives": [
+						"ECON311",
+						"ECON312",
+						"ECON321",
+						"ECON327",
+						"ECON328",
+						"ECON329",
+						"ECON330",
+						"ECON332",
+						"ECON333",
+						"ECON335",
+						"ECON336",
+						"SOCL205"
+					],
+					"choices": [
+						{
+							"rule": "Indian Economy or History of Economic Thought",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "ECON207",
+									"title": "The Indian Economy"
+								},
+								{
+									"code": "ECON206",
+									"title": "History of Economic Thought"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "economics",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 24,
+						"elective": 0
+					},
+					"required": [
+						"ECON201",
+						"ECON202",
+						"ECON203",
+						"ECON211",
+						"ECON212"
+					],
+					"picks": [
+						"ECON207",
+						"ECON206"
+					],
+					"electives": [
+						"ECON311",
+						"ECON312",
+						"ECON321",
+						"ECON327",
+						"ECON328",
+						"ECON329",
+						"ECON330",
+						"ECON332",
+						"ECON333",
+						"ECON335",
+						"ECON336",
+						"SOCL205"
+					],
+					"choices": [
+						{
+							"rule": "Indian Economy or History of Economic Thought",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "ECON207",
+									"title": "The Indian Economy"
+								},
+								{
+									"code": "ECON206",
+									"title": "History of Economic Thought"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "economics",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [
+						"ECON201",
+						"ECON202",
+						"ECON203",
+						"ECON211"
+					],
+					"picks": [],
+					"electives": [
+						"ECON311",
+						"ECON312",
+						"ECON321",
+						"ECON327",
+						"ECON328",
+						"ECON329",
+						"ECON330",
+						"ECON332",
+						"ECON333",
+						"ECON335",
+						"ECON336",
+						"SOCL205"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "economics",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [
+						"ECON201",
+						"ECON202",
+						"ECON203",
+						"ECON211"
+					],
+					"picks": [],
+					"electives": [
+						"ECON311",
+						"ECON312",
+						"ECON321",
+						"ECON327",
+						"ECON328",
+						"ECON329",
+						"ECON330",
+						"ECON332",
+						"ECON333",
+						"ECON335",
+						"ECON336",
+						"SOCL205"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "environmental studies",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 36,
+						"elective": 44
+					},
+					"required": [
+						"ENVS204",
+						"ENVS206",
+						"ENVS216",
+						"ENVS221",
+						"ENVS235",
+						"BIOS241",
+						"ENVS250",
+						"ENVS306",
+						"ECON332"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS227",
+						"BIOS235",
+						"BIOS401",
+						"BIOS409",
+						"ECON312",
+						"ENVS242",
+						"ENVS245",
+						"ENVS302",
+						"ENVS310",
+						"ENVS328",
+						"ENVS333",
+						"ENVS337",
+						"ENVS346",
+						"ENVS422",
+						"ENVS426",
+						"ENVS433",
+						"SOCL218",
+						"SOCL325"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "environmental studies",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 64,
+						"required": 36,
+						"elective": 28
+					},
+					"required": [
+						"ENVS204",
+						"ENVS206",
+						"ENVS216",
+						"ENVS221",
+						"ENVS235",
+						"BIOS241",
+						"ENVS250",
+						"ENVS306",
+						"ECON332"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS227",
+						"BIOS235",
+						"BIOS401",
+						"BIOS409",
+						"ECON312",
+						"ENVS242",
+						"ENVS245",
+						"ENVS302",
+						"ENVS310",
+						"ENVS328",
+						"ENVS333",
+						"ENVS337",
+						"ENVS346",
+						"ENVS422",
+						"ENVS426",
+						"ENVS433",
+						"SOCL218",
+						"SOCL325"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "environmental studies",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 60,
+						"required": 36,
+						"elective": 24
+					},
+					"required": [
+						"ENVS204",
+						"ENVS206",
+						"ENVS216",
+						"ENVS221",
+						"ENVS235",
+						"BIOS241",
+						"ENVS250",
+						"ENVS306",
+						"ECON332"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS227",
+						"BIOS235",
+						"BIOS401",
+						"BIOS409",
+						"ECON312",
+						"ENVS242",
+						"ENVS245",
+						"ENVS302",
+						"ENVS310",
+						"ENVS328",
+						"ENVS333",
+						"ENVS337",
+						"ENVS346",
+						"ENVS422",
+						"ENVS426",
+						"ENVS433",
+						"SOCL218",
+						"SOCL325"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "environmental studies",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 36,
+						"elective": 12
+					},
+					"required": [
+						"ENVS204",
+						"ENVS206",
+						"ENVS216",
+						"ENVS221",
+						"ENVS235",
+						"BIOS241",
+						"ENVS250",
+						"ENVS306",
+						"ECON332"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS227",
+						"BIOS235",
+						"BIOS401",
+						"BIOS409",
+						"ECON312",
+						"ENVS242",
+						"ENVS245",
+						"ENVS302",
+						"ENVS310",
+						"ENVS328",
+						"ENVS333",
+						"ENVS337",
+						"ENVS346",
+						"ENVS422",
+						"ENVS426",
+						"ENVS433",
+						"SOCL218",
+						"SOCL325"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "environmental studies",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 32,
+						"elective": 0
+					},
+					"required": [],
+					"picks": [
+						"ENVS206",
+						"ENVS221",
+						"ENVS204",
+						"ENVS306",
+						"ENVS250",
+						"BIOS241",
+						"ENVS216",
+						"ECON332",
+						"ENVS235"
+					],
+					"electives": [
+						"BIOS227",
+						"BIOS235",
+						"BIOS401",
+						"BIOS409",
+						"ECON312",
+						"ENVS242",
+						"ENVS245",
+						"ENVS302",
+						"ENVS310",
+						"ENVS328",
+						"ENVS333",
+						"ENVS337",
+						"ENVS346",
+						"ENVS422",
+						"ENVS426",
+						"ENVS433",
+						"SOCL218",
+						"SOCL325"
+					],
+					"choices": [
+						{
+							"rule": "Any eight of the required courses",
+							"pick": 8,
+							"courses": [
+								{
+									"code": "ENVS206",
+									"title": "Tools and Methods in Environmental Studies"
+								},
+								{
+									"code": "ENVS221",
+									"title": "Environmental Communication"
+								},
+								{
+									"code": "ENVS204",
+									"title": "Climate Change: Science, Economics, and Policy"
+								},
+								{
+									"code": "ENVS306",
+									"title": "Introduction to Sustainability"
+								},
+								{
+									"code": "ENVS250",
+									"title": "Environment and Ethics"
+								},
+								{
+									"code": "BIOS241",
+									"title": "Ecology and Conservation Biology"
+								},
+								{
+									"code": "ENVS216",
+									"title": "Environmental History"
+								},
+								{
+									"code": "ECON332",
+									"title": "Ecological Economics"
+								},
+								{
+									"code": "ENVS235",
+									"title": "Introduction to Environmental Science"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "environmental studies",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 24,
+						"elective": 0
+					},
+					"required": [],
+					"picks": [
+						"ENVS206",
+						"ENVS221",
+						"ENVS204",
+						"ENVS306",
+						"ENVS250",
+						"BIOS241",
+						"ENVS216",
+						"ECON332",
+						"ENVS235"
+					],
+					"electives": [
+						"BIOS227",
+						"BIOS235",
+						"BIOS401",
+						"BIOS409",
+						"ECON312",
+						"ENVS242",
+						"ENVS245",
+						"ENVS302",
+						"ENVS310",
+						"ENVS328",
+						"ENVS333",
+						"ENVS337",
+						"ENVS346",
+						"ENVS422",
+						"ENVS426",
+						"ENVS433",
+						"SOCL218",
+						"SOCL325"
+					],
+					"choices": [
+						{
+							"rule": "Any six of the required courses",
+							"pick": 6,
+							"courses": [
+								{
+									"code": "ENVS206",
+									"title": "Tools and Methods in Environmental Studies"
+								},
+								{
+									"code": "ENVS221",
+									"title": "Environmental Communication"
+								},
+								{
+									"code": "ENVS204",
+									"title": "Climate Change: Science, Economics, and Policy"
+								},
+								{
+									"code": "ENVS306",
+									"title": "Introduction to Sustainability"
+								},
+								{
+									"code": "ENVS250",
+									"title": "Environment and Ethics"
+								},
+								{
+									"code": "BIOS241",
+									"title": "Ecology and Conservation Biology"
+								},
+								{
+									"code": "ENVS216",
+									"title": "Environmental History"
+								},
+								{
+									"code": "ECON332",
+									"title": "Ecological Economics"
+								},
+								{
+									"code": "ENVS235",
+									"title": "Introduction to Environmental Science"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "environmental studies",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [],
+					"picks": [
+						"ENVS206",
+						"ENVS221",
+						"ENVS204",
+						"ENVS306",
+						"ENVS250",
+						"BIOS241",
+						"ENVS216",
+						"ECON332",
+						"ENVS235"
+					],
+					"electives": [
+						"BIOS227",
+						"BIOS235",
+						"BIOS401",
+						"BIOS409",
+						"ECON312",
+						"ENVS242",
+						"ENVS245",
+						"ENVS302",
+						"ENVS310",
+						"ENVS328",
+						"ENVS333",
+						"ENVS337",
+						"ENVS346",
+						"ENVS422",
+						"ENVS426",
+						"ENVS433",
+						"SOCL218",
+						"SOCL325"
+					],
+					"choices": [
+						{
+							"rule": "Any four of the required courses",
+							"pick": 4,
+							"courses": [
+								{
+									"code": "ENVS206",
+									"title": "Tools and Methods in Environmental Studies"
+								},
+								{
+									"code": "ENVS221",
+									"title": "Environmental Communication"
+								},
+								{
+									"code": "ENVS204",
+									"title": "Climate Change: Science, Economics, and Policy"
+								},
+								{
+									"code": "ENVS306",
+									"title": "Introduction to Sustainability"
+								},
+								{
+									"code": "ENVS250",
+									"title": "Environment and Ethics"
+								},
+								{
+									"code": "BIOS241",
+									"title": "Ecology and Conservation Biology"
+								},
+								{
+									"code": "ENVS216",
+									"title": "Environmental History"
+								},
+								{
+									"code": "ECON332",
+									"title": "Ecological Economics"
+								},
+								{
+									"code": "ENVS235",
+									"title": "Introduction to Environmental Science"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "environmental studies",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [],
+					"picks": [
+						"ENVS206",
+						"ENVS221",
+						"ENVS204",
+						"ENVS306",
+						"ENVS250",
+						"BIOS241",
+						"ENVS216",
+						"ECON332",
+						"ENVS235"
+					],
+					"electives": [
+						"BIOS227",
+						"BIOS235",
+						"BIOS401",
+						"BIOS409",
+						"ECON312",
+						"ENVS242",
+						"ENVS245",
+						"ENVS302",
+						"ENVS310",
+						"ENVS328",
+						"ENVS333",
+						"ENVS337",
+						"ENVS346",
+						"ENVS422",
+						"ENVS426",
+						"ENVS433",
+						"SOCL218",
+						"SOCL325"
+					],
+					"choices": [
+						{
+							"rule": "Any four of the required courses",
+							"pick": 4,
+							"courses": [
+								{
+									"code": "ENVS206",
+									"title": "Tools and Methods in Environmental Studies"
+								},
+								{
+									"code": "ENVS221",
+									"title": "Environmental Communication"
+								},
+								{
+									"code": "ENVS204",
+									"title": "Climate Change: Science, Economics, and Policy"
+								},
+								{
+									"code": "ENVS306",
+									"title": "Introduction to Sustainability"
+								},
+								{
+									"code": "ENVS250",
+									"title": "Environment and Ethics"
+								},
+								{
+									"code": "BIOS241",
+									"title": "Ecology and Conservation Biology"
+								},
+								{
+									"code": "ENVS216",
+									"title": "Environmental History"
+								},
+								{
+									"code": "ECON332",
+									"title": "Ecological Economics"
+								},
+								{
+									"code": "ENVS235",
+									"title": "Introduction to Environmental Science"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "history",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 40,
+						"elective": 40
+					},
+					"required": [
+						"HIST205",
+						"HIST206",
+						"HIST337"
+					],
+					"picks": [
+						"HIST303",
+						"HIST355",
+						"HIST326",
+						"HIST209"
+					],
+					"electives": [
+						"ENVS216",
+						"HIST318",
+						"HIST330",
+						"HIST334",
+						"HIST336",
+						"HIST343",
+						"SOCL338"
+					],
+					"choices": [
+						{
+							"rule": "Any three methodology courses",
+							"pick": 3,
+							"courses": [
+								{
+									"code": null,
+									"title": "The Historian's Craft: Primary Sources and their Interpretations"
+								},
+								{
+									"code": "HIST303",
+									"title": "Historical Reasoning"
+								},
+								{
+									"code": "HIST355",
+									"title": "Indian Historiography"
+								},
+								{
+									"code": null,
+									"title": "The New Science"
+								},
+								{
+									"code": null,
+									"title": "Advanced Indian Historiography"
+								}
+							]
+						},
+						{
+							"rule": "Any three world history courses",
+							"pick": 3,
+							"courses": [
+								{
+									"code": "HIST326",
+									"title": "Ancient World"
+								},
+								{
+									"code": "HIST209",
+									"title": "How We Became Modern: World History from 1750 to the Present"
+								},
+								{
+									"code": null,
+									"title": "Winds of Change: Anticolonial Movements in the 19th and 20th Centuries"
+								},
+								{
+									"code": null,
+									"title": "Economic History: Humans as Planetary Pilots"
+								},
+								{
+									"code": null,
+									"title": "Urban Emergence"
+								}
+							]
+						},
+						{
+							"rule": "Also required, not in the catalogue yet",
+							"pick": 1,
+							"courses": [
+								{
+									"code": null,
+									"title": "India and the World"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "history",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 64,
+						"required": 40,
+						"elective": 24
+					},
+					"required": [
+						"HIST205",
+						"HIST206",
+						"HIST337"
+					],
+					"picks": [
+						"HIST303",
+						"HIST355",
+						"HIST326",
+						"HIST209"
+					],
+					"electives": [
+						"ENVS216",
+						"HIST318",
+						"HIST330",
+						"HIST334",
+						"HIST336",
+						"HIST343",
+						"SOCL338"
+					],
+					"choices": [
+						{
+							"rule": "Any three methodology courses",
+							"pick": 3,
+							"courses": [
+								{
+									"code": null,
+									"title": "The Historian's Craft: Primary Sources and their Interpretations"
+								},
+								{
+									"code": "HIST303",
+									"title": "Historical Reasoning"
+								},
+								{
+									"code": "HIST355",
+									"title": "Indian Historiography"
+								},
+								{
+									"code": null,
+									"title": "The New Science"
+								},
+								{
+									"code": null,
+									"title": "Advanced Indian Historiography"
+								}
+							]
+						},
+						{
+							"rule": "Any three world history courses",
+							"pick": 3,
+							"courses": [
+								{
+									"code": "HIST326",
+									"title": "Ancient World"
+								},
+								{
+									"code": "HIST209",
+									"title": "How We Became Modern: World History from 1750 to the Present"
+								},
+								{
+									"code": null,
+									"title": "Winds of Change: Anticolonial Movements in the 19th and 20th Centuries"
+								},
+								{
+									"code": null,
+									"title": "Economic History: Humans as Planetary Pilots"
+								},
+								{
+									"code": null,
+									"title": "Urban Emergence"
+								}
+							]
+						},
+						{
+							"rule": "Also required, not in the catalogue yet",
+							"pick": 1,
+							"courses": [
+								{
+									"code": null,
+									"title": "India and the World"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "history",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 60,
+						"required": 40,
+						"elective": 20
+					},
+					"required": [
+						"HIST205",
+						"HIST206",
+						"HIST337"
+					],
+					"picks": [
+						"HIST303",
+						"HIST355",
+						"HIST326",
+						"HIST209"
+					],
+					"electives": [
+						"ENVS216",
+						"HIST318",
+						"HIST330",
+						"HIST334",
+						"HIST336",
+						"HIST343",
+						"SOCL338"
+					],
+					"choices": [
+						{
+							"rule": "Any three methodology courses",
+							"pick": 3,
+							"courses": [
+								{
+									"code": null,
+									"title": "The Historian's Craft: Primary Sources and their Interpretations"
+								},
+								{
+									"code": "HIST303",
+									"title": "Historical Reasoning"
+								},
+								{
+									"code": "HIST355",
+									"title": "Indian Historiography"
+								},
+								{
+									"code": null,
+									"title": "The New Science"
+								},
+								{
+									"code": null,
+									"title": "Advanced Indian Historiography"
+								}
+							]
+						},
+						{
+							"rule": "Any three world history courses",
+							"pick": 3,
+							"courses": [
+								{
+									"code": "HIST326",
+									"title": "Ancient World"
+								},
+								{
+									"code": "HIST209",
+									"title": "How We Became Modern: World History from 1750 to the Present"
+								},
+								{
+									"code": null,
+									"title": "Winds of Change: Anticolonial Movements in the 19th and 20th Centuries"
+								},
+								{
+									"code": null,
+									"title": "Economic History: Humans as Planetary Pilots"
+								},
+								{
+									"code": null,
+									"title": "Urban Emergence"
+								}
+							]
+						},
+						{
+							"rule": "Also required, not in the catalogue yet",
+							"pick": 1,
+							"courses": [
+								{
+									"code": null,
+									"title": "India and the World"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "history",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 40,
+						"elective": 8
+					},
+					"required": [
+						"HIST205",
+						"HIST206",
+						"HIST337"
+					],
+					"picks": [
+						"HIST303",
+						"HIST355",
+						"HIST326",
+						"HIST209"
+					],
+					"electives": [
+						"ENVS216",
+						"HIST318",
+						"HIST330",
+						"HIST334",
+						"HIST336",
+						"HIST343",
+						"SOCL338"
+					],
+					"choices": [
+						{
+							"rule": "Any three methodology courses",
+							"pick": 3,
+							"courses": [
+								{
+									"code": null,
+									"title": "The Historian's Craft: Primary Sources and their Interpretations"
+								},
+								{
+									"code": "HIST303",
+									"title": "Historical Reasoning"
+								},
+								{
+									"code": "HIST355",
+									"title": "Indian Historiography"
+								},
+								{
+									"code": null,
+									"title": "The New Science"
+								},
+								{
+									"code": null,
+									"title": "Advanced Indian Historiography"
+								}
+							]
+						},
+						{
+							"rule": "Any three world history courses",
+							"pick": 3,
+							"courses": [
+								{
+									"code": "HIST326",
+									"title": "Ancient World"
+								},
+								{
+									"code": "HIST209",
+									"title": "How We Became Modern: World History from 1750 to the Present"
+								},
+								{
+									"code": null,
+									"title": "Winds of Change: Anticolonial Movements in the 19th and 20th Centuries"
+								},
+								{
+									"code": null,
+									"title": "Economic History: Humans as Planetary Pilots"
+								},
+								{
+									"code": null,
+									"title": "Urban Emergence"
+								}
+							]
+						},
+						{
+							"rule": "Also required, not in the catalogue yet",
+							"pick": 1,
+							"courses": [
+								{
+									"code": null,
+									"title": "India and the World"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "history",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 20,
+						"elective": 12
+					},
+					"required": [],
+					"picks": [
+						"HIST303",
+						"HIST355",
+						"HIST326",
+						"HIST209",
+						"HIST337",
+						"HIST205",
+						"HIST206"
+					],
+					"electives": [
+						"ENVS216",
+						"HIST318",
+						"HIST330",
+						"HIST334",
+						"HIST336",
+						"HIST343",
+						"SOCL338"
+					],
+					"choices": [
+						{
+							"rule": "Any one methodology course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": null,
+									"title": "The Historian's Craft: Primary Sources and their Interpretations"
+								},
+								{
+									"code": "HIST303",
+									"title": "Historical Reasoning"
+								},
+								{
+									"code": "HIST355",
+									"title": "Indian Historiography"
+								},
+								{
+									"code": null,
+									"title": "The New Science"
+								},
+								{
+									"code": null,
+									"title": "Advanced Indian Historiography"
+								}
+							]
+						},
+						{
+							"rule": "Any two world history courses",
+							"pick": 2,
+							"courses": [
+								{
+									"code": "HIST326",
+									"title": "Ancient World"
+								},
+								{
+									"code": "HIST209",
+									"title": "How We Became Modern: World History from 1750 to the Present"
+								},
+								{
+									"code": null,
+									"title": "Winds of Change: Anticolonial Movements in the 19th and 20th Centuries"
+								},
+								{
+									"code": null,
+									"title": "Economic History: Humans as Planetary Pilots"
+								},
+								{
+									"code": null,
+									"title": "Urban Emergence"
+								}
+							]
+						},
+						{
+							"rule": "Any two Indian history courses",
+							"pick": 2,
+							"courses": [
+								{
+									"code": "HIST337",
+									"title": "The Rise of Civilizations in India"
+								},
+								{
+									"code": "HIST205",
+									"title": "Sources of the Self: India in the Second Millennium A.D."
+								},
+								{
+									"code": "HIST206",
+									"title": "From Mughaliyah Saltanat to Sovereign Republic: India in Transition"
+								},
+								{
+									"code": null,
+									"title": "India and the World"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "history",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 20,
+						"elective": 4
+					},
+					"required": [],
+					"picks": [
+						"HIST303",
+						"HIST355",
+						"HIST326",
+						"HIST209",
+						"HIST337",
+						"HIST205",
+						"HIST206"
+					],
+					"electives": [
+						"ENVS216",
+						"HIST318",
+						"HIST330",
+						"HIST334",
+						"HIST336",
+						"HIST343",
+						"SOCL338"
+					],
+					"choices": [
+						{
+							"rule": "Any one methodology course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": null,
+									"title": "The Historian's Craft: Primary Sources and their Interpretations"
+								},
+								{
+									"code": "HIST303",
+									"title": "Historical Reasoning"
+								},
+								{
+									"code": "HIST355",
+									"title": "Indian Historiography"
+								},
+								{
+									"code": null,
+									"title": "The New Science"
+								},
+								{
+									"code": null,
+									"title": "Advanced Indian Historiography"
+								}
+							]
+						},
+						{
+							"rule": "Any two world history courses",
+							"pick": 2,
+							"courses": [
+								{
+									"code": "HIST326",
+									"title": "Ancient World"
+								},
+								{
+									"code": "HIST209",
+									"title": "How We Became Modern: World History from 1750 to the Present"
+								},
+								{
+									"code": null,
+									"title": "Winds of Change: Anticolonial Movements in the 19th and 20th Centuries"
+								},
+								{
+									"code": null,
+									"title": "Economic History: Humans as Planetary Pilots"
+								},
+								{
+									"code": null,
+									"title": "Urban Emergence"
+								}
+							]
+						},
+						{
+							"rule": "Any two Indian history courses",
+							"pick": 2,
+							"courses": [
+								{
+									"code": "HIST337",
+									"title": "The Rise of Civilizations in India"
+								},
+								{
+									"code": "HIST205",
+									"title": "Sources of the Self: India in the Second Millennium A.D."
+								},
+								{
+									"code": "HIST206",
+									"title": "From Mughaliyah Saltanat to Sovereign Republic: India in Transition"
+								},
+								{
+									"code": null,
+									"title": "India and the World"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "history",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [],
+					"picks": [
+						"HIST303",
+						"HIST355",
+						"HIST326",
+						"HIST209",
+						"HIST337",
+						"HIST205",
+						"HIST206"
+					],
+					"electives": [
+						"ENVS216",
+						"HIST318",
+						"HIST330",
+						"HIST334",
+						"HIST336",
+						"HIST343",
+						"SOCL338"
+					],
+					"choices": [
+						{
+							"rule": "Any one methodology course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": null,
+									"title": "The Historian's Craft: Primary Sources and their Interpretations"
+								},
+								{
+									"code": "HIST303",
+									"title": "Historical Reasoning"
+								},
+								{
+									"code": "HIST355",
+									"title": "Indian Historiography"
+								},
+								{
+									"code": null,
+									"title": "The New Science"
+								},
+								{
+									"code": null,
+									"title": "Advanced Indian Historiography"
+								}
+							]
+						},
+						{
+							"rule": "Any one world history course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "HIST326",
+									"title": "Ancient World"
+								},
+								{
+									"code": "HIST209",
+									"title": "How We Became Modern: World History from 1750 to the Present"
+								},
+								{
+									"code": null,
+									"title": "Winds of Change: Anticolonial Movements in the 19th and 20th Centuries"
+								},
+								{
+									"code": null,
+									"title": "Economic History: Humans as Planetary Pilots"
+								},
+								{
+									"code": null,
+									"title": "Urban Emergence"
+								}
+							]
+						},
+						{
+							"rule": "Any two Indian history courses",
+							"pick": 2,
+							"courses": [
+								{
+									"code": "HIST337",
+									"title": "The Rise of Civilizations in India"
+								},
+								{
+									"code": "HIST205",
+									"title": "Sources of the Self: India in the Second Millennium A.D."
+								},
+								{
+									"code": "HIST206",
+									"title": "From Mughaliyah Saltanat to Sovereign Republic: India in Transition"
+								},
+								{
+									"code": null,
+									"title": "India and the World"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "history",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [],
+					"picks": [
+						"HIST303",
+						"HIST355",
+						"HIST326",
+						"HIST209",
+						"HIST337",
+						"HIST205",
+						"HIST206"
+					],
+					"electives": [
+						"ENVS216",
+						"HIST318",
+						"HIST330",
+						"HIST334",
+						"HIST336",
+						"HIST343",
+						"SOCL338"
+					],
+					"choices": [
+						{
+							"rule": "Any one methodology course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": null,
+									"title": "The Historian's Craft: Primary Sources and their Interpretations"
+								},
+								{
+									"code": "HIST303",
+									"title": "Historical Reasoning"
+								},
+								{
+									"code": "HIST355",
+									"title": "Indian Historiography"
+								},
+								{
+									"code": null,
+									"title": "The New Science"
+								},
+								{
+									"code": null,
+									"title": "Advanced Indian Historiography"
+								}
+							]
+						},
+						{
+							"rule": "Any one world history course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "HIST326",
+									"title": "Ancient World"
+								},
+								{
+									"code": "HIST209",
+									"title": "How We Became Modern: World History from 1750 to the Present"
+								},
+								{
+									"code": null,
+									"title": "Winds of Change: Anticolonial Movements in the 19th and 20th Centuries"
+								},
+								{
+									"code": null,
+									"title": "Economic History: Humans as Planetary Pilots"
+								},
+								{
+									"code": null,
+									"title": "Urban Emergence"
+								}
+							]
+						},
+						{
+							"rule": "Any two Indian history courses",
+							"pick": 2,
+							"courses": [
+								{
+									"code": "HIST337",
+									"title": "The Rise of Civilizations in India"
+								},
+								{
+									"code": "HIST205",
+									"title": "Sources of the Self: India in the Second Millennium A.D."
+								},
+								{
+									"code": "HIST206",
+									"title": "From Mughaliyah Saltanat to Sovereign Republic: India in Transition"
+								},
+								{
+									"code": null,
+									"title": "India and the World"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "literature",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 28,
+						"elective": 52
+					},
+					"required": [
+						"LITT201",
+						"LITT206",
+						"LITT208",
+						"LITT212",
+						"LITT241",
+						"LITT301",
+						"LITT308"
+					],
+					"picks": [],
+					"electives": [
+						"LITT205",
+						"LITT224",
+						"LITT232",
+						"LITT326",
+						"LITT335",
+						"LITT431"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "literature",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 64,
+						"required": 28,
+						"elective": 36
+					},
+					"required": [
+						"LITT201",
+						"LITT206",
+						"LITT208",
+						"LITT212",
+						"LITT241",
+						"LITT301",
+						"LITT308"
+					],
+					"picks": [],
+					"electives": [
+						"LITT205",
+						"LITT224",
+						"LITT232",
+						"LITT326",
+						"LITT335",
+						"LITT431"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "literature",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 60,
+						"required": 28,
+						"elective": 32
+					},
+					"required": [
+						"LITT201",
+						"LITT206",
+						"LITT208",
+						"LITT212",
+						"LITT241",
+						"LITT301",
+						"LITT308"
+					],
+					"picks": [],
+					"electives": [
+						"LITT205",
+						"LITT224",
+						"LITT232",
+						"LITT326",
+						"LITT335",
+						"LITT431"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "literature",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 28,
+						"elective": 20
+					},
+					"required": [
+						"LITT201",
+						"LITT206",
+						"LITT208",
+						"LITT212",
+						"LITT241",
+						"LITT301",
+						"LITT308"
+					],
+					"picks": [],
+					"electives": [
+						"LITT205",
+						"LITT224",
+						"LITT232",
+						"LITT326",
+						"LITT335",
+						"LITT431"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "literature",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 16,
+						"elective": 16
+					},
+					"required": [],
+					"picks": [
+						"LITT201",
+						"LITT206",
+						"LITT208",
+						"LITT212",
+						"LITT301",
+						"LITT308",
+						"LITT241"
+					],
+					"electives": [
+						"LITT205",
+						"LITT224",
+						"LITT232",
+						"LITT326",
+						"LITT335",
+						"LITT431"
+					],
+					"choices": [
+						{
+							"rule": "Any four of the required courses",
+							"pick": 4,
+							"courses": [
+								{
+									"code": "LITT201",
+									"title": "Introduction to Literary Studies"
+								},
+								{
+									"code": "LITT206",
+									"title": "Creative Writing"
+								},
+								{
+									"code": "LITT208",
+									"title": "Genre (Shakespeare on Screen)"
+								},
+								{
+									"code": "LITT212",
+									"title": "Literary Movements"
+								},
+								{
+									"code": "LITT301",
+									"title": "Make or Break?: The Literary Canon"
+								},
+								{
+									"code": "LITT308",
+									"title": "Translation"
+								},
+								{
+									"code": "LITT241",
+									"title": "Out on a Quest: Writing a Research Essay"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "literature",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 16,
+						"elective": 8
+					},
+					"required": [],
+					"picks": [
+						"LITT201",
+						"LITT206",
+						"LITT208",
+						"LITT212",
+						"LITT301",
+						"LITT308",
+						"LITT241"
+					],
+					"electives": [
+						"LITT205",
+						"LITT224",
+						"LITT232",
+						"LITT326",
+						"LITT335",
+						"LITT431"
+					],
+					"choices": [
+						{
+							"rule": "Any four of the required courses",
+							"pick": 4,
+							"courses": [
+								{
+									"code": "LITT201",
+									"title": "Introduction to Literary Studies"
+								},
+								{
+									"code": "LITT206",
+									"title": "Creative Writing"
+								},
+								{
+									"code": "LITT208",
+									"title": "Genre (Shakespeare on Screen)"
+								},
+								{
+									"code": "LITT212",
+									"title": "Literary Movements"
+								},
+								{
+									"code": "LITT301",
+									"title": "Make or Break?: The Literary Canon"
+								},
+								{
+									"code": "LITT308",
+									"title": "Translation"
+								},
+								{
+									"code": "LITT241",
+									"title": "Out on a Quest: Writing a Research Essay"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "literature",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 0,
+						"elective": 16
+					},
+					"required": [],
+					"picks": [],
+					"electives": [
+						"ARTS229",
+						"ARTS242",
+						"ARTS336",
+						"ENVS221",
+						"ENVS315",
+						"ENVS433",
+						"HIST303",
+						"LITT201",
+						"LITT205",
+						"LITT206",
+						"LITT208",
+						"LITT212",
+						"LITT223",
+						"LITT224",
+						"LITT232",
+						"LITT233",
+						"LITT237",
+						"LITT241",
+						"LITT244",
+						"LITT301",
+						"LITT308",
+						"LITT316",
+						"LITT323",
+						"LITT326",
+						"LITT330",
+						"LITT331",
+						"LITT332",
+						"LITT335",
+						"LITT338",
+						"LITT342",
+						"LITT343",
+						"LITT344",
+						"LITT348",
+						"LITT431",
+						"LITT442",
+						"PHIL208",
+						"PHIL334",
+						"PHIL337",
+						"PSYC333",
+						"SOCL225",
+						"SOCL337",
+						"SOCL346",
+						"SOCL347",
+						"LITT432",
+						"LITT340",
+						"LITT239",
+						"LITT245"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "literature",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 0,
+						"elective": 16
+					},
+					"required": [],
+					"picks": [],
+					"electives": [
+						"ARTS229",
+						"ARTS242",
+						"ARTS336",
+						"ENVS221",
+						"ENVS315",
+						"ENVS433",
+						"HIST303",
+						"LITT201",
+						"LITT205",
+						"LITT206",
+						"LITT208",
+						"LITT212",
+						"LITT223",
+						"LITT224",
+						"LITT232",
+						"LITT233",
+						"LITT237",
+						"LITT241",
+						"LITT244",
+						"LITT301",
+						"LITT308",
+						"LITT316",
+						"LITT323",
+						"LITT326",
+						"LITT330",
+						"LITT331",
+						"LITT332",
+						"LITT335",
+						"LITT338",
+						"LITT342",
+						"LITT343",
+						"LITT344",
+						"LITT348",
+						"LITT431",
+						"LITT442",
+						"PHIL208",
+						"PHIL334",
+						"PHIL337",
+						"PSYC333",
+						"SOCL225",
+						"SOCL337",
+						"SOCL346",
+						"SOCL347",
+						"LITT432",
+						"LITT340",
+						"LITT239",
+						"LITT245"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "mathematics",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 68,
+						"elective": 12
+					},
+					"required": [
+						"MATH191",
+						"MATH201",
+						"MATH202",
+						"MATH203",
+						"MATH226",
+						"MATH230",
+						"MATH231",
+						"MATH303",
+						"MATH304",
+						"MATH305",
+						"MATH313",
+						"MATH332",
+						"MATH333",
+						"MATH341"
+					],
+					"picks": [
+						"MATH434",
+						"MATH442",
+						"MATH427",
+						"MATH328",
+						"MATH414",
+						"MATH344",
+						"MATH405"
+					],
+					"electives": [
+						"COMP330",
+						"MATH061",
+						"MATH066",
+						"MATH256",
+						"MATH342",
+						"MATH343",
+						"MATH346",
+						"MATH352",
+						"MATH381",
+						"MATH307",
+						"MATH334"
+					],
+					"choices": [
+						{
+							"rule": "Any three of the following courses",
+							"pick": 3,
+							"courses": [
+								{
+									"code": "MATH434",
+									"title": "Algebra 4"
+								},
+								{
+									"code": "MATH442",
+									"title": "Topology 2"
+								},
+								{
+									"code": "MATH427",
+									"title": "Partial Differential Equations"
+								},
+								{
+									"code": "MATH328",
+									"title": "Numerical Methods"
+								},
+								{
+									"code": "MATH414",
+									"title": "Statistics"
+								},
+								{
+									"code": "MATH344",
+									"title": "Geometry of Curves and Surfaces"
+								},
+								{
+									"code": "MATH405",
+									"title": "Measure theory and integration"
+								}
+							]
+						}
+					],
+					"pathway": [
+						{
+							"year": 1,
+							"trim": 3,
+							"code": "MATH191"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "MATH201"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "MATH230"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "MATH202"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "MATH231"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH203"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH226"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "MATH303"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "MATH332"
+						},
+						{
+							"year": 3,
+							"trim": 2,
+							"code": "MATH341"
+						},
+						{
+							"year": 3,
+							"trim": 2,
+							"code": "MATH313"
+						},
+						{
+							"year": 3,
+							"trim": 3,
+							"code": "MATH305"
+						},
+						{
+							"year": 3,
+							"trim": 3,
+							"code": "MATH333"
+						},
+						{
+							"year": 4,
+							"trim": 1,
+							"code": "MATH304"
+						}
+					]
+				},
+				{
+					"subject": "mathematics",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 64,
+						"required": 52,
+						"elective": 12
+					},
+					"required": [
+						"MATH191",
+						"MATH201",
+						"MATH202",
+						"MATH203",
+						"MATH226",
+						"MATH230",
+						"MATH231",
+						"MATH303",
+						"MATH332"
+					],
+					"picks": [
+						"MATH341",
+						"MATH305",
+						"MATH333",
+						"MATH313",
+						"MATH328"
+					],
+					"electives": [
+						"COMP330",
+						"MATH061",
+						"MATH066",
+						"MATH256",
+						"MATH304",
+						"MATH342",
+						"MATH343",
+						"MATH344",
+						"MATH346",
+						"MATH352",
+						"MATH381",
+						"MATH405",
+						"MATH414",
+						"MATH427",
+						"MATH434",
+						"MATH442",
+						"MATH307",
+						"MATH334"
+					],
+					"choices": [
+						{
+							"rule": "Any four of the following courses",
+							"pick": 4,
+							"courses": [
+								{
+									"code": "MATH341",
+									"title": "Topology 1"
+								},
+								{
+									"code": "MATH305",
+									"title": "Complex Analysis"
+								},
+								{
+									"code": "MATH333",
+									"title": "Algebra 3"
+								},
+								{
+									"code": "MATH313",
+									"title": "Probability"
+								},
+								{
+									"code": "MATH328",
+									"title": "Numerical Methods"
+								}
+							]
+						}
+					],
+					"pathway": [
+						{
+							"year": 1,
+							"trim": 3,
+							"code": "MATH191"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "MATH201"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "MATH230"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "MATH202"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "MATH231"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH203"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH226"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "MATH303"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "MATH332"
+						}
+					]
+				},
+				{
+					"subject": "mathematics",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 60,
+						"required": 52,
+						"elective": 8
+					},
+					"required": [
+						"MATH191",
+						"MATH201",
+						"MATH202",
+						"MATH203",
+						"MATH226",
+						"MATH230",
+						"MATH231",
+						"MATH303",
+						"MATH332"
+					],
+					"picks": [
+						"MATH341",
+						"MATH305",
+						"MATH333",
+						"MATH313",
+						"MATH328"
+					],
+					"electives": [
+						"COMP330",
+						"MATH061",
+						"MATH066",
+						"MATH256",
+						"MATH304",
+						"MATH342",
+						"MATH343",
+						"MATH344",
+						"MATH346",
+						"MATH352",
+						"MATH381",
+						"MATH405",
+						"MATH414",
+						"MATH427",
+						"MATH434",
+						"MATH442",
+						"MATH307",
+						"MATH334"
+					],
+					"choices": [
+						{
+							"rule": "Any four of the following courses",
+							"pick": 4,
+							"courses": [
+								{
+									"code": "MATH341",
+									"title": "Topology 1"
+								},
+								{
+									"code": "MATH305",
+									"title": "Complex Analysis"
+								},
+								{
+									"code": "MATH333",
+									"title": "Algebra 3"
+								},
+								{
+									"code": "MATH313",
+									"title": "Probability"
+								},
+								{
+									"code": "MATH328",
+									"title": "Numerical Methods"
+								}
+							]
+						}
+					],
+					"pathway": [
+						{
+							"year": 1,
+							"trim": 3,
+							"code": "MATH191"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "MATH201"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "MATH230"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "MATH202"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "MATH231"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH203"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH226"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "MATH303"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "MATH332"
+						}
+					]
+				},
+				{
+					"subject": "mathematics",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 48,
+						"elective": 0
+					},
+					"required": [
+						"MATH191",
+						"MATH201",
+						"MATH202",
+						"MATH203",
+						"MATH226",
+						"MATH230",
+						"MATH231",
+						"MATH303",
+						"MATH332"
+					],
+					"picks": [
+						"MATH341",
+						"MATH305",
+						"MATH333",
+						"MATH313",
+						"MATH328"
+					],
+					"electives": [
+						"COMP330",
+						"MATH061",
+						"MATH066",
+						"MATH256",
+						"MATH304",
+						"MATH342",
+						"MATH343",
+						"MATH344",
+						"MATH346",
+						"MATH352",
+						"MATH381",
+						"MATH405",
+						"MATH414",
+						"MATH427",
+						"MATH434",
+						"MATH442",
+						"MATH307",
+						"MATH334"
+					],
+					"choices": [
+						{
+							"rule": "Any three of the following courses",
+							"pick": 3,
+							"courses": [
+								{
+									"code": "MATH341",
+									"title": "Topology 1"
+								},
+								{
+									"code": "MATH305",
+									"title": "Complex Analysis"
+								},
+								{
+									"code": "MATH333",
+									"title": "Algebra 3"
+								},
+								{
+									"code": "MATH313",
+									"title": "Probability"
+								},
+								{
+									"code": "MATH328",
+									"title": "Numerical Methods"
+								}
+							]
+						}
+					],
+					"pathway": [
+						{
+							"year": 1,
+							"trim": 3,
+							"code": "MATH191"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "MATH201"
+						},
+						{
+							"year": 2,
+							"trim": 1,
+							"code": "MATH230"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "MATH202"
+						},
+						{
+							"year": 2,
+							"trim": 2,
+							"code": "MATH231"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH203"
+						},
+						{
+							"year": 2,
+							"trim": 3,
+							"code": "MATH226"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "MATH303"
+						},
+						{
+							"year": 3,
+							"trim": 1,
+							"code": "MATH332"
+						}
+					]
+				},
+				{
+					"subject": "mathematics",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 16,
+						"elective": 16
+					},
+					"required": [
+						"MATH191",
+						"MATH201",
+						"MATH202",
+						"MATH230"
+					],
+					"picks": [],
+					"electives": [
+						"COMP330",
+						"MATH061",
+						"MATH066",
+						"MATH203",
+						"MATH226",
+						"MATH231",
+						"MATH256",
+						"MATH303",
+						"MATH304",
+						"MATH305",
+						"MATH313",
+						"MATH328",
+						"MATH332",
+						"MATH333",
+						"MATH341",
+						"MATH342",
+						"MATH343",
+						"MATH344",
+						"MATH346",
+						"MATH352",
+						"MATH381",
+						"MATH405",
+						"MATH414",
+						"MATH427",
+						"MATH434",
+						"MATH442",
+						"MATH307",
+						"MATH334"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "mathematics",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 16,
+						"elective": 8
+					},
+					"required": [
+						"MATH191",
+						"MATH201",
+						"MATH202",
+						"MATH230"
+					],
+					"picks": [],
+					"electives": [
+						"COMP330",
+						"MATH061",
+						"MATH066",
+						"MATH203",
+						"MATH226",
+						"MATH231",
+						"MATH256",
+						"MATH303",
+						"MATH304",
+						"MATH305",
+						"MATH313",
+						"MATH328",
+						"MATH332",
+						"MATH333",
+						"MATH341",
+						"MATH342",
+						"MATH343",
+						"MATH344",
+						"MATH346",
+						"MATH352",
+						"MATH381",
+						"MATH405",
+						"MATH414",
+						"MATH427",
+						"MATH434",
+						"MATH442",
+						"MATH307",
+						"MATH334"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "mathematics",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [
+						"MATH191",
+						"MATH201",
+						"MATH202",
+						"MATH230"
+					],
+					"picks": [],
+					"electives": [
+						"COMP330",
+						"MATH061",
+						"MATH066",
+						"MATH203",
+						"MATH226",
+						"MATH231",
+						"MATH256",
+						"MATH303",
+						"MATH304",
+						"MATH305",
+						"MATH313",
+						"MATH328",
+						"MATH332",
+						"MATH333",
+						"MATH341",
+						"MATH342",
+						"MATH343",
+						"MATH344",
+						"MATH346",
+						"MATH352",
+						"MATH381",
+						"MATH405",
+						"MATH414",
+						"MATH427",
+						"MATH434",
+						"MATH442",
+						"MATH307",
+						"MATH334"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "mathematics",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [
+						"MATH191",
+						"MATH201",
+						"MATH202",
+						"MATH230"
+					],
+					"picks": [],
+					"electives": [
+						"COMP330",
+						"MATH061",
+						"MATH066",
+						"MATH203",
+						"MATH226",
+						"MATH231",
+						"MATH256",
+						"MATH303",
+						"MATH304",
+						"MATH305",
+						"MATH313",
+						"MATH328",
+						"MATH332",
+						"MATH333",
+						"MATH341",
+						"MATH342",
+						"MATH343",
+						"MATH344",
+						"MATH346",
+						"MATH352",
+						"MATH381",
+						"MATH405",
+						"MATH414",
+						"MATH427",
+						"MATH434",
+						"MATH442",
+						"MATH307",
+						"MATH334"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "philosophy",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 16,
+						"elective": 16
+					},
+					"required": [
+						"PHIL202",
+						"PHIL205",
+						"PHIL206",
+						"PHIL305"
+					],
+					"picks": [],
+					"electives": [
+						"ENVS250",
+						"HIST303",
+						"LITT323",
+						"PHIL208",
+						"PHIL230",
+						"PHIL231",
+						"PHIL240",
+						"PHIL303",
+						"PHIL312",
+						"PHIL333",
+						"PHIL334",
+						"PHIL335",
+						"PHIL337",
+						"PHIL339",
+						"PHIL341",
+						"PHIL342",
+						"POLT301",
+						"POLT313",
+						"SOCL206",
+						"SOCL337",
+						"PHIL207"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "philosophy",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 16,
+						"elective": 8
+					},
+					"required": [
+						"PHIL202",
+						"PHIL205",
+						"PHIL206",
+						"PHIL305"
+					],
+					"picks": [],
+					"electives": [
+						"ENVS250",
+						"HIST303",
+						"LITT323",
+						"PHIL208",
+						"PHIL230",
+						"PHIL231",
+						"PHIL240",
+						"PHIL303",
+						"PHIL312",
+						"PHIL333",
+						"PHIL334",
+						"PHIL335",
+						"PHIL337",
+						"PHIL339",
+						"PHIL341",
+						"PHIL342",
+						"POLT301",
+						"POLT313",
+						"SOCL206",
+						"SOCL337",
+						"PHIL207"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "philosophy",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [
+						"PHIL202",
+						"PHIL205",
+						"PHIL206",
+						"PHIL305"
+					],
+					"picks": [],
+					"electives": [
+						"ENVS250",
+						"HIST303",
+						"LITT323",
+						"PHIL208",
+						"PHIL230",
+						"PHIL231",
+						"PHIL240",
+						"PHIL303",
+						"PHIL312",
+						"PHIL333",
+						"PHIL334",
+						"PHIL335",
+						"PHIL337",
+						"PHIL339",
+						"PHIL341",
+						"PHIL342",
+						"POLT301",
+						"POLT313",
+						"SOCL206",
+						"SOCL337",
+						"PHIL207"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "philosophy",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [
+						"PHIL202",
+						"PHIL205",
+						"PHIL206",
+						"PHIL305"
+					],
+					"picks": [],
+					"electives": [
+						"ENVS250",
+						"HIST303",
+						"LITT323",
+						"PHIL208",
+						"PHIL230",
+						"PHIL231",
+						"PHIL240",
+						"PHIL303",
+						"PHIL312",
+						"PHIL333",
+						"PHIL334",
+						"PHIL335",
+						"PHIL337",
+						"PHIL339",
+						"PHIL341",
+						"PHIL342",
+						"POLT301",
+						"POLT313",
+						"SOCL206",
+						"SOCL337",
+						"PHIL207"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "physics",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 82,
+						"required": 58,
+						"elective": 24
+					},
+					"required": [
+						"PHYS201",
+						"PHYS202",
+						"PHYS211",
+						"PHYS216",
+						"PHYS221",
+						"PHYS222",
+						"PHYS223",
+						"PHYS224",
+						"PHYS225",
+						"PHYS226",
+						"PHYS227",
+						"PHYS231",
+						"PHYS236",
+						"PHYS301",
+						"PHYS311",
+						"PHYS327",
+						"PHYS331",
+						"PHYS341",
+						"PHYS345",
+						"PHYS401"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"PHYS228",
+						"PHYS251",
+						"PHYS253",
+						"PHYS303",
+						"PHYS350",
+						"PHYS360",
+						"PHYS361",
+						"PHYS438",
+						"PHYS443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "physics",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 64,
+						"required": 50,
+						"elective": 14
+					},
+					"required": [
+						"PHYS201",
+						"PHYS202",
+						"PHYS211",
+						"PHYS216",
+						"PHYS221",
+						"PHYS222",
+						"PHYS223",
+						"PHYS224",
+						"PHYS225",
+						"PHYS226",
+						"PHYS227",
+						"PHYS231",
+						"PHYS236",
+						"PHYS301",
+						"PHYS311",
+						"PHYS327",
+						"PHYS341",
+						"PHYS345"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"PHYS228",
+						"PHYS251",
+						"PHYS253",
+						"PHYS303",
+						"PHYS350",
+						"PHYS360",
+						"PHYS361",
+						"PHYS438",
+						"PHYS443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "physics",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 62,
+						"required": 50,
+						"elective": 12
+					},
+					"required": [
+						"PHYS201",
+						"PHYS202",
+						"PHYS211",
+						"PHYS216",
+						"PHYS221",
+						"PHYS222",
+						"PHYS223",
+						"PHYS224",
+						"PHYS225",
+						"PHYS226",
+						"PHYS227",
+						"PHYS231",
+						"PHYS236",
+						"PHYS301",
+						"PHYS311",
+						"PHYS327",
+						"PHYS341",
+						"PHYS345"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"PHYS228",
+						"PHYS251",
+						"PHYS253",
+						"PHYS303",
+						"PHYS350",
+						"PHYS360",
+						"PHYS361",
+						"PHYS438",
+						"PHYS443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "physics",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 46,
+						"elective": 2
+					},
+					"required": [
+						"PHYS201",
+						"PHYS202",
+						"PHYS211",
+						"PHYS216",
+						"PHYS221",
+						"PHYS222",
+						"PHYS223",
+						"PHYS224",
+						"PHYS225",
+						"PHYS226",
+						"PHYS227",
+						"PHYS231",
+						"PHYS236",
+						"PHYS301",
+						"PHYS311",
+						"PHYS327",
+						"PHYS341"
+					],
+					"picks": [],
+					"electives": [
+						"PHYS345",
+						"BIOS306",
+						"PHYS228",
+						"PHYS251",
+						"PHYS253",
+						"PHYS303",
+						"PHYS350",
+						"PHYS360",
+						"PHYS361",
+						"PHYS438",
+						"PHYS443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "physics",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 22,
+						"elective": 10
+					},
+					"required": [
+						"PHYS201",
+						"PHYS221",
+						"PHYS222",
+						"PHYS223",
+						"PHYS224",
+						"PHYS225",
+						"PHYS231",
+						"PHYS236"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"PHYS228",
+						"PHYS251",
+						"PHYS253",
+						"PHYS303",
+						"PHYS350",
+						"PHYS360",
+						"PHYS361",
+						"PHYS438",
+						"PHYS443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "physics",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 22,
+						"elective": 2
+					},
+					"required": [
+						"PHYS201",
+						"PHYS221",
+						"PHYS222",
+						"PHYS223",
+						"PHYS224",
+						"PHYS225",
+						"PHYS231",
+						"PHYS236"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"PHYS228",
+						"PHYS251",
+						"PHYS253",
+						"PHYS303",
+						"PHYS350",
+						"PHYS360",
+						"PHYS361",
+						"PHYS438",
+						"PHYS443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "physics",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 18,
+						"required": 18,
+						"elective": 0
+					},
+					"required": [
+						"PHYS201",
+						"PHYS221",
+						"PHYS223",
+						"PHYS224",
+						"PHYS231",
+						"PHYS236"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"PHYS228",
+						"PHYS251",
+						"PHYS253",
+						"PHYS303",
+						"PHYS350",
+						"PHYS360",
+						"PHYS361",
+						"PHYS438",
+						"PHYS443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "physics",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 18,
+						"required": 18,
+						"elective": 0
+					},
+					"required": [
+						"PHYS201",
+						"PHYS221",
+						"PHYS223",
+						"PHYS224",
+						"PHYS231",
+						"PHYS236"
+					],
+					"picks": [],
+					"electives": [
+						"BIOS306",
+						"PHYS228",
+						"PHYS251",
+						"PHYS253",
+						"PHYS303",
+						"PHYS350",
+						"PHYS360",
+						"PHYS361",
+						"PHYS438",
+						"PHYS443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "political science",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 40,
+						"elective": 40
+					},
+					"required": [
+						"POLT202",
+						"POLT203",
+						"POLT204",
+						"POLT207",
+						"SOCL304",
+						"POLT311",
+						"POLT313",
+						"SOCL355"
+					],
+					"picks": [
+						"POLT309",
+						"POLT317",
+						"POLT307",
+						"POLT308"
+					],
+					"electives": [
+						"ECON326",
+						"POLT301",
+						"POLT316",
+						"POLT325",
+						"POLT327",
+						"POLT334",
+						"POLT337",
+						"POLT338",
+						"POLT339",
+						"POLT412",
+						"POLT416",
+						"POLT431",
+						"SOCL205"
+					],
+					"choices": [
+						{
+							"rule": "Part II of any two subfields",
+							"pick": 2,
+							"courses": [
+								{
+									"code": "POLT309",
+									"title": "Indian Politics II"
+								},
+								{
+									"code": "POLT317",
+									"title": "Political Theory II"
+								},
+								{
+									"code": "POLT307",
+									"title": "Comparative Politics II"
+								},
+								{
+									"code": "POLT308",
+									"title": "Global Politics II"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "political science",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 64,
+						"required": 40,
+						"elective": 24
+					},
+					"required": [
+						"POLT202",
+						"POLT203",
+						"POLT204",
+						"POLT207",
+						"SOCL304",
+						"POLT311",
+						"POLT313",
+						"SOCL355"
+					],
+					"picks": [
+						"POLT309",
+						"POLT317",
+						"POLT307",
+						"POLT308"
+					],
+					"electives": [
+						"ECON326",
+						"POLT301",
+						"POLT316",
+						"POLT325",
+						"POLT327",
+						"POLT334",
+						"POLT337",
+						"POLT338",
+						"POLT339",
+						"POLT412",
+						"POLT416",
+						"POLT431",
+						"SOCL205"
+					],
+					"choices": [
+						{
+							"rule": "Part II of any two subfields",
+							"pick": 2,
+							"courses": [
+								{
+									"code": "POLT309",
+									"title": "Indian Politics II"
+								},
+								{
+									"code": "POLT317",
+									"title": "Political Theory II"
+								},
+								{
+									"code": "POLT307",
+									"title": "Comparative Politics II"
+								},
+								{
+									"code": "POLT308",
+									"title": "Global Politics II"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "political science",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 60,
+						"required": 36,
+						"elective": 24
+					},
+					"required": [
+						"POLT202",
+						"POLT203",
+						"POLT204",
+						"POLT207",
+						"SOCL304",
+						"POLT311",
+						"POLT313"
+					],
+					"picks": [
+						"POLT309",
+						"POLT317",
+						"POLT307",
+						"POLT308"
+					],
+					"electives": [
+						"ECON326",
+						"POLT301",
+						"POLT316",
+						"POLT325",
+						"POLT327",
+						"POLT334",
+						"POLT337",
+						"POLT338",
+						"POLT339",
+						"POLT412",
+						"POLT416",
+						"POLT431",
+						"SOCL205"
+					],
+					"choices": [
+						{
+							"rule": "Part II of any two subfields",
+							"pick": 2,
+							"courses": [
+								{
+									"code": "POLT309",
+									"title": "Indian Politics II"
+								},
+								{
+									"code": "POLT317",
+									"title": "Political Theory II"
+								},
+								{
+									"code": "POLT307",
+									"title": "Comparative Politics II"
+								},
+								{
+									"code": "POLT308",
+									"title": "Global Politics II"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "political science",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 32,
+						"elective": 16
+					},
+					"required": [
+						"POLT202",
+						"POLT203",
+						"POLT204",
+						"POLT207",
+						"SOCL304",
+						"POLT311",
+						"POLT313"
+					],
+					"picks": [
+						"POLT309",
+						"POLT317",
+						"POLT307",
+						"POLT308"
+					],
+					"electives": [
+						"ECON326",
+						"POLT301",
+						"POLT316",
+						"POLT325",
+						"POLT327",
+						"POLT334",
+						"POLT337",
+						"POLT338",
+						"POLT339",
+						"POLT412",
+						"POLT416",
+						"POLT431",
+						"SOCL205"
+					],
+					"choices": [
+						{
+							"rule": "Part II of any one subfield",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "POLT309",
+									"title": "Indian Politics II"
+								},
+								{
+									"code": "POLT317",
+									"title": "Political Theory II"
+								},
+								{
+									"code": "POLT307",
+									"title": "Comparative Politics II"
+								},
+								{
+									"code": "POLT308",
+									"title": "Global Politics II"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "political science",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 16,
+						"elective": 16
+					},
+					"required": [
+						"POLT202",
+						"POLT313"
+					],
+					"picks": [
+						"POLT203",
+						"SOCL304",
+						"POLT204",
+						"POLT207",
+						"POLT309",
+						"POLT317"
+					],
+					"electives": [
+						"ECON326",
+						"POLT301",
+						"POLT316",
+						"POLT325",
+						"POLT327",
+						"POLT334",
+						"POLT337",
+						"POLT338",
+						"POLT339",
+						"POLT412",
+						"POLT416",
+						"POLT431",
+						"SOCL205"
+					],
+					"choices": [
+						{
+							"rule": "Any two of the following courses",
+							"pick": 2,
+							"courses": [
+								{
+									"code": "POLT203",
+									"title": "Politics in Multiple Frames: Approaches, concepts and theoretical perspectives"
+								},
+								{
+									"code": "SOCL304",
+									"title": "Qualitative Methods: Researching the Social, Political and the Historical"
+								},
+								{
+									"code": "POLT204",
+									"title": "Comparative Politics I"
+								},
+								{
+									"code": "POLT207",
+									"title": "Global Politics I"
+								},
+								{
+									"code": "POLT309",
+									"title": "Indian Politics II"
+								},
+								{
+									"code": "POLT317",
+									"title": "Political Theory II"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "political science",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 16,
+						"elective": 8
+					},
+					"required": [
+						"POLT202",
+						"POLT313"
+					],
+					"picks": [
+						"POLT204",
+						"POLT207",
+						"POLT309",
+						"POLT317"
+					],
+					"electives": [
+						"ECON326",
+						"POLT301",
+						"POLT316",
+						"POLT325",
+						"POLT327",
+						"POLT334",
+						"POLT337",
+						"POLT338",
+						"POLT339",
+						"POLT412",
+						"POLT416",
+						"POLT431",
+						"SOCL205"
+					],
+					"choices": [
+						{
+							"rule": "Comparative or Global Politics I",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "POLT204",
+									"title": "Comparative Politics I"
+								},
+								{
+									"code": "POLT207",
+									"title": "Global Politics I"
+								}
+							]
+						},
+						{
+							"rule": "Indian Politics II or Political Theory II",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "POLT309",
+									"title": "Indian Politics II"
+								},
+								{
+									"code": "POLT317",
+									"title": "Political Theory II"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "political science",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 8,
+						"elective": 8
+					},
+					"required": [
+						"POLT202",
+						"POLT313"
+					],
+					"picks": [],
+					"electives": [
+						"ECON326",
+						"POLT301",
+						"POLT316",
+						"POLT325",
+						"POLT327",
+						"POLT334",
+						"POLT337",
+						"POLT338",
+						"POLT339",
+						"POLT412",
+						"POLT416",
+						"POLT431",
+						"SOCL205"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "political science",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 8,
+						"elective": 8
+					},
+					"required": [
+						"POLT202",
+						"POLT313"
+					],
+					"picks": [],
+					"electives": [
+						"ECON326",
+						"POLT301",
+						"POLT316",
+						"POLT325",
+						"POLT327",
+						"POLT334",
+						"POLT337",
+						"POLT338",
+						"POLT339",
+						"POLT412",
+						"POLT416",
+						"POLT431",
+						"SOCL205"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "psychology",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 48,
+						"elective": 32
+					},
+					"required": [
+						"PSYC201",
+						"PSYC203",
+						"PSYC204",
+						"PSYC205",
+						"PSYC208",
+						"PSYC210",
+						"PSYC304",
+						"PSYC307",
+						"PSYC327",
+						"PSYC334",
+						"PSYC340",
+						"PSYC437"
+					],
+					"picks": [],
+					"electives": [
+						"PSYC226",
+						"PSYC233",
+						"PSYC236",
+						"PSYC238",
+						"PSYC239",
+						"PSYC326",
+						"PSYC333",
+						"PSYC335",
+						"PSYC341",
+						"PSYC348",
+						"PSYC417",
+						"PSYC432",
+						"PSYC434",
+						"PSYC438",
+						"PSYC442",
+						"PSYC443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "psychology",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 64,
+						"required": 48,
+						"elective": 16
+					},
+					"required": [
+						"PSYC201",
+						"PSYC203",
+						"PSYC204",
+						"PSYC205",
+						"PSYC208",
+						"PSYC210",
+						"PSYC304",
+						"PSYC307",
+						"PSYC327",
+						"PSYC334",
+						"PSYC340",
+						"PSYC437"
+					],
+					"picks": [],
+					"electives": [
+						"PSYC226",
+						"PSYC233",
+						"PSYC236",
+						"PSYC238",
+						"PSYC239",
+						"PSYC326",
+						"PSYC333",
+						"PSYC335",
+						"PSYC341",
+						"PSYC348",
+						"PSYC417",
+						"PSYC432",
+						"PSYC434",
+						"PSYC438",
+						"PSYC442",
+						"PSYC443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "psychology",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 60,
+						"required": 36,
+						"elective": 24
+					},
+					"required": [
+						"PSYC201",
+						"PSYC203",
+						"PSYC204",
+						"PSYC205",
+						"PSYC208",
+						"PSYC210",
+						"PSYC304",
+						"PSYC327",
+						"PSYC334"
+					],
+					"picks": [],
+					"electives": [
+						"PSYC226",
+						"PSYC233",
+						"PSYC236",
+						"PSYC238",
+						"PSYC239",
+						"PSYC326",
+						"PSYC333",
+						"PSYC335",
+						"PSYC341",
+						"PSYC348",
+						"PSYC417",
+						"PSYC432",
+						"PSYC434",
+						"PSYC438",
+						"PSYC442",
+						"PSYC443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "psychology",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 36,
+						"elective": 12
+					},
+					"required": [
+						"PSYC201",
+						"PSYC203",
+						"PSYC204",
+						"PSYC205",
+						"PSYC208",
+						"PSYC210",
+						"PSYC304",
+						"PSYC327",
+						"PSYC334"
+					],
+					"picks": [],
+					"electives": [
+						"PSYC226",
+						"PSYC233",
+						"PSYC236",
+						"PSYC238",
+						"PSYC239",
+						"PSYC326",
+						"PSYC333",
+						"PSYC335",
+						"PSYC341",
+						"PSYC348",
+						"PSYC417",
+						"PSYC432",
+						"PSYC434",
+						"PSYC438",
+						"PSYC442",
+						"PSYC443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "psychology",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 20,
+						"elective": 12
+					},
+					"required": [
+						"PSYC201",
+						"PSYC203",
+						"PSYC204",
+						"PSYC304",
+						"PSYC327"
+					],
+					"picks": [],
+					"electives": [
+						"PSYC226",
+						"PSYC233",
+						"PSYC236",
+						"PSYC238",
+						"PSYC239",
+						"PSYC326",
+						"PSYC333",
+						"PSYC335",
+						"PSYC341",
+						"PSYC348",
+						"PSYC417",
+						"PSYC432",
+						"PSYC434",
+						"PSYC438",
+						"PSYC442",
+						"PSYC443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "psychology",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 20,
+						"elective": 4
+					},
+					"required": [
+						"PSYC201",
+						"PSYC203",
+						"PSYC204",
+						"PSYC304",
+						"PSYC327"
+					],
+					"picks": [],
+					"electives": [
+						"PSYC226",
+						"PSYC233",
+						"PSYC236",
+						"PSYC238",
+						"PSYC239",
+						"PSYC326",
+						"PSYC333",
+						"PSYC335",
+						"PSYC341",
+						"PSYC348",
+						"PSYC417",
+						"PSYC432",
+						"PSYC434",
+						"PSYC438",
+						"PSYC442",
+						"PSYC443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "psychology",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": null,
+						"elective": null
+					},
+					"required": [
+						"PSYC201",
+						"PSYC210"
+					],
+					"picks": [],
+					"electives": [
+						"PSYC226",
+						"PSYC233",
+						"PSYC236",
+						"PSYC238",
+						"PSYC239",
+						"PSYC326",
+						"PSYC333",
+						"PSYC335",
+						"PSYC341",
+						"PSYC348",
+						"PSYC417",
+						"PSYC432",
+						"PSYC434",
+						"PSYC438",
+						"PSYC442",
+						"PSYC443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "psychology",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": null,
+						"elective": null
+					},
+					"required": [
+						"PSYC201",
+						"PSYC210"
+					],
+					"picks": [],
+					"electives": [
+						"PSYC226",
+						"PSYC233",
+						"PSYC236",
+						"PSYC238",
+						"PSYC239",
+						"PSYC326",
+						"PSYC333",
+						"PSYC335",
+						"PSYC341",
+						"PSYC348",
+						"PSYC417",
+						"PSYC432",
+						"PSYC434",
+						"PSYC438",
+						"PSYC442",
+						"PSYC443"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "sociology",
+					"variant": "single_major_4yr",
+					"credits": {
+						"total": 80,
+						"required": 40,
+						"elective": 40
+					},
+					"required": [
+						"SOCL201",
+						"SOCL206",
+						"SOCL211",
+						"SOCL304",
+						"SOCL305",
+						"SOCL306",
+						"SOCL328",
+						"SOCL335",
+						"SOCL355",
+						"SOCL406"
+					],
+					"picks": [],
+					"electives": [
+						"ENVS433",
+						"SOCL205",
+						"SOCL213",
+						"SOCL218",
+						"SOCL225",
+						"SOCL236",
+						"SOCL257",
+						"SOCL337",
+						"SOCL338",
+						"SOCL340",
+						"SOCL345",
+						"SOCL346",
+						"SOCL347",
+						"SOCL348",
+						"SOCL349",
+						"SOCL352",
+						"SOCL411"
+					],
+					"choices": [],
+					"pathway": []
+				},
+				{
+					"subject": "sociology",
+					"variant": "double_major_4yr",
+					"credits": {
+						"total": 64,
+						"required": 36,
+						"elective": 28
+					},
+					"required": [
+						"SOCL201",
+						"SOCL206",
+						"SOCL211",
+						"SOCL304",
+						"SOCL305",
+						"SOCL306",
+						"SOCL328",
+						"SOCL355"
+					],
+					"picks": [
+						"SOCL406",
+						"SOCL335"
+					],
+					"electives": [
+						"ENVS433",
+						"SOCL205",
+						"SOCL213",
+						"SOCL218",
+						"SOCL225",
+						"SOCL236",
+						"SOCL257",
+						"SOCL337",
+						"SOCL338",
+						"SOCL340",
+						"SOCL345",
+						"SOCL346",
+						"SOCL347",
+						"SOCL348",
+						"SOCL349",
+						"SOCL352",
+						"SOCL411"
+					],
+					"choices": [
+						{
+							"rule": "Either of the following courses",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL406",
+									"title": "Religion and Society in South Asia"
+								},
+								{
+									"code": "SOCL335",
+									"title": "Caste and Indigeneity Studies: Critical Perspectives from South Asia"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "sociology",
+					"variant": "single_major_3yr",
+					"credits": {
+						"total": 60,
+						"required": 36,
+						"elective": 24
+					},
+					"required": [
+						"SOCL201",
+						"SOCL206",
+						"SOCL211",
+						"SOCL304",
+						"SOCL305",
+						"SOCL306",
+						"SOCL328",
+						"SOCL355"
+					],
+					"picks": [
+						"SOCL406",
+						"SOCL335"
+					],
+					"electives": [
+						"ENVS433",
+						"SOCL205",
+						"SOCL213",
+						"SOCL218",
+						"SOCL225",
+						"SOCL236",
+						"SOCL257",
+						"SOCL337",
+						"SOCL338",
+						"SOCL340",
+						"SOCL345",
+						"SOCL346",
+						"SOCL347",
+						"SOCL348",
+						"SOCL349",
+						"SOCL352",
+						"SOCL411"
+					],
+					"choices": [
+						{
+							"rule": "Either of the following courses",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL406",
+									"title": "Religion and Society in South Asia"
+								},
+								{
+									"code": "SOCL335",
+									"title": "Caste and Indigeneity Studies: Critical Perspectives from South Asia"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "sociology",
+					"variant": "double_major_3yr",
+					"credits": {
+						"total": 48,
+						"required": 32,
+						"elective": 16
+					},
+					"required": [
+						"SOCL206",
+						"SOCL211",
+						"SOCL304",
+						"SOCL305",
+						"SOCL306",
+						"SOCL328",
+						"SOCL355"
+					],
+					"picks": [
+						"SOCL201",
+						"SOCL406",
+						"SOCL335"
+					],
+					"electives": [
+						"ENVS433",
+						"SOCL205",
+						"SOCL213",
+						"SOCL218",
+						"SOCL225",
+						"SOCL236",
+						"SOCL257",
+						"SOCL337",
+						"SOCL338",
+						"SOCL340",
+						"SOCL345",
+						"SOCL346",
+						"SOCL347",
+						"SOCL348",
+						"SOCL349",
+						"SOCL352",
+						"SOCL411"
+					],
+					"choices": [
+						{
+							"rule": "Any one of the following courses",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL201",
+									"title": "Communities, Identities and Cultures in India"
+								},
+								{
+									"code": "SOCL406",
+									"title": "Religion and Society in South Asia"
+								},
+								{
+									"code": "SOCL335",
+									"title": "Caste and Indigeneity Studies: Critical Perspectives from South Asia"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "sociology",
+					"variant": "minor_4yr",
+					"credits": {
+						"total": 32,
+						"required": 16,
+						"elective": 16
+					},
+					"required": [
+						"SOCL306"
+					],
+					"picks": [
+						"SOCL304",
+						"SOCL355",
+						"SOCL305",
+						"SOCL211",
+						"SOCL328",
+						"SOCL206",
+						"SOCL201",
+						"SOCL406",
+						"SOCL335"
+					],
+					"electives": [
+						"ENVS433",
+						"SOCL205",
+						"SOCL213",
+						"SOCL218",
+						"SOCL225",
+						"SOCL236",
+						"SOCL257",
+						"SOCL337",
+						"SOCL338",
+						"SOCL340",
+						"SOCL345",
+						"SOCL346",
+						"SOCL347",
+						"SOCL348",
+						"SOCL349",
+						"SOCL352",
+						"SOCL411"
+					],
+					"choices": [
+						{
+							"rule": "Either research methods course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL304",
+									"title": "Qualitative Methods: Researching the Social, Political and the Historical"
+								},
+								{
+									"code": "SOCL355",
+									"title": "Quantitative Research Methods in Humanities and Social Sciences"
+								}
+							]
+						},
+						{
+							"rule": "Any one of the following courses",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL305",
+									"title": "Introduction to Political Anthropology"
+								},
+								{
+									"code": "SOCL211",
+									"title": "Economy and Society"
+								},
+								{
+									"code": "SOCL328",
+									"title": "Kinship, Family, and Community"
+								}
+							]
+						},
+						{
+							"rule": "Any one of the following courses",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL206",
+									"title": "Introduction to Feminist Theory"
+								},
+								{
+									"code": "SOCL201",
+									"title": "Communities, Identities and Cultures in India"
+								},
+								{
+									"code": "SOCL406",
+									"title": "Religion and Society in South Asia"
+								},
+								{
+									"code": "SOCL335",
+									"title": "Caste and Indigeneity Studies: Critical Perspectives from South Asia"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "sociology",
+					"variant": "minor_3yr",
+					"credits": {
+						"total": 24,
+						"required": 16,
+						"elective": 8
+					},
+					"required": [
+						"SOCL306"
+					],
+					"picks": [
+						"SOCL304",
+						"SOCL355",
+						"SOCL305",
+						"SOCL211",
+						"SOCL328",
+						"SOCL206",
+						"SOCL201",
+						"SOCL406",
+						"SOCL335"
+					],
+					"electives": [
+						"ENVS433",
+						"SOCL205",
+						"SOCL213",
+						"SOCL218",
+						"SOCL225",
+						"SOCL236",
+						"SOCL257",
+						"SOCL337",
+						"SOCL338",
+						"SOCL340",
+						"SOCL345",
+						"SOCL346",
+						"SOCL347",
+						"SOCL348",
+						"SOCL349",
+						"SOCL352",
+						"SOCL411"
+					],
+					"choices": [
+						{
+							"rule": "Either research methods course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL304",
+									"title": "Qualitative Methods: Researching the Social, Political and the Historical"
+								},
+								{
+									"code": "SOCL355",
+									"title": "Quantitative Research Methods in Humanities and Social Sciences"
+								}
+							]
+						},
+						{
+							"rule": "Any one of the following courses",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL305",
+									"title": "Introduction to Political Anthropology"
+								},
+								{
+									"code": "SOCL211",
+									"title": "Economy and Society"
+								},
+								{
+									"code": "SOCL328",
+									"title": "Kinship, Family, and Community"
+								}
+							]
+						},
+						{
+							"rule": "Any one of the following courses",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL206",
+									"title": "Introduction to Feminist Theory"
+								},
+								{
+									"code": "SOCL201",
+									"title": "Communities, Identities and Cultures in India"
+								},
+								{
+									"code": "SOCL406",
+									"title": "Religion and Society in South Asia"
+								},
+								{
+									"code": "SOCL335",
+									"title": "Caste and Indigeneity Studies: Critical Perspectives from South Asia"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "sociology",
+					"variant": "concentration_4yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [
+						"SOCL306"
+					],
+					"picks": [
+						"SOCL304",
+						"SOCL355",
+						"SOCL305",
+						"SOCL211",
+						"SOCL328",
+						"SOCL206",
+						"SOCL201",
+						"SOCL406",
+						"SOCL335"
+					],
+					"electives": [
+						"ENVS433",
+						"SOCL205",
+						"SOCL213",
+						"SOCL218",
+						"SOCL225",
+						"SOCL236",
+						"SOCL257",
+						"SOCL337",
+						"SOCL338",
+						"SOCL340",
+						"SOCL345",
+						"SOCL346",
+						"SOCL347",
+						"SOCL348",
+						"SOCL349",
+						"SOCL352",
+						"SOCL411"
+					],
+					"choices": [
+						{
+							"rule": "Either research methods course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL304",
+									"title": "Qualitative Methods: Researching the Social, Political and the Historical"
+								},
+								{
+									"code": "SOCL355",
+									"title": "Quantitative Research Methods in Humanities and Social Sciences"
+								}
+							]
+						},
+						{
+							"rule": "Any one of the following courses",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL305",
+									"title": "Introduction to Political Anthropology"
+								},
+								{
+									"code": "SOCL211",
+									"title": "Economy and Society"
+								},
+								{
+									"code": "SOCL328",
+									"title": "Kinship, Family, and Community"
+								}
+							]
+						},
+						{
+							"rule": "Any one of the following courses",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL206",
+									"title": "Introduction to Feminist Theory"
+								},
+								{
+									"code": "SOCL201",
+									"title": "Communities, Identities and Cultures in India"
+								},
+								{
+									"code": "SOCL406",
+									"title": "Religion and Society in South Asia"
+								},
+								{
+									"code": "SOCL335",
+									"title": "Caste and Indigeneity Studies: Critical Perspectives from South Asia"
+								}
+							]
+						}
+					],
+					"pathway": []
+				},
+				{
+					"subject": "sociology",
+					"variant": "concentration_3yr",
+					"credits": {
+						"total": 16,
+						"required": 16,
+						"elective": 0
+					},
+					"required": [
+						"SOCL306"
+					],
+					"picks": [
+						"SOCL304",
+						"SOCL355",
+						"SOCL305",
+						"SOCL211",
+						"SOCL328",
+						"SOCL206",
+						"SOCL201",
+						"SOCL406",
+						"SOCL335"
+					],
+					"electives": [
+						"ENVS433",
+						"SOCL205",
+						"SOCL213",
+						"SOCL218",
+						"SOCL225",
+						"SOCL236",
+						"SOCL257",
+						"SOCL337",
+						"SOCL338",
+						"SOCL340",
+						"SOCL345",
+						"SOCL346",
+						"SOCL347",
+						"SOCL348",
+						"SOCL349",
+						"SOCL352",
+						"SOCL411"
+					],
+					"choices": [
+						{
+							"rule": "Either research methods course",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL304",
+									"title": "Qualitative Methods: Researching the Social, Political and the Historical"
+								},
+								{
+									"code": "SOCL355",
+									"title": "Quantitative Research Methods in Humanities and Social Sciences"
+								}
+							]
+						},
+						{
+							"rule": "Any one of the following courses",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL305",
+									"title": "Introduction to Political Anthropology"
+								},
+								{
+									"code": "SOCL211",
+									"title": "Economy and Society"
+								},
+								{
+									"code": "SOCL328",
+									"title": "Kinship, Family, and Community"
+								}
+							]
+						},
+						{
+							"rule": "Any one of the following courses",
+							"pick": 1,
+							"courses": [
+								{
+									"code": "SOCL206",
+									"title": "Introduction to Feminist Theory"
+								},
+								{
+									"code": "SOCL201",
+									"title": "Communities, Identities and Cultures in India"
+								},
+								{
+									"code": "SOCL406",
+									"title": "Religion and Society in South Asia"
+								},
+								{
+									"code": "SOCL335",
+									"title": "Caste and Indigeneity Studies: Critical Perspectives from South Asia"
+								}
+							]
+						}
+					],
+					"pathway": []
+				}
+			]
 		}
 	],
 	"batchRules": [
@@ -31508,5 +38415,5 @@
 			}
 		}
 	],
-	"release": "f94fcb0069ef"
+	"release": "6ace70982553"
 }

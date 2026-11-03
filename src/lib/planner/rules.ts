@@ -4,7 +4,7 @@
 // lists. a plain function of the plan so the rules can be read and tested
 // on their own; the plan store derives `allHints` from it.
 import type { Plan } from '$lib/planner/plan.svelte';
-import { offeredIn, trimName } from '$lib/planner/calendar';
+import { offeredIn } from '$lib/planner/calendar';
 import {
 	AUDIT_LIMIT,
 	byCode,
@@ -30,8 +30,9 @@ import { slotKey, TRIMS, type Hint, type TrimNum } from '$lib/types';
 /** every rule the plan is held to, as hints: worst first is the panel's job,
  *  this just states each broken (or satisfied) rule once */
 export function planHints(plan: Plan): Hint[] {
-	// a hint names courses by code, the titles are on the grid and in the details
-	const code = (c: string) => (hasCode(c) ? plan.shownCode(c) : c);
+	// a hint names courses the way the codes / titles switches say, like
+	// the grid and the catalogue, so the two never disagree
+	const code = (c: string) => (hasCode(c) ? plan.courseLabel(c) : c);
 	const hints: Hint[] = [];
 	const pos = new Map<string, { year: number; trim: TrimNum; order: number }>();
 	for (const p of plan.placed) pos.set(p.code, { year: p.year, trim: p.trim, order: p.year * 10 + p.trim });
@@ -63,11 +64,10 @@ export function planHints(plan: Plan): Hint[] {
 			kind: 'caution',
 			text:
 				thin.length === 1
-					? `${plan.trimName(thin[0].year, thin[0].trim)} is under the ${TRIM_MIN}-credit minimum (${thin[0].credits}/${TRIM_MIN})`
-					: `${thin.length} trimesters are under the ${TRIM_MIN}-credit minimum, ${thin
-							.map((t) => `${plan.trimName(t.year, t.trim)} (${t.credits})`)
-							.join(', ')}`,
-			codes: []
+					? `${plan.trimName(thin[0].year, thin[0].trim)} has ${thin[0].credits} of the ${TRIM_MIN} credits it needs`
+					: `under ${TRIM_MIN} credits: ${thin.map((t) => `${plan.trimName(t.year, t.trim)} ${t.credits}`).join(' · ')}`,
+			codes: [],
+			slots: thin.map((t) => slotKey(t.year, t.trim))
 		});
 	}
 

@@ -1,6 +1,5 @@
 // Compiles the curriculum snapshot from the source data (see
-// src/lib/curriculum/compiler.ts) and writes src/lib/data/curriculum.json —
-// what `curriculum:push` sends to Postgres, and the app's offline fallback.
+// src/lib/curriculum/compiler.ts) and writes src/lib/data/curriculum.json, // what `curriculum:push` sends to Postgres, and the app's offline fallback.
 // Runs the compiler through Vite so `$lib` imports and globs resolve exactly
 // as they do in the app.
 import { createHash } from 'node:crypto';

@@ -7,7 +7,6 @@
 	import TrimHead from './TrimHead.svelte';
 	import YearHead from './YearHead.svelte';
 	import TrimesterCell from './TrimesterCell.svelte';
-	import Milestone from './Milestone.svelte';
 	import YearControls from './YearControls.svelte';
 
 	let { touchLayout = false }: { touchLayout?: boolean } = $props();
@@ -42,7 +41,6 @@
 		{#each plan.trims as trim (trim)}
 			<TrimesterCell {year} {trim} {touchLayout} />
 		{/each}
-		{#if plan.view === 'milestones'}<Milestone {year} />{/if}
 	{/each}
 
 	<!-- the prerequisite chain's arrows, over everything -->
@@ -65,14 +63,14 @@
 		display: grid;
 		grid-template-columns: 6rem repeat(var(--cols), 1fr);
 		gap: 1rem;
-		padding: 2.4rem 3.2rem;
+		padding: 2.4rem var(--board-gutter, 3.2rem);
 	}
 
 	@include mobile {
 		.overview {
 			grid-template-columns: minmax(0, 1fr);
-			gap: 1.2rem;
-			padding: 1.6rem;
+			gap: 0.8rem;
+			padding: 1.2rem 1.6rem;
 		}
 
 		.corner {

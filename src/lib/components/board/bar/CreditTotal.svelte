@@ -3,6 +3,7 @@
 	// placed against a target. the count and its min/max switch share one
 	// recessed capsule so they read as one thing, "104 of 128, to the minimum".
 	import { usePlan } from '$lib/planner/context';
+	import { viewport } from '$lib/planner/viewport.svelte';
 	import { useBoard } from '../boardState.svelte';
 
 	const plan = usePlan();
@@ -32,19 +33,22 @@
 		>
 			{plan.totalPlacedCredits}<em>/</em>{plan.creditTarget} cr
 		</button>
-		<!-- one switch, not two buttons: a click anywhere on it flips sides -->
-		<button
-			class="seg"
-			class:maximum={!minimum}
-			title={minimum
-				? `counting against the credits you need to graduate (${plan.creditMinimum}), click for the maximum`
-				: `counting against the most you may register over your tenure (${plan.creditCeiling}), click for the minimum`}
-			aria-label="count credits against the {plan.creditTargetMode}, click to switch"
-			onclick={() => (plan.creditTargetMode = minimum ? 'maximum' : 'minimum')}
-		>
-			<span class:active={minimum}>min</span>
-			<span class:active={!minimum}>max</span>
-		</button>
+		<!-- one switch, not two buttons: a click anywhere on it flips sides.
+		     laptop-only: a phone counts against the minimum -->
+		{#if viewport.desktop}
+			<button
+				class="seg"
+				class:maximum={!minimum}
+				title={minimum
+					? `counting against the credits you need to graduate (${plan.creditMinimum}), click for the maximum`
+					: `counting against the most you may register over your tenure (${plan.creditCeiling}), click for the minimum`}
+				aria-label="count credits against the {plan.creditTargetMode}, click to switch"
+				onclick={() => (plan.creditTargetMode = minimum ? 'maximum' : 'minimum')}
+			>
+				<span class:active={minimum}>min</span>
+				<span class:active={!minimum}>max</span>
+			</button>
+		{/if}
 	</div>
 {/if}
 

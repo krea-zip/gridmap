@@ -1,11 +1,6 @@
 <script lang="ts">
 	import '../app.scss';
-	import { onMount, type Snippet } from 'svelte';
-	import { account } from '$lib/features/auth/account.svelte';
-
-	onMount(() => {
-		void account.init();
-	});
+	import type { Snippet } from 'svelte';
 
 	let { children }: { children: Snippet } = $props();
 </script>

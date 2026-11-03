@@ -1,6 +1,6 @@
 <script lang="ts">
 	// the strip over every office page: where the draft stands, and the
-	// actions that apply to all of it (preview, save, sign out). a save
+	// actions that apply to all of it (preview, save, backup, sign out). a save
 	// conflict offers a download first, so nobody loses an afternoon's work.
 	import { invalidateAll } from '$app/navigation';
 	import { account } from '$lib/features/auth/account.svelte';
@@ -13,6 +13,13 @@
 		if (office.dirty && !confirm('Sign out and leave unsaved changes?')) return;
 		await account.signOut();
 		await invalidateAll();
+	}
+
+	// the draft as an Excel file, loaded only when asked for (exceljs is big)
+	async function backup() {
+		if (!office.document) return;
+		const { downloadBackup } = await import('$lib/features/office/backup');
+		await downloadBackup(office.document);
 	}
 
 	async function downloadDraft() {
@@ -37,6 +44,7 @@
 				onclick={() => office.save()}>Save draft</button
 			>
 		{/if}
+		{#if office.document}<button onclick={backup}>Download backup</button>{/if}
 		<button onclick={signOut}>Sign out</button>
 	</div>
 </header>

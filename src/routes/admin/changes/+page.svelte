@@ -102,7 +102,7 @@
 				<ul>
 					{#each issues as issue, i (i)}
 						<li class:error={issue.severity === 'error'}>
-							{#if issue.record}<b>{issue.record}</b> —
+							{#if issue.record}<b>{issue.record}</b>:
 							{/if}{issue.message}
 						</li>
 					{/each}

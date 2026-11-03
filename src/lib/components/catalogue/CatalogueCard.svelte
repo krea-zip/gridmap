@@ -3,6 +3,7 @@
 	import type { Course, CourseType } from '$lib/types';
 	import { codeFor } from '$lib/curriculum/data';
 	import { courseIn, courseOut } from '$lib/ui/transitions';
+	import { carry } from '$lib/ui/courseDrag';
 
 	let {
 		course,
@@ -40,8 +41,7 @@
 	let showReq = $derived(type === 'required' && !compact);
 
 	function dragstart(e: DragEvent) {
-		e.dataTransfer?.setData('text/plain', course.code);
-		if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+		carry(e, course.code);
 		plan.dragging = course.code;
 	}
 </script>

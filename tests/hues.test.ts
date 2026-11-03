@@ -1,7 +1,7 @@
 // two programmes on one plan never share a colour, and a subject only ever
 // leaves its own hue when it has to
 import { expect, test } from 'vitest';
-import { distinctHues, MIN_GAP } from '$lib/planner/hues';
+import { distinctHues, MIN_GAP, nowHues } from '$lib/planner/hues';
 
 const HUES: Record<string, number> = { chemistry: 310, 'computer science': 325, mathematics: 250, literature: 340 };
 const hueOf = (s: string) => HUES[s];
@@ -29,4 +29,23 @@ test('three programmes are all kept apart', () => {
 
 test('subjects without a hue (the open minor) are skipped', () => {
 	expect(distinctHues(['open', 'chemistry'], hueOf).has('open')).toBe(false);
+});
+
+// the "now" ring: the major's colour, or both majors' on a double major
+const majors = (...subjects: string[]) => subjects.map((subject) => ({ role: 'major' as const, subject }));
+
+test('the major colours the ring', () => {
+	expect(nowHues(majors('chemistry'), hueOf)).toEqual([310, 310]);
+});
+
+test('a double major runs from one major to the other', () => {
+	expect(nowHues(majors('chemistry', 'mathematics'), hueOf)).toEqual([310, 250]);
+});
+
+test('a minor never colours the ring', () => {
+	expect(nowHues([...majors('mathematics'), { role: 'minor', subject: 'chemistry' }], hueOf)).toEqual([250, 250]);
+});
+
+test('nothing chosen yet leaves the page default', () => {
+	expect(nowHues([], hueOf)).toBeNull();
 });

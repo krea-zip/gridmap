@@ -40,8 +40,8 @@
 						<tr>
 							<td><b>{o.code}</b> {titleOf(o.code)}</td>
 							<td>{o.term}</td>
-							<td>{o.section || '—'}</td>
-							<td>{o.facultyText || o.faculty.join(', ') || '—'}</td>
+							<td>{o.section || '-'}</td>
+							<td>{o.facultyText || o.faculty.join(', ') || '-'}</td>
 							<td>
 								<select aria-label="Approval for {o.code}" bind:value={o.approval}>
 									{#each APPROVALS as a (a.value)}<option value={a.value}>{a.label}</option>{/each}

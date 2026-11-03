@@ -1,6 +1,6 @@
 // Replaces the database curriculum with the compiled one
 // (src/lib/data/curriculum.json, from `curriculum:build`) and publishes it as
-// a release — one transaction (public.import_curriculum). Needs the project's
+// a release, one transaction (public.import_curriculum). Needs the project's
 // secret key: run it from a trusted machine, never ship the key.
 //
 //   SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run curriculum:push

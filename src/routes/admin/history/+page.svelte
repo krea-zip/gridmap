@@ -1,6 +1,6 @@
 <script lang="ts">
-	// opening an old revision puts it in the editor unsaved, so nothing is
-	// lost until someone reviews it and saves it as the newest revision
+	// past releases. opening one puts it in the editor unsaved, so nothing
+	// changes until someone saves and publishes it again
 	import { enhance } from '$app/forms';
 	import { useOffice } from '$lib/features/office/workspace.svelte';
 	import type { OfficeDocument } from '$lib/features/office/model';
@@ -19,8 +19,8 @@
 		});
 </script>
 
-<h1>Change history</h1>
-<p class="office-lead">The last 100 saves, review steps and releases. Open any of them to roll back to it.</p>
+<h1>Past releases</h1>
+<p class="office-lead">What students were shown, newest first. Open one as a draft to go back to it.</p>
 
 {#if office.dirty}
 	<p class="office-note error">Save or discard your current changes before opening an older revision.</p>
@@ -28,15 +28,13 @@
 
 <div class="office-table-scroll">
 	<table>
-		<thead><tr><th>Revision</th><th>When</th><th>Step</th><th>Note</th><th></th></tr></thead>
+		<thead><tr><th>Published</th><th>Release</th><th></th></tr></thead>
 		<tbody>
 			{#each data.history as h (h.revision)}
 				<tr>
 					<td
-						>{h.revision}{#if h.revision === office.revision}<span class="office-badge">current</span>{/if}</td
+						>{when(h.created_at)}{#if h.revision === office.revision}<span class="office-badge">current</span>{/if}</td
 					>
-					<td>{when(h.created_at)}</td>
-					<td>{h.action}</td>
 					<td>{h.note}</td>
 					<td>
 						{#if h.revision !== office.revision && office.canEdit}
@@ -47,7 +45,7 @@
 									async ({ result }) => {
 										if (result.type === 'success' && result.data?.document) {
 											office.document = result.data.document as OfficeDocument;
-											office.message = `Revision ${result.data.revision} opened, unsaved. Save to make it the newest.`;
+											office.message = `Release opened as an unsaved draft. Save and publish to bring it back.`;
 										}
 									}}
 							>
@@ -58,7 +56,7 @@
 					</td>
 				</tr>
 			{:else}
-				<tr><td colspan="5" class="office-empty">No history yet. It starts with the first save.</td></tr>
+				<tr><td colspan="3" class="office-empty">Nothing published yet.</td></tr>
 			{/each}
 		</tbody>
 	</table>

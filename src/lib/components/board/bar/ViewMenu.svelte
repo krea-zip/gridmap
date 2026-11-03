@@ -3,7 +3,7 @@
 	// The board's view menu, drawn with the board's own parts. Every view is
 	// shown by what it does to one of YOUR courses: the same chip the grid
 	// draws, wearing the same mark that view adds (its grade, how often it
-	// ran, the arrow from its prerequisite, who teaches it). So the menu is a
+	// ran, the arrow from its prerequisite). So the menu is a
 	// preview of the board, not a list of names. Opens with the bar's spring,
 	// like the colour key beside it.
 	import { fade, scale } from 'svelte/transition';
@@ -12,7 +12,7 @@
 	import { BOARD_VIEWS, type BoardView } from '$lib/planner/plan.svelte';
 	import { COURSES, byCode, hasCode, isCore, satisfiedBy } from '$lib/curriculum/data';
 	import { isGradeLetter } from '$lib/planner/grades';
-	import { milestones, runRecord, teacherOf } from '$lib/planner/boardViews';
+	import { runRecord } from '$lib/planner/boardViews';
 	import type { TrimNum } from '$lib/types';
 
 	let { onpick }: { onpick: (view: BoardView) => void } = $props();
@@ -46,9 +46,7 @@
 			code,
 			pre: before(code),
 			run: runRecord(code, trim).kind,
-			grade: isGradeLetter(grade) ? grade : 'A',
-			who: teacherOf(code),
-			firstYear: milestones(plan)[0]?.credits ?? 0
+			grade: isGradeLetter(grade) ? grade : 'A'
 		};
 	});
 
@@ -95,8 +93,6 @@
 							<span class="with-x">{@render chip(sample.code)}<span class="x">×</span></span>
 						{:else if v.id === 'grades'}
 							<span class="grade">{sample.grade}</span>{@render chip(sample.code)}
-						{:else if v.id === 'milestones'}
-							<span class="rule"><b>end of y1</b> · {sample.firstYear} cr</span>
 						{:else if v.id === 'runs'}
 							{@render chip(sample.code)}<i class="run-mark" data-kind={sample.run}></i>
 						{:else if v.id === 'prereqs'}
@@ -108,10 +104,6 @@
 						{:else if v.id === 'whatif'}
 							<!-- the same course, read as another degree would: no longer counting -->
 							{@render chip(sample.code, 'other', undefined)}<i class="wi-mark" data-change="stops">−</i>
-						{:else if v.id === 'faculty'}
-							<span class="mini two" data-type={plan.courseType(sample.code)} style:--hue={plan.hueOf(sample.code)}>
-								<b>{plan.shownCode(sample.code)}</b><span class="who">{sample.who || 'lecturer'}</span>
-							</span>
 						{/if}
 					</span>
 					<span class="vm-text"><b>{v.label}</b><span>{v.note}</span></span>
@@ -256,21 +248,6 @@
 			height: 0.55rem;
 		}
 
-		// faculty: the code, and the lecturer on a line under it
-		&.two {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 0;
-		}
-
-		.who {
-			max-width: 9.6rem;
-			overflow: hidden;
-			font-size: 0.95rem;
-			text-overflow: ellipsis;
-			color: color-mix(in srgb, var(--course-ink) 75%, transparent);
-		}
-
 		// no prerequisite on the plan to show: an empty slot where it would be
 		&.ghost {
 			color: var(--color-text-muted);
@@ -315,21 +292,6 @@
 		border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
 		border-radius: 999px;
 		font-variant-numeric: tabular-nums;
-	}
-
-	// milestones: the line drawn under each year
-	.rule {
-		padding: 0.25rem 0.4rem;
-		font-size: 1.05rem;
-		white-space: nowrap;
-		color: var(--color-text-muted);
-		border-top: 1px dotted var(--color-border-light);
-		border-bottom: 1px dotted var(--color-border-light);
-
-		b {
-			font-weight: 650;
-			color: var(--color-text);
-		}
 	}
 
 	.run-mark {

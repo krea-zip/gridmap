@@ -7,6 +7,7 @@ import {
 	byCode,
 	CORE_COURSES,
 	hasCode,
+	isCore,
 	MATHS_COVERS,
 	reachableIn,
 	recommendedFor,
@@ -21,7 +22,8 @@ import { slotKey, TRIMS, type SlotKey, type TrimNum } from '$lib/types';
  * The department's recommended path for the CURRENT programme, as a pure
  * function of it: the published pathway where one exists, otherwise the
  * required courses scheduled into the earliest slot that satisfies
- * offering, year eligibility, prereq order and the 20-credit load.
+ * offering, year eligibility, prereq order and the 16-credit normal load,
+ * then evened out across the trimesters (see level).
  *
  * Derived, not stored, because it is not a second plan the student can get
  * lost in, it is what the app would suggest, recomputed whenever the
@@ -31,6 +33,7 @@ export function recommendedPath(plan: Plan, programmes: Programme[] = plan.progr
 	const subjects = programmes.map((p) => p.subject);
 	const placements: Record<SlotKey, string[]> = {};
 	const pos = new Map<string, number>(); // code -> year*10+trim
+	const published = new Map<string, number>(); // a pathway course -> the slot its department gave it
 	const load = (y: number, t: TrimNum) => (placements[slotKey(y, t)] ?? []).reduce((s, c) => s + byCode(c).credits, 0);
 	const put = (code: string, y: number, t: TrimNum) => {
 		const key = slotKey(y, t);
@@ -140,6 +143,7 @@ export function recommendedPath(plan: Plan, programmes: Programme[] = plan.progr
 			const after = Math.max(0, ...byCode(code).prereqs.map((p) => pos.get(p) ?? 0));
 			if (plan.seedYears.includes(year) && !plan.coreOnly(year, trim) && year * 10 + trim > after) {
 				put(code, year, trim);
+				published.set(code, year * 10 + trim);
 			} else {
 				// pathway claims a core-only/invisible slot (e.g. MATH191 in
 				// y1 t1) or one that breaks prereq order, tuck it into
@@ -216,7 +220,91 @@ export function recommendedPath(plan: Plan, programmes: Programme[] = plan.progr
 		}
 	}
 
+	level(plan, placements, pos, published, subs);
 	return placements;
+}
+
+/**
+ * Even the path out. Each programme's courses are laid out well on their
+ * own, but with two or three programmes the same years fill up (years 2
+ * and 3 at 16 credits, year 4 nearly empty), so this moves single courses
+ * from a heavy trimester to a lighter one while that makes the loads more
+ * even (the sum of squared loads drops). A move is only ever one the
+ * student could make: offered that term, a year the course is open to,
+ * after its prerequisites and before what needs it, under the normal load.
+ *
+ * Two things hold a course where it is. A course goes later than its level
+ * only reluctantly (a 200-level course belongs in year 2, and only a much
+ * heavier trimester sends it to year 4). A course a department's published
+ * pathway placed leaves that slot only when it clearly helps: the pathways
+ * are the departments' advice, though maths' FYUP page says other pathways
+ * work too, and its double-major versions spread over years 2 to 4.
+ * The foundation core stays put.
+ */
+function level(
+	plan: Plan,
+	placements: Record<SlotKey, string[]>,
+	pos: Map<string, number>,
+	published: Map<string, number>,
+	subs: (code: string) => string[]
+) {
+	const LATE = 6; // per credit, per year past the course's level
+	const OFF_PATHWAY = 4; // per credit, for leaving a published slot
+	const slots = plan.seedYears.flatMap((y) =>
+		TRIMS.filter((t) => !plan.coreOnly(y, t)).map((t) => ({ y, t, order: y * 10 + t, key: slotKey(y, t) }))
+	);
+	const loadAt = new Map(
+		slots.map((s) => [s.order, (placements[s.key] ?? []).reduce((sum, c) => sum + byCode(c).credits, 0)])
+	);
+	// the year a course's number says it's for: MATH191 year 1, ECON309 year 3
+	const levelYear = (code: string) => Math.min(4, Math.max(1, Number(code.match(/\d/)?.[0] ?? 2)));
+	const cost = (code: string, order: number) => {
+		const credits = byCode(code).credits;
+		const late = Math.max(0, Math.floor(order / 10) - levelYear(code));
+		const off = published.has(code) && published.get(code) !== order ? 1 : 0;
+		return credits * (LATE * late + OFF_PATHWAY * off);
+	};
+	// what a course must come after and before, among what's on the path
+	const after = (code: string) =>
+		Math.max(0, ...byCode(code).prereqs.flatMap((p) => [p, ...subs(p)].map((q) => pos.get(q) ?? 0)));
+	const before = (code: string) =>
+		Math.min(
+			Infinity,
+			...[...pos.keys()]
+				.filter((d) => byCode(d).prereqs.some((p) => p === code || subs(p).includes(code)))
+				.map((d) => pos.get(d)!)
+		);
+
+	const movable = [...pos.keys()].filter((code) => !isCore(code)).sort();
+	for (let round = 0; round < 200; round++) {
+		let best: { code: string; from: number; to: (typeof slots)[number]; gain: number } | undefined;
+		for (const code of movable) {
+			const course = byCode(code);
+			const from = pos.get(code)!;
+			const fromLoad = loadAt.get(from) ?? 0;
+			const [lo, hi] = [after(code), before(code)];
+			for (const to of slots) {
+				if (to.order === from || to.order <= lo || to.order >= hi) continue;
+				if (course.eligibleYears.length && !course.eligibleYears.includes(to.y)) continue;
+				if (course.offered.length && !course.offered.includes(to.t)) continue;
+				const toLoad = loadAt.get(to.order)!;
+				if (toLoad + course.credits > TRIM_NORMAL_MAX) continue;
+				// the change in the sum of squared loads, plus what the move costs
+				const gain =
+					2 * course.credits * (fromLoad - toLoad - course.credits) - cost(code, to.order) + cost(code, from);
+				if (gain > 0 && (!best || gain > best.gain)) best = { code, from, to, gain };
+			}
+		}
+		if (!best) return;
+		const { code, from, to } = best;
+		const fromKey = slotKey(Math.floor(from / 10), (from % 10) as TrimNum);
+		placements[fromKey] = placements[fromKey].filter((c) => c !== code);
+		if (!placements[fromKey].length) delete placements[fromKey];
+		placements[to.key] = [...(placements[to.key] ?? []), code];
+		loadAt.set(from, (loadAt.get(from) ?? 0) - byCode(code).credits);
+		loadAt.set(to.order, loadAt.get(to.order)! + byCode(code).credits);
+		pos.set(code, to.order);
+	}
 }
 
 /**

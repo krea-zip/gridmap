@@ -5,7 +5,7 @@
 
 <script lang="ts">
 	// The side columns can be dragged wider or narrower by their inner edges.
-	// Until then each takes its share of the window (see the planner layout);
+	// Until then each is as wide as its content needs (see the planner layout);
 	// a dragged width is this viewer's own, in rem so it follows the text size,
 	// and always leaves the board room. Double-clicking an edge puts it back.
 	import { onMount } from 'svelte';

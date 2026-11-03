@@ -3,6 +3,7 @@
 	// scrolls: history, what the board shows, how chips are labelled, what
 	// their colours mean, and where the plan stands at the far end
 	import { usePlan } from '$lib/planner/context';
+	import { viewport } from '$lib/planner/viewport.svelte';
 	import PixelIcon from '$lib/components/PixelIcon.svelte';
 	import Keys from './Keys.svelte';
 	import ViewPicker from './ViewPicker.svelte';
@@ -19,25 +20,29 @@
 		>
 	</Keys>
 
-	<span class="rule" aria-hidden="true"></span>
-	<ViewPicker />
-	<span class="rule" aria-hidden="true"></span>
+	<!-- the other views and the label switches are laptop-only: a phone's
+	     board stays on the plan, and its rows show code and title both -->
+	{#if viewport.desktop}
+		<span class="rule" aria-hidden="true"></span>
+		<ViewPicker />
+		<span class="rule" aria-hidden="true"></span>
 
-	<Keys label="course labels">
-		<button class:active={plan.showCodes} aria-pressed={plan.showCodes} onclick={() => plan.toggleLabel('code')}
-			><PixelIcon name="code" />codes</button
-		>
-		<button class:active={plan.showTitles} aria-pressed={plan.showTitles} onclick={() => plan.toggleLabel('title')}
-			><PixelIcon name="title" />titles</button
-		>
-		{#if plan.gradeMode}
-			<button
-				class:active={plan.showGradeLabels}
-				aria-pressed={plan.showGradeLabels}
-				onclick={() => (plan.showGradeLabels = !plan.showGradeLabels)}><PixelIcon name="grade" />grades</button
+		<Keys label="course labels">
+			<button class:active={plan.showCodes} aria-pressed={plan.showCodes} onclick={() => plan.toggleLabel('code')}
+				><PixelIcon name="code" />codes</button
 			>
-		{/if}
-	</Keys>
+			<button class:active={plan.showTitles} aria-pressed={plan.showTitles} onclick={() => plan.toggleLabel('title')}
+				><PixelIcon name="title" />titles</button
+			>
+			{#if plan.gradeMode}
+				<button
+					class:active={plan.showGradeLabels}
+					aria-pressed={plan.showGradeLabels}
+					onclick={() => (plan.showGradeLabels = !plan.showGradeLabels)}><PixelIcon name="grade" />grades</button
+				>
+			{/if}
+		</Keys>
+	{/if}
 
 	<span class="rule" aria-hidden="true"></span>
 	<ColourKey />
@@ -57,7 +62,7 @@
 		gap: 1.6rem;
 		flex-wrap: wrap;
 		min-height: 5.6rem;
-		padding: 0.8rem 3.2rem;
+		padding: 0.8rem var(--board-gutter, 3.2rem);
 		background: linear-gradient(to bottom, var(--bar-top), var(--bar-bottom));
 		box-shadow: inset 0 1px 0 var(--bar-hi);
 		border-bottom: 1px solid var(--bar-edge);
@@ -93,11 +98,22 @@
 		margin-left: auto;
 	}
 
+	// phones: one row that scrolls sideways rather than wrapping onto two.
+	// the bar isn't positioned here, so the dropdowns hang off the board
+	// instead and aren't clipped by the scrolling row (see ColourKey, ViewPicker)
 	@include mobile {
 		.board-bar {
-			position: relative;
-			padding: 1.2rem 1.6rem;
-			gap: 0.8rem;
+			position: static;
+			flex-wrap: nowrap;
+			gap: 0.6rem;
+			min-height: 0;
+			padding: 0.6rem 1.6rem;
+			overflow-x: auto;
+			scrollbar-width: none;
+
+			> :global(*) {
+				flex: none;
+			}
 		}
 
 		.rule {

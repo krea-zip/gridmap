@@ -3,7 +3,7 @@
 // per board, handed down by context so the bar, the strip and the grid stay
 // in step without threading props through every cell and chip.
 import { createContext } from 'svelte';
-import { milestones, planEnd, prereqChain, whatIfVerdict } from '$lib/planner/boardViews';
+import { planEnd, prereqChain, whatIfVerdict } from '$lib/planner/boardViews';
 import { slotOrder } from '$lib/planner/calendar';
 import type { BoardView, Plan } from '$lib/planner/plan.svelte';
 import type { TrimNum } from '$lib/types';
@@ -32,7 +32,6 @@ export class BoardState {
 			: null;
 	});
 	verdict = $derived.by(() => (this.plan.view === 'whatif' && this.plan.whatIf ? whatIfVerdict(this.plan) : null));
-	stones = $derived.by(() => (this.plan.view === 'milestones' ? milestones(this.plan) : []));
 	// a break, a suspension or a retake can push graduation past the degree's
 	// own last year
 	gradYear = $derived.by(() => Math.max(this.plan.minYears, planEnd(this.plan).end?.year ?? this.plan.minYears));

@@ -4,6 +4,7 @@
 import { tick } from 'svelte';
 import { isCore } from '$lib/curriculum/data';
 import { reducedMotion } from '$lib/ui/transitions';
+import { carried, carry } from '$lib/ui/courseDrag';
 import type { Plan } from '$lib/planner/plan.svelte';
 import type { TrimNum } from '$lib/types';
 
@@ -112,8 +113,7 @@ export class GridDrag {
 	}
 
 	start(e: DragEvent, code: string) {
-		e.dataTransfer?.setData('text/plain', code);
-		if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+		carry(e, code);
 		this.#plan.dragging = code;
 	}
 
@@ -138,7 +138,7 @@ export class GridDrag {
 		this.target = null;
 		this.aim = null;
 		this.#plan.dragging = null;
-		const code = e.dataTransfer?.getData('text/plain');
+		const code = carried(e);
 		const slot = code ? this.#nearest(e.clientX, e.clientY, code) : null;
 		if (!code || !slot) return;
 		const at = shown && shownIn === slotKey(slot) ? shown.index : this.#aimAt(slot, e.clientX, e.clientY, code)?.index;

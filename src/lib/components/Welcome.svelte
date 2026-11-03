@@ -6,7 +6,8 @@
 	// every answer is also in the sidebar; nothing here is final.
 	import { onMount } from 'svelte';
 	import { usePlan } from '$lib/planner/context';
-	import { MAJOR_SUBJECTS } from '$lib/curriculum/data';
+	import { viewport } from '$lib/planner/viewport.svelte';
+	import { optionLabel, type PickRole } from '$lib/planner/picks';
 	import type { ProgrammeRole } from '$lib/types';
 	import Modal from './Modal.svelte';
 
@@ -57,6 +58,22 @@
 		if (answered.batch) plan.growRecommended(chosen());
 	}
 </script>
+
+<!-- an answered role holds its subject; one still unanswered holds nothing yet -->
+{#snippet pick(role: PickRole, label: string)}
+	<label class="field">
+		<span>{label}</span>
+		<select
+			value={answered[role] ? plan.picks[role] : ''}
+			onchange={(e) => ((plan.picks[role] = e.currentTarget.value), answer(role))}
+		>
+			{#if !answered[role]}<option value="" disabled>choose…</option>{/if}
+			{#each plan.pickOptions(role, (r) => answered[r]) as o (o.subject.id)}
+				<option value={o.subject.id} disabled={!!o.heldAs}>{optionLabel(o)}</option>
+			{/each}
+		</select>
+	</label>
+{/snippet}
 
 <Modal title="welcome to kcal" width="54rem" onclose={ondone}>
 	<p class="lede">
@@ -113,60 +130,10 @@
 							<option value="major-minor-conc">major + minor + concentration</option>
 						</select>
 					</label>
-					<label class="field">
-						<span>major</span>
-						<select
-							value={answered.major1 ? plan.picks.major1 : ''}
-							onchange={(e) => ((plan.picks.major1 = e.currentTarget.value), answer('major1'))}
-						>
-							{#if !answered.major1}<option value="" disabled>choose…</option>{/if}
-							{#each MAJOR_SUBJECTS as s (s.id)}
-								<option value={s.id}>{s.label}</option>
-							{/each}
-						</select>
-					</label>
-					{#if asked.major2}
-						<label class="field">
-							<span>second major</span>
-							<select
-								value={answered.major2 ? plan.picks.major2 : ''}
-								onchange={(e) => ((plan.picks.major2 = e.currentTarget.value), answer('major2'))}
-							>
-								{#if !answered.major2}<option value="" disabled>choose…</option>{/if}
-								{#each plan.major2Opts as s (s.id)}
-									<option value={s.id}>{s.label}</option>
-								{/each}
-							</select>
-						</label>
-					{/if}
-					{#if asked.minor}
-						<label class="field">
-							<span>minor</span>
-							<select
-								value={answered.minor ? plan.picks.minor : ''}
-								onchange={(e) => ((plan.picks.minor = e.currentTarget.value), answer('minor'))}
-							>
-								{#if !answered.minor}<option value="" disabled>choose…</option>{/if}
-								{#each plan.minorOpts as s (s.id)}
-									<option value={s.id}>{s.label}</option>
-								{/each}
-							</select>
-						</label>
-					{/if}
-					{#if asked.conc}
-						<label class="field">
-							<span>concentration</span>
-							<select
-								value={answered.conc ? plan.picks.conc : ''}
-								onchange={(e) => ((plan.picks.conc = e.currentTarget.value), answer('conc'))}
-							>
-								{#if !answered.conc}<option value="" disabled>choose…</option>{/if}
-								{#each plan.concOpts as s (s.id)}
-									<option value={s.id}>{s.label}</option>
-								{/each}
-							</select>
-						</label>
-					{/if}
+					{@render pick('major1', 'major')}
+					{#if asked.major2}{@render pick('major2', 'second major')}{/if}
+					{#if asked.minor}{@render pick('minor', 'minor')}{/if}
+					{#if asked.conc}{@render pick('conc', 'concentration')}{/if}
 				</div>
 			</div>
 		</li>
@@ -174,7 +141,7 @@
 
 	<p class="note">
 		your department's suggested path fills in behind this as you answer, move, add or drop anything. your plan saves in
-		this browser, and you can change all of this later in the sidebar.
+		this browser, and you can change all of this later in {viewport.desktop ? 'the sidebar' : 'your degree'}.
 	</p>
 
 	<div class="actions">

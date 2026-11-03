@@ -4,7 +4,7 @@
 	// the chips render straight into the cell, which lays them out.
 	import { flip } from 'svelte/animate';
 	import { byCode, isAttemptId, isCore } from '$lib/curriculum/data';
-	import { runRecord, runText, teacherOf } from '$lib/planner/boardViews';
+	import { runRecord, runText } from '$lib/planner/boardViews';
 	import { usePlan } from '$lib/planner/context';
 	import { courseIn, courseOut, courseShift } from '$lib/ui/transitions';
 	import type { TrimNum } from '$lib/types';
@@ -41,13 +41,11 @@
 	{@const type = plan.view === 'whatif' && !attempt ? plan.whatIfType(code) : plan.courseType(code)}
 	{@const run = plan.view === 'runs' && !attempt ? runRecord(code, trim) : null}
 	{@const shift = change(code)}
-	{@const who = plan.view === 'faculty' && !isCore(code) ? teacherOf(code) : ''}
 	{@const grade = plan.gradeOf(code)}
 	<div
 		class="chip"
 		class:faded={!!board.chain && !board.chain.nodes.has(code)}
 		class:chain-root={board.chain?.root === code}
-		class:with-who={!!who}
 		class:is-audit={plan.isAudit(code)}
 		class:is-attempt={attempt}
 		class:retake={!attempt && plan.attemptsOf(code).length > 0}
@@ -98,7 +96,7 @@
 						class="phone-title">{byCode(code).title}</span
 					>{/if}
 			</span>
-			<!-- each view's mark: how often it ran, whether it'd still count, who teaches it -->
+			<!-- each view's mark: how often it ran, whether it'd still count -->
 			{#if run}
 				<span
 					class="run-mark"
@@ -114,7 +112,6 @@
 					>{shift === 'stops' ? '−' : '+'}</span
 				>
 			{/if}
-			{#if who}<span class="who" title={who}>{who}</span>{/if}
 		</button>
 		<button
 			class="x"
@@ -198,16 +195,6 @@
 			box-shadow:
 				0 0 0 2px var(--color-accent),
 				var(--shadow-card);
-		}
-
-		// faculty: the lecturer gets a line of its own under the code, the chip
-		// stretched across its trimester so the name has room
-		&.with-who {
-			flex-grow: 1;
-
-			.open {
-				flex-wrap: wrap;
-			}
 		}
 
 		// placed again after a failed attempt
@@ -296,21 +283,6 @@
 		@include whatif-mark;
 	}
 
-	.who {
-		flex-basis: 100%;
-		min-width: 0;
-		// a long name never widens the chip (and with it the column): it trims
-		// to the code's width, hover shows it all
-		contain: inline-size;
-		overflow: hidden;
-		font-size: 1.1rem;
-		font-weight: 400;
-		color: color-mix(in srgb, var(--course-ink, var(--color-text)) 75%, transparent);
-		white-space: nowrap;
-		text-overflow: ellipsis;
-	}
-
-	// pinned to the corner, above the chip-wide open button
 	.x {
 		position: absolute;
 		top: 50%;
@@ -353,38 +325,43 @@
 		}
 	}
 
+	// phones: one slim row per course, code then title, cut short with an
+	// ellipsis (the details have it in full), the × as a full-height target
 	@include mobile {
 		.chip,
 		.chip.titled {
 			flex-basis: 100%;
 			width: 100%;
 			max-width: 100%;
-			padding: 0.4rem 0.8rem;
+			padding: 0 0 0 0.9rem;
 		}
 
 		.open {
-			min-height: 4.4rem;
+			min-height: 3.8rem;
 			font-size: 1.4rem;
 		}
 
 		.label {
-			overflow: visible;
-			white-space: normal;
+			white-space: nowrap;
 		}
 
 		.phone-title {
-			display: block;
-			margin-top: 0.2rem;
-			font-size: 1.4rem;
+			display: inline;
+			margin-left: 0.6rem;
 			font-weight: 400;
-			line-height: 1.4;
 		}
 
 		.x {
 			position: static;
 			flex-shrink: 0;
-			min-width: 4.4rem;
+			transform: none;
+			min-width: 3.8rem;
+			min-height: 3.8rem;
 			opacity: 1;
+
+			&:hover {
+				transform: none;
+			}
 		}
 	}
 </style>

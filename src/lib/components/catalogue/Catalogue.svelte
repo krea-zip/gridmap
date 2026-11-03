@@ -4,6 +4,7 @@
 	import { tick } from 'svelte';
 	import { COURSES, SUBJECTS, subjectById } from '$lib/curriculum/data';
 	import { offeredIn } from '$lib/planner/calendar';
+	import { carried } from '$lib/ui/courseDrag';
 	import CatalogueCard from './CatalogueCard.svelte';
 
 	let { mobile = false }: { mobile?: boolean } = $props();
@@ -61,7 +62,7 @@
 	// dropping a course back on the catalogue removes it from the plan
 	function drop(e: DragEvent) {
 		e.preventDefault();
-		const code = e.dataTransfer?.getData('text/plain');
+		const code = carried(e);
 		if (code) plan.remove(code);
 	}
 </script>
@@ -190,12 +191,21 @@
 <style lang="scss">
 	@use '$lib/styles/mixins' as *;
 
+	// the planner gives the catalogue only the width its filter row needs at
+	// its fullest (see .filters); nothing else in it may ask for more, the
+	// cards and the search fit to whatever that is
 	.catalogue {
 		display: flex;
 		flex-direction: column;
 		height: 100%;
 		min-height: 0;
 		overflow: hidden;
+
+		> :not(.controls),
+		.search-box,
+		.department-filter {
+			contain: inline-size;
+		}
 		background: linear-gradient(to bottom, var(--color-bg-warm-start), var(--color-bg-warm-end));
 		border-right: 1px solid var(--color-border-warm);
 	}
@@ -319,11 +329,17 @@
 		}
 	}
 
+	// sized for the most a degree can have, a major, a minor and a
+	// concentration, plus kccs: four ticks, four short names (a name is four
+	// letters, under 3.8ch in any font) and the gaps, so the column holds
+	// still when the degree changes
 	.filters {
 		display: flex;
 		gap: 1.2rem;
 		flex-wrap: wrap;
+		min-inline-size: calc(4 * (1.4rem + 0.5rem + 3.8ch) + 3 * 1.2rem + 1.4rem + 1px + 0.8rem);
 		padding: 1.4rem 0.4rem 1.6rem;
+		font-size: var(--text-body);
 	}
 
 	.filter {

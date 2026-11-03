@@ -56,6 +56,8 @@
 </div>
 
 <style lang="scss">
+	@use '$lib/styles/mixins' as *;
+
 	// the menu (ViewMenu) hangs below; the caret turns over while it's open
 	.view-pick {
 		position: relative;
@@ -68,5 +70,22 @@
 
 	.open .caret {
 		transform: rotate(180deg);
+	}
+
+	// a phone's bar scrolls sideways, so the menu can't hang off its key
+	// there: it opens full width under the bar, against the board
+	@include mobile {
+		.view-pick {
+			position: static;
+		}
+
+		.view-pick :global(.view-menu) {
+			top: auto;
+			left: 1.6rem;
+			right: 1.6rem;
+			width: auto;
+			min-width: 0;
+			margin-top: 0.6rem;
+		}
 	}
 </style>

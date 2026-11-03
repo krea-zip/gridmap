@@ -60,7 +60,7 @@
 			be corrected gradually; errors must be resolved before publication.
 		</p>
 		<ul>
-			{#each office.issues.slice(0, 5) as issue}<li><b>{issue.record || issue.area}</b> — {issue.message}</li>{/each}
+			{#each office.issues.slice(0, 5) as issue}<li><b>{issue.record || issue.area}</b>, {issue.message}</li>{/each}
 		</ul>
 		<a href="/admin/changes">View all checks →</a>
 	</section>{/if}

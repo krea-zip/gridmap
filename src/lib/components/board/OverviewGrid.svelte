@@ -3,6 +3,7 @@
 	// the bulk actions under it. the parts share a BoardState by context.
 	import { untrack } from 'svelte';
 	import { usePlan } from '$lib/planner/context';
+	import { viewport } from '$lib/planner/viewport.svelte';
 	import { BoardState, provideBoard } from './boardState.svelte';
 	import BoardBar from './bar/BoardBar.svelte';
 	import ViewStrip from './ViewStrip.svelte';
@@ -47,12 +48,20 @@
 	<GradesPanel year={board.grades.year} onclose={() => (board.grades = { open: false })} />
 {/if}
 
+<!-- a phone is for checking credits and the catalogue; say so plainly -->
+{#if !viewport.desktop}
+	<p class="laptop-note">
+		<b>kcal on a phone is for checking your credits and the catalogue.</b> grades, what-if, prerequisites and the other views
+		are on a laptop. plan properly there.
+	</p>
+{/if}
+
 <!-- until the student changes something the grid is the suggested path,
      filled in for them; say so, so it doesn't read as someone else's plan -->
 {#if !plan.touched && !plan.welcoming && plan.view === 'plan'}
 	<p class="example-note">
-		<b>this is the suggested path for your degree, filled in to start you off.</b> change anything and it's yours, until then,
-		picking a different degree on the left lays it out again.
+		<b>this is the suggested path for your degree, filled in to start you off.</b> change anything and it's yours, until
+		then, picking a different degree {viewport.desktop ? 'on the left' : 'in your degree'} lays it out again.
 	</p>
 {/if}
 
@@ -62,8 +71,20 @@
 <style lang="scss">
 	@use '$lib/styles/mixins' as *;
 
+	// the phone's one plain line: what it's for, and where the rest lives
+	.laptop-note {
+		margin: 1.2rem 1.6rem 0;
+		font-size: 1.3rem;
+		line-height: 1.5;
+		color: var(--color-text-muted);
+
+		b {
+			color: var(--color-text);
+		}
+	}
+
 	.example-note {
-		margin: 1.6rem 3.2rem 0;
+		margin: 1.6rem var(--board-gutter, 3.2rem) 0;
 		padding: 0.9rem 1.4rem;
 		font-size: 1.3rem;
 		line-height: 1.5;
@@ -78,8 +99,8 @@
 
 	@include mobile {
 		.example-note {
-			margin: 1.6rem;
-			font-size: 1.4rem;
+			margin: 1.2rem 1.6rem 0;
+			font-size: 1.3rem;
 		}
 	}
 </style>

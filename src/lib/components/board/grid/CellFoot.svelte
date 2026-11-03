@@ -1,67 +1,55 @@
 <script lang="ts">
 	// a trimester's footer: through the degree, its number on the left; its
-	// load and credits on the right. in a narrow trimester the meter gives way
-	// first, so nothing runs into anything.
+	// credits on the right, coloured only when the load is off (light, heavy,
+	// over), so a normal trimester's number stays quiet.
 	import { academicYear } from '$lib/planner/calendar';
-	import { TRIM_HARD_MAX, TRIM_NORMAL_MAX } from '$lib/curriculum/data';
 	import { usePlan } from '$lib/planner/context';
 	import type { TrimNum } from '$lib/types';
+	import { fade } from 'svelte/transition';
+	import { reducedMotion } from '$lib/ui/transitions';
 
 	let { year, trim, now }: { year: number; trim: TrimNum; now: boolean } = $props();
 	const plan = usePlan();
-
-	// one segment per ordinary 4-credit course, up to the cap
-	const STEP = 4;
-	const SEGMENTS = Array.from({ length: Math.ceil(TRIM_HARD_MAX / STEP) }, (_, i) => i * STEP);
 
 	let credits = $derived(plan.slotCredits(year, trim));
 	let load = $derived(plan.slotLoad(year, trim));
 	let numbered = $derived(plan.trimNaming === 'degree');
 	let tgpa = $derived(plan.gradeMode ? plan.slotTgpa(year, trim) : null);
-	const fill = (from: number) => Math.max(0, Math.min(1, (load.credits - from) / STEP)) * 100;
 </script>
 
-{#if numbered || credits > 0}
-	<div class="foot">
-		{#if numbered}
-			<span
-				class="term"
-				class:now
-				title="{plan.trimSpelled(year, trim)}, {academicYear(plan.batchStartYear, year)}{now
-					? ', the one you’re in now'
-					: ''}">{plan.trimName(year, trim)}</span
+<!-- always there, so the number can fade in and out on its own instead of
+     arriving with the whole foot -->
+<div class="foot">
+	{#if numbered}
+		<span
+			class="term"
+			class:now
+			transition:fade={{ duration: reducedMotion() ? 0 : 180 }}
+			title="{plan.trimSpelled(year, trim)}, {academicYear(plan.batchStartYear, year)}{now
+				? ', the one you’re in now'
+				: ''}">{plan.trimName(year, trim)}</span
+		>
+	{/if}
+	{#if credits > 0}
+		<span class="cell-credits" data-status={plan.gradeMode ? undefined : load.status}>
+			{#if plan.gradeMode}
+				<span title="term GPA, this trimester's grade average">TGPA {tgpa === null ? '–' : tgpa.toFixed(2)}</span>
+			{:else}
+				<!-- amber when light or heavy, red when over; hover says why -->
+				<span class="credits" title={load.note || undefined}>{credits} cr</span>
+			{/if}
+			<button
+				class="clear"
+				title="clear this trimester"
+				aria-label="clear {plan.trimName(year, trim)}"
+				onclick={(e) => {
+					e.stopPropagation();
+					plan.clearSlot(year, trim);
+				}}>×<span class="word">clear</span></button
 			>
-		{/if}
-		{#if credits > 0}
-			<span class="cell-credits" data-status={plan.gradeMode ? undefined : load.status}>
-				<!-- the last segment, past the normal load, is the faintly striped extra load -->
-				{#if !plan.gradeMode && load.status !== 'exempt'}
-					<span class="meter" aria-hidden="true">
-						{#each SEGMENTS as from, i (i)}
-							<i class:extra={from >= TRIM_NORMAL_MAX}><b style:width="{fill(from)}%"></b></i>
-						{/each}
-					</span>
-				{/if}
-				{#if plan.gradeMode}
-					<span title="term GPA, this trimester's grade average">TGPA {tgpa === null ? '–' : tgpa.toFixed(2)}</span>
-				{:else}
-					<!-- red past the hard cap, or when more trimesters are heavy than
-					     allowed; hover says how the load stands -->
-					<span class="credits" title={load.note || undefined}>{credits} cr</span>
-				{/if}
-				<button
-					class="clear"
-					title="clear this trimester"
-					aria-label="clear {plan.trimName(year, trim)}"
-					onclick={(e) => {
-						e.stopPropagation();
-						plan.clearSlot(year, trim);
-					}}>×</button
-				>
-			</span>
-		{/if}
-	</div>
-{/if}
+		</span>
+	{/if}
+</div>
 
 <style lang="scss">
 	@use '$lib/styles/mixins' as *;
@@ -77,7 +65,7 @@
 		min-width: 0;
 	}
 
-	// the one you're in is in the accent, matching its ring and "now" tag
+	// the one you're in matches its ring and "now" tag
 	.term {
 		flex: none;
 		font-size: 1.2rem;
@@ -87,7 +75,7 @@
 		font-variant-numeric: tabular-nums;
 
 		&.now {
-			color: var(--color-accent);
+			color: var(--color-now);
 		}
 	}
 
@@ -101,13 +89,16 @@
 		font-weight: 700;
 		color: var(--color-text-muted);
 
+		&[data-status='under'],
+		&[data-status='heavy'] {
+			color: color-mix(in srgb, var(--color-hint-caution-deep) 65%, var(--color-text));
+		}
+
 		&[data-status='over'] {
 			color: var(--color-danger);
-			--load: var(--color-danger);
 		}
 	}
 
-	// the credits never give way; the meter beside them does
 	.credits {
 		flex: none;
 		white-space: nowrap;
@@ -137,51 +128,6 @@
 		}
 	}
 
-	// a glossy capsule like the sidebar's progress bars
-	.meter {
-		display: inline-flex;
-		flex: 0 1 auto;
-		min-width: 0;
-		overflow: hidden;
-		gap: 2px;
-		height: 0.8rem;
-		padding: 1px;
-		margin-right: 0.4rem;
-		@include progress-track;
-
-		i {
-			width: 0.8rem;
-			overflow: hidden;
-			border-radius: 1px;
-			background: color-mix(in srgb, var(--color-text) 7%, transparent);
-
-			&:first-child {
-				border-radius: 999px 1px 1px 999px;
-			}
-
-			&:last-child {
-				border-radius: 1px 999px 999px 1px;
-			}
-
-			&.extra {
-				background: repeating-linear-gradient(
-					-45deg,
-					color-mix(in srgb, var(--color-text) 10%, transparent) 0 2px,
-					transparent 2px 4px
-				);
-			}
-		}
-
-		b {
-			display: block;
-			height: 100%;
-			background-color: var(--load, var(--color-hint-good-deep));
-			@include progress-fill;
-			box-shadow: none;
-			transition: width 0.35s var(--spring);
-		}
-	}
-
 	// nothing waits on a hover that never comes
 	@include touch {
 		.clear {
@@ -189,7 +135,26 @@
 		}
 	}
 
+	.word {
+		display: none;
+	}
+
+	// phones: the foot joins the flow under the last course, and the clear
+	// button says what it does
 	@include mobile {
+		.foot {
+			position: static;
+			order: 9999;
+			width: 100%;
+			justify-content: flex-end;
+		}
+
+		.word {
+			display: inline;
+			margin-left: 0.3rem;
+			font-size: 1.2rem;
+		}
+
 		.term {
 			display: none; // the trimester's own button names it
 		}
@@ -200,6 +165,7 @@
 
 		.clear {
 			opacity: 1;
+			min-height: 3.2rem;
 			min-width: 4.4rem;
 		}
 	}

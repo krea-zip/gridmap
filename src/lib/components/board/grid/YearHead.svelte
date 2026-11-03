@@ -7,6 +7,7 @@
 	import { usePlan } from '$lib/planner/context';
 	import Rolling from '$lib/components/Rolling.svelte';
 	import { useBoard } from '../boardState.svelte';
+	import HeadLine from './HeadLine.svelte';
 
 	let { year }: { year: number } = $props();
 	const plan = usePlan();
@@ -33,7 +34,7 @@
 	{:else}
 		<span class="short">y{year}</span><span class="long">year {year}</span>
 	{/if}
-	<span class="ay">{academicYear(plan.batchStartYear, year)}</span>
+	<HeadLine text={academicYear(plan.batchStartYear, year)} />
 </div>
 
 <style lang="scss">
@@ -55,14 +56,6 @@
 
 	.long {
 		display: none;
-	}
-
-	.ay {
-		font-size: 1.05rem;
-		font-weight: 600;
-		white-space: nowrap;
-		color: var(--color-text-muted);
-		font-variant-numeric: tabular-nums;
 	}
 
 	// an old desktop app's readout: springs up under the cursor and squeezes
@@ -130,10 +123,17 @@
 			grid-column: 1 / -1;
 			min-width: 0;
 			flex-direction: row;
+			align-items: baseline;
 			gap: 1rem;
 			text-align: left;
-			padding: 1.2rem 0 0.2rem;
+			padding: 0.8rem 0 0;
+			font-size: 1.8rem;
 			font-weight: 600;
+		}
+
+		// the dates under it are a small toggle, not a 44px button
+		.year-head :global(.head-line) {
+			min-height: 0;
 		}
 
 		.short {

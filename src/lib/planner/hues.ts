@@ -1,9 +1,11 @@
-// a programme's colour is its subject's hue, the same on every plan. but
-// several subjects sit close together on the wheel (chemistry and computer
-// science, biology and economics, physics and data science), so on a plan
-// that has two of them they read as one. here the later programme moves to
-// the nearest hue that stands clear of the others; a plan without a clash
-// keeps every subject's own colour.
+// a programme's colour is its subject's hue, the same on every plan. sixteen
+// subjects share one arc, so each sits 15° from its neighbours, too close to
+// tell apart on one plan. the palette's order (the subjects' hues in the
+// curriculum) puts subjects students rarely combine side by side, and when a
+// plan does have two close ones, the later programme moves here to the
+// nearest hue that stands clear of the others. a plan without a clash keeps
+// every subject's own colour.
+import type { Programme } from '$lib/types';
 
 /** degrees two programmes' hues must be apart to read as different */
 export const MIN_GAP = 40;
@@ -36,4 +38,15 @@ export function distinctHues(subjects: string[], hueOf: (subject: string) => num
 		out.set(subject, best);
 	}
 	return out;
+}
+
+/** the hues the "now" ring wears: the major's, or both of a double major's,
+ *  one at each end of the ring. null before there's a major */
+export function nowHues(
+	programmes: Programme[],
+	hueOf: (subject: string) => number | undefined
+): [number, number] | null {
+	const majors = programmes.filter((p) => p.role === 'major').map((p) => hueOf(p.subject));
+	const [a, b = a] = majors.filter((h) => h !== undefined);
+	return a === undefined ? null : [a, b];
 }

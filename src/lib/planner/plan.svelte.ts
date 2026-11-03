@@ -9,7 +9,6 @@ import { restoreBoard, saveBoard } from '$lib/features/plans/autosave';
 // one course moving (worth watching fly) and when it is a whole-board redraw
 import { quietRedraw } from '$lib/ui/transitions';
 import { selectCatalogue } from '$lib/planner/catalogue';
-import { mergeCanvasCourses } from '$lib/features/plans/canvas-import';
 import { guessNow, slotAt, slotOrder, trimName, trimSpelled, type Here, type TrimNaming } from '$lib/planner/calendar';
 import {
 	CORE_COURSES,
@@ -25,9 +24,6 @@ import {
 	TRIM_MIN,
 	TRIM_NORMAL_MAX,
 	TRIM_STANDARD_MAX,
-	MAJOR_SUBJECTS,
-	OPEN_MINOR,
-	PROGRAMME_SUBJECTS,
 	Y1_CORE_MAX,
 	attemptId,
 	attemptNumber,
@@ -52,6 +48,7 @@ import {
 import { GRADE_POINTS, isGradeLetter, isGradeMark, recovery, weightedGpa, type GradeMark } from '$lib/planner/grades';
 import { planHints } from '$lib/planner/rules';
 import { distinctHues } from '$lib/planner/hues';
+import { keepPicksDistinct, pickOptions, type Picks, type PickRole } from '$lib/planner/picks';
 import { recommendedElectives, recommendedPath } from '$lib/planner/recommended';
 import {
 	slotKey,
@@ -81,11 +78,9 @@ export const MAX_YEARS = 6;
 export const BOARD_VIEWS = [
 	{ id: 'plan', group: 'yours', label: 'plan', note: 'arrange your courses' },
 	{ id: 'grades', group: 'yours', label: 'grades', note: 'your grades, TGPA and CGPA' },
-	{ id: 'milestones', group: 'yours', label: 'milestones', note: 'where each year leaves you' },
 	{ id: 'runs', group: 'explore', label: 'will it run?', note: 'how often it ran in that trimester' },
 	{ id: 'prereqs', group: 'explore', label: 'prerequisites', note: 'what a course needs and leads to' },
-	{ id: 'whatif', group: 'explore', label: 'what-if', note: 'try another programme on your plan' },
-	{ id: 'faculty', group: 'explore', label: 'faculty', note: 'who teaches each course' }
+	{ id: 'whatif', group: 'explore', label: 'what-if', note: 'try another programme on your plan' }
 ] as const;
 export type BoardView = (typeof BOARD_VIEWS)[number]['id'];
 const isBoardView = (v: unknown): v is BoardView => BOARD_VIEWS.some((b) => b.id === v);
@@ -101,9 +96,6 @@ export const BREAK_KINDS: Record<BreakKind, { label: string; note: string }> = {
 	away: { label: 'away', note: 'an exchange or study-abroad term; its credits come back with you' }
 };
 const isBreakKind = (v: unknown): v is BreakKind => v === 'break' || v === 'suspension' || v === 'away';
-
-/** the four subject picks a degree can name */
-export type Picks = { major1: string; major2: string; minor: string; conc: string };
 
 /** the programmes a degree structure and its picks add up to */
 export function programmesFor(structure: StructureKind, picks: Picks): Programme[] {
@@ -204,6 +196,7 @@ export class Plan {
 	// the courses a hint names, while the student points at that hint, they
 	// light up on the grid so the hint and the trimester it's about connect
 	highlight = $state<string[]>([]);
+	highlightSlots = $state<SlotKey[]>([]); // trimesters a pointed-at hint is about
 	// the feedback window: null = shut, otherwise the text it opens with (a
 	// course or a hint can open it pre-filled with what it's about)
 	feedbackDraft = $state<string | null>(null);
@@ -259,7 +252,8 @@ export class Plan {
 			try {
 				this.storageError = saveBoard(localStorage, json) ? '' : 'Your browser could not save the latest changes.';
 			} catch {
-				this.storageError = 'Browser storage is unavailable. Save a cloud copy before closing.';
+				this.storageError =
+					'Browser storage is unavailable, so this plan is lost when the tab closes. Copy a share link to keep it.';
 			}
 			this.#recordHistory();
 		});
@@ -1268,34 +1262,6 @@ export class Plan {
 	}
 
 	// ── actions ──
-	/** Canvas imports are additive: existing placements, grades and audits stay put. */
-	/** each group's courses into its own slot, in one change; a course already
-	 *  placed (or placed by an earlier group) keeps where it is */
-	importCanvasCourses(groups: { codes: string[]; year: number; trim: TrimNum }[]) {
-		let placements = this.placements;
-		const added: { code: string; year: number; trim: TrimNum }[] = [];
-		for (const { codes, year, trim } of groups) {
-			if (!this.years.includes(year) || !TRIMS.includes(trim)) continue;
-			const accepted = codes
-				.filter(
-					(code) =>
-						hasCode(code) &&
-						!(byCode(code).pendingCredits && byCode(code).credits === 0) &&
-						(!this.coreOnly(year, trim) || isCore(code))
-				)
-				.map((code) => byCode(code).code);
-			const result = mergeCanvasCourses(placements, accepted, slotKey(year, trim));
-			placements = result.placements;
-			for (const code of result.added) added.push({ code, year, trim });
-		}
-		if (added.length) {
-			quietRedraw();
-			this.#touch();
-			this.placements = placements;
-		}
-		return added;
-	}
-
 	/** put a course in a slot, at position `at` among the slot's other
 	 *  courses (where it was dropped between them), or on the end */
 	place(code: string, year: number, trim: TrimNum, at?: number) {
@@ -1443,48 +1409,24 @@ export class Plan {
 			);
 	}
 
-	// what each later role may pick: a subject already claimed by an earlier
-	// role drops out of the later roles' lists (cs major → no cs minor)
-	major2Opts = $derived(MAJOR_SUBJECTS.filter((s) => s.id !== this.picks.major1));
-	// the open minor (free courses, no declared subject) leads the minor list
-	minorOpts = $derived([OPEN_MINOR, ...PROGRAMME_SUBJECTS.filter((s) => s.id !== this.picks.major1)]);
-	// the minor only blocks a concentration subject when a minor is in play
-	concOpts = $derived(
-		PROGRAMME_SUBJECTS.filter(
-			(s) => s.id !== this.picks.major1 && (this.structure !== 'major-minor-conc' || s.id !== this.picks.minor)
-		)
-	);
-
-	/** no two active roles may point at the same subject, after a pick or
-	 *  structure change, later roles bump off a collision (minor = cs when
-	 *  the major just became cs → the minor moves to the first free subject) */
-	ensureDistinctPicks() {
-		const active: (keyof typeof this.picks)[] = ['major1'];
-		if (this.structure === 'double-major') active.push('major2');
-		if (this.structure === 'major-minor' || this.structure === 'major-minor-conc') active.push('minor');
-		if (this.structure === 'major-minor-conc' || this.structure === 'major-conc') active.push('conc');
-		const taken = new Set<string>();
-		for (const k of active) {
-			const pool = k === 'major1' || k === 'major2' ? MAJOR_SUBJECTS : PROGRAMME_SUBJECTS;
-			if (taken.has(this.picks[k])) {
-				const free = pool.find((s) => !taken.has(s.id));
-				if (free) this.picks[k] = free.id;
-			}
-			taken.add(this.picks[k]);
-		}
+	/** what a role's dropdown lists, see planner/picks.ts */
+	pickOptions(role: PickRole, holds?: (role: PickRole) => boolean) {
+		return pickOptions(this.structure, this.picks, role, holds);
 	}
 
-	/**
-	 * Fill the grid with the department order for the chosen programmes:
-	 * the department's published pathway where one exists, otherwise the
-	 * required courses scheduled into the earliest slot that satisfies
-	 * offering, year eligibility, prereq order and the 20-credit load.
-	 * Replaces whatever is on the grid, called when the programme changes.
-	 */
+	/** no two roles may hold the same subject: after a pick or a change of
+	 *  degree, a later role on an earlier one's subject moves along */
+	ensureDistinctPicks() {
+		keepPicksDistinct(this.structure, this.picks);
+	}
+
+	/** fill the grid with the suggested path for the chosen programmes (see
+	 *  planner/recommended.ts), replacing whatever is on it. called when an
+	 *  untouched plan's degree changes */
 	/** the first-visit welcome: lay out the suggested path for the programmes
 	 *  answered so far, adding only what's new. courses already on the grid
-	 *  stay where they are, so the grid fills in rather than reshuffling with
-	 *  every answer; a programme switched away takes its courses with it */
+	 *  stay put, so it fills in rather than reshuffling with every answer; a
+	 *  programme switched away takes its courses with it */
 	growRecommended(programmes: Programme[]) {
 		const target = recommendedPath(this, programmes);
 		const wanted = new Set(Object.values(target).flat());
@@ -1612,53 +1554,79 @@ export class Plan {
 		);
 	}
 
-	/**
-	 * Put every missing required course on the grid in one go. Each lands
-	 * where the recommendation would put it; one the recommendation doesn't
-	 * schedule goes to the earliest trimester it can legally sit in that still
-	 * has room under the student's target load. Anything that fits nowhere is
-	 * left off and named, rather than forced into a broken slot.
-	 */
-	addRequiredCourses() {
-		const want = new Set(this.missingRequiredCodes);
-		if (!want.size) return;
-		quietRedraw();
-		this.#touch();
+	// ── filling in the plan ──
+	// The suggested path and every required course in one move. They used to
+	// be two buttons that mostly did the same thing, each missing what the
+	// other caught: the path brings prerequisites that aren't required
+	// themselves (PSYC205 under a psychology minor), and the required list
+	// has what the path found no room for (ECON207 beside a data science
+	// minor). Nothing another course already clears goes on twice (MATH230
+	// clears COMP208).
+
+	/** required courses the suggested path won't place, given what's on (or
+	 *  about to be on) the grid */
+	#requiredBeyond(placed: Set<string>): string[] {
+		return this.missingRequiredCodes.filter(
+			(code) => !placed.has(code) && !satisfiedBy(code).some((sub) => placed.has(sub))
+		);
+	}
+
+	/** what fillIn() would make of the grid: each suggestion in its own
+	 *  trimester, then each required course the path left out, and any
+	 *  suggestion whose trimester your own courses have filled, in the
+	 *  earliest trimester it can legally sit in with room under the target
+	 *  load. one that fits nowhere is left off and named, not forced into a
+	 *  broken slot. worked out ahead, so the button's count is exact */
+	#fill = $derived.by(() => {
 		const next: Record<SlotKey, string[]> = Object.fromEntries(
 			Object.entries(this.placements).map(([key, codes]) => [key, [...codes]])
 		);
 		const load = (key: SlotKey) => (next[key] ?? []).reduce((sum, c) => sum + byCode(c).credits, 0);
-		const add = (key: SlotKey, code: string) => {
-			next[key] = [...(next[key] ?? []), code];
-			want.delete(code);
+		const fits = (code: string, year: number, trim: TrimNum) => {
+			const key = slotKey(year, trim);
+			if (!this.canDrop(code, year, trim)) return false;
+			return this.coreOnly(year, trim)
+				? (next[key] ?? []).length < Y1_CORE_MAX
+				: load(key) + byCode(code).credits <= this.targetLoad;
 		};
-		for (const [key, codes] of Object.entries(this.suggestions))
-			for (const code of codes) if (want.has(code)) add(key, code);
-		// what the recommendation didn't place, lowest-numbered first so a
-		// prerequisite is placed before the course that needs it
-		const rest = [...want].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+		const put = (code: string, key: SlotKey) => (next[key] = [...(next[key] ?? []), code]);
+
+		const crowdedOut: string[] = [];
+		for (const [key, codes] of Object.entries(this.suggestions)) {
+			const { year, trim } = parseSlot(key);
+			for (const code of codes)
+				if (fits(code, year, trim)) put(code, key as SlotKey);
+				else crowdedOut.push(code);
+		}
+		// lowest-numbered first, so a prerequisite lands before what needs it
+		const placedOrComing = new Set([...Object.values(next).flat(), ...crowdedOut]);
+		const rest = [...crowdedOut, ...this.#requiredBeyond(placedOrComing)].sort((a, b) =>
+			a.localeCompare(b, undefined, { numeric: true })
+		);
+		const slots = this.years.flatMap((year) => TRIMS.map((trim) => ({ year, trim })));
 		const unplaced: string[] = [];
 		for (const code of rest) {
-			let landed = false;
-			for (const year of this.years) {
-				for (const trim of TRIMS) {
-					const key = slotKey(year, trim);
-					if (!this.canDrop(code, year, trim)) continue;
-					if (!this.coreOnly(year, trim) && load(key) + byCode(code).credits > this.targetLoad) continue;
-					if (this.coreOnly(year, trim) && (next[key] ?? []).length >= Y1_CORE_MAX) continue;
-					add(key, code);
-					landed = true;
-					break;
-				}
-				if (landed) break;
-			}
-			if (!landed) unplaced.push(code);
+			const slot = slots.find(({ year, trim }) => fits(code, year, trim));
+			if (slot) put(code, slotKey(slot.year, slot.trim));
+			else unplaced.push(code);
 		}
+		const added = Object.values(next).flat().length - Object.values(this.placements).flat().length;
+		return { next, added, unplaced };
+	});
+
+	/** how many courses fillIn() adds */
+	fillCount = $derived.by(() => this.#fill.added);
+
+	fillIn() {
+		const { next, added, unplaced } = this.#fill;
+		if (!added) return;
+		quietRedraw(); // the board fills in one go, fade, don't fly
+		this.#touch();
 		this.placements = next;
 		this.#setFlash(
 			unplaced.length
-				? `added the required courses, ${unplaced.length} had no room left: ${unplaced.map((c) => this.courseLabel(c)).join(', ')}`
-				: 'every required course is on the plan now'
+				? `filled in, but no trimester has room for ${unplaced.map((c) => this.courseLabel(c)).join(', ')} under your target load`
+				: 'filled in: every required course is on your plan'
 		);
 	}
 
@@ -1685,7 +1653,16 @@ export class Plan {
 
 	/** drop every placed course that counts toward no chosen programme */
 	removeOtherCourses() {
-		const drop = new Set(this.otherPlacedCodes);
+		const n = this.otherPlacedCodes.length;
+		this.removeCourses(
+			this.otherPlacedCodes,
+			`removed ${n} course${n === 1 ? '' : 's'} that count toward no programme`
+		);
+	}
+
+	/** take a set of courses off the grid at once, then say so */
+	removeCourses(codes: Iterable<string>, flash: string) {
+		const drop = new Set(codes);
 		if (!drop.size) return;
 		quietRedraw(); // several chips leave at once, fade, don't fly
 		this.#touch();
@@ -1696,7 +1673,7 @@ export class Plan {
 		}
 		this.placements = next;
 		for (const code of drop) delete this.zoomPos[code];
-		this.#setFlash(`removed ${drop.size} course${drop.size === 1 ? '' : 's'} that count toward no programme`);
+		this.#setFlash(flash);
 	}
 
 	toggleFilter(subjectId: string) {

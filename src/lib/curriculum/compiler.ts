@@ -85,30 +85,34 @@ type RawProgramme = {
 // 'open' is the open minor, no declared subject, any courses the other
 // programmes don't claim count toward it.
 // Each programme subject wears one fixed hue wherever it's a major, minor or
-// concentration, so maths always looks like maths. Sixteen hues can't all be
-// told apart, so they're spread so the pairs people actually take together
-// (CS + maths, history + literature, econ + polsci …) sit at least 60° apart;
-// the yellow/khaki arc is skipped (muted, it reads as beige) and so is the
-// arc round the KCCS blush. The depths they're worn at live in _variables.
+// concentration, so maths always looks like maths. Sixteen hues 15° apart
+// can't all be told apart, so the order sits the subjects students least
+// often combine side by side, and puts the pairs they do combine (CS + maths,
+// econ + politics, biology + chemistry …) far apart, mostly a 'theme' apart
+// like environmental studies' blue and biology's green. scripts/hue-order.mjs
+// works the order out and says why. A plan that still gets two close ones has
+// the later moved (planner/hues.ts). The yellow/khaki arc is skipped (muted,
+// it reads as beige) and so is the arc round the KCCS blush. The depths
+// they're worn at live in _variables.
 export const SUBJECTS: Subject[] = [
-	{ id: 'arts', label: 'arts', short: 'arts', majorable: false, hue: 220 },
+	{ id: 'arts', label: 'arts', short: 'arts', majorable: false, hue: 310 },
 	{ id: 'core', label: 'foundation core', short: 'kccs', majorable: false },
 	{ id: 'open', label: 'open minor', short: 'open', majorable: false },
 	{ id: 'biology', label: 'biology', short: 'bios', majorable: true, hue: 130 },
 	{ id: 'business studies', label: 'business studies', short: 'busi', majorable: false, hue: 265 },
-	{ id: 'chemistry', label: 'chemistry', short: 'chem', majorable: true, hue: 310 },
-	{ id: 'computer science', label: 'computer science', short: 'comp', majorable: true, hue: 325 },
-	{ id: 'data science', label: 'data science', short: 'data', majorable: true, hue: 190 },
-	{ id: 'economics', label: 'economics', short: 'econ', majorable: true, hue: 115 },
+	{ id: 'chemistry', label: 'chemistry', short: 'chem', majorable: true, hue: 175 },
+	{ id: 'computer science', label: 'computer science', short: 'comp', majorable: true, hue: 220 },
+	{ id: 'data science', label: 'data science', short: 'data', majorable: true, hue: 115 },
+	{ id: 'economics', label: 'economics', short: 'econ', majorable: true, hue: 160 },
 	{ id: 'environmental studies', label: 'environmental studies', short: 'envs', majorable: true, hue: 235 },
-	{ id: 'history', label: 'history', short: 'hist', majorable: true, hue: 145 },
-	{ id: 'literature', label: 'literature', short: 'litt', majorable: true, hue: 340 },
-	{ id: 'mathematics', label: 'mathematics', short: 'math', majorable: true, hue: 250 },
-	{ id: 'philosophy', label: 'philosophy', short: 'phil', majorable: false, hue: 160 },
-	{ id: 'physics', label: 'physics', short: 'phys', majorable: true, hue: 175 },
+	{ id: 'history', label: 'history', short: 'hist', majorable: true, hue: 190 },
+	{ id: 'literature', label: 'literature', short: 'litt', majorable: true, hue: 145 },
+	{ id: 'mathematics', label: 'mathematics', short: 'math', majorable: true, hue: 325 },
+	{ id: 'philosophy', label: 'philosophy', short: 'phil', majorable: false, hue: 250 },
+	{ id: 'physics', label: 'physics', short: 'phys', majorable: true, hue: 280 },
 	{ id: 'political science', label: 'political science', short: 'polt', majorable: true, hue: 295 },
-	{ id: 'psychology', label: 'psychology', short: 'psyc', majorable: true, hue: 280 },
-	{ id: 'sociology', label: 'sociology', short: 'socl', majorable: true, hue: 205 }
+	{ id: 'psychology', label: 'psychology', short: 'psyc', majorable: true, hue: 205 },
+	{ id: 'sociology', label: 'sociology', short: 'socl', majorable: true, hue: 340 }
 ];
 
 export const MAJOR_SUBJECTS: Subject[] = SUBJECTS.filter((s) => s.majorable);
@@ -178,6 +182,16 @@ for (const entry of manualOfferings.courses) {
 		terms: [...new Set([...(existing?.terms ?? []), 'manual_T2'])],
 		faculty: entry.faculty
 	};
+}
+// credits a new course's page states before any term CSV carries them.
+// BUSI336: the business studies page makes its seven required courses 24
+// credits, two of them 2-credit, so the rest are 4 each
+const KNOWN_CREDITS: Record<string, number> = { BUSI336: 4 };
+for (const [code, credits] of Object.entries(KNOWN_CREDITS)) {
+	const c = rawCourses[code];
+	if (!c?.pendingCredits) continue;
+	const { pendingCredits: _, ...known } = c;
+	rawCourses[code] = { ...known, credits };
 }
 
 const termToTrim = (term: string): TrimNum | undefined => {
@@ -635,7 +649,14 @@ type StatedProgramme = {
 	pathway?: Record<string, Record<string, string[]>>;
 };
 type StatedSubject = { subject: string; source: string; notes?: string[]; programmes: Record<string, StatedProgramme> };
-type RequirementSet = { id: string; name: string; batches: number[]; subjects: Record<string, StatedSubject> };
+type RequirementSet = {
+	id: string;
+	name: string;
+	batches: number[];
+	/** another set this one amends: subjects it doesn't state come from there */
+	extends?: string;
+	subjects: Record<string, StatedSubject>;
+};
 
 const REQUIREMENT_SETS: RequirementSet[] = (() => {
 	const files = import.meta.glob<{ default: unknown }>('/src/lib/data/requirement-sets/*/*.json', { eager: true });
@@ -643,13 +664,17 @@ const REQUIREMENT_SETS: RequirementSet[] = (() => {
 	for (const [path, file] of Object.entries(files)) {
 		const [, dir, name] = path.match(/requirement-sets\/([^/]+)\/([^/]+)\.json$/)!;
 		const set = sets.get(dir) ?? { id: dir, name: dir, batches: [], subjects: {} };
-		if (name === 'set') Object.assign(set, file.default as Pick<RequirementSet, 'name' | 'batches'>);
+		if (name === 'set') Object.assign(set, file.default as Pick<RequirementSet, 'name' | 'batches' | 'extends'>);
 		else {
 			const stated = file.default as StatedSubject;
 			set.subjects[stated.subject] = stated;
 		}
 		sets.set(dir, set);
 	}
+	// a set that amends another (a newer website rule for one subject) keeps
+	// the base's documents for every subject it leaves alone
+	for (const set of sets.values())
+		if (set.extends) set.subjects = { ...sets.get(set.extends)!.subjects, ...set.subjects };
 	return [...sets.values()].sort((a, b) => Math.min(...a.batches) - Math.min(...b.batches));
 })();
 

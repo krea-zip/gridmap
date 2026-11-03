@@ -74,17 +74,12 @@ test.describe('phone planner', () => {
 		await expect(page.getByRole('searchbox')).toHaveValue('Prathamesh');
 	});
 
-	test('course and Canvas deep links open above the active tab', async ({ page }) => {
+	test('a course deep link opens above the active tab', async ({ page }) => {
 		await page.goto('/?course=MATH201');
 		await expect(page.locator('[data-panel="details"] .d-place')).toBeVisible();
 		await expect(page.locator('[data-panel="details"]')).toBeVisible();
 		// the course link is consumed, so a refresh doesn't reopen it
 		await expect(page).toHaveURL('/');
-		// an import always arrives in a fresh tab, from the extension
-		await page.goto('about:blank');
-		await page.goto('/#canvas-import=%7Bbad');
-		await expect(page.getByRole('dialog', { name: 'import courses & grades' })).toBeVisible();
-		await expect(page.getByRole('alert')).toContainText('not a valid course list');
 	});
 
 	test('trimester browsing and large text in dark mode', async ({ page }) => {
@@ -105,7 +100,7 @@ test.describe('phone planner', () => {
 		expect(await page.locator('.catalogue').evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
 	});
 
-	// phones only — from 768px a tablet keeps the desktop columns (below)
+	// phones only, from 768px a tablet keeps the desktop columns (below)
 	for (const width of [320, 390, 767]) {
 		test(`fits catalogue, plan, degree and details at ${width}px`, async ({ page }) => {
 			await page.setViewportSize({ width, height: 844 });

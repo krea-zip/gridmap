@@ -274,7 +274,7 @@ export function changesBetween(
 	after: OfficeDocument
 ): { area: string; record: string; field: string; before: string; after: string }[] {
 	const changes: { area: string; record: string; field: string; before: string; after: string }[] = [];
-	const show = (v: unknown) => (v === undefined ? '—' : typeof v === 'string' ? v : JSON.stringify(v));
+	const show = (v: unknown) => (v === undefined ? '-' : typeof v === 'string' ? v : JSON.stringify(v));
 	const compare = (area: string, oldRows: Record<string, unknown>[], rows: Record<string, unknown>[], key: string) => {
 		const previous = new Map(oldRows.map((r) => [String(r[key]), r]));
 		const next = new Map(rows.map((r) => [String(r[key]), r]));
@@ -286,8 +286,8 @@ export function changesBetween(
 					area,
 					record: id,
 					field: a ? 'Removed' : 'Added',
-					before: a ? show(a) : '—',
-					after: b ? show(b) : '—'
+					before: a ? show(a) : '-',
+					after: b ? show(b) : '-'
 				});
 				continue;
 			}

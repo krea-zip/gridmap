@@ -2,7 +2,7 @@
 -- resolves from the scrape and the departments' FYUP documents
 -- (src/lib/curriculum/compiler.ts). Normalised tables are the record and
 -- what /admin edits; publishing assembles them into one immutable snapshot
--- per release, which is all the app reads — one indexed row per request,
+-- per release, which is all the app reads, one indexed row per request,
 -- with a cache key that changes only when something is published.
 --
 -- Everyone may read the curriculum. Only admins write: a user whose

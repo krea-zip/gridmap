@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
+	import { fade } from 'svelte/transition';
 	// The what-if view's bar: try a change to the degree from where you are,
 	// and see what it means before anything on the plan moves. Built for the
 	// student rescheduling mid-degree (a third-year double major swapping
@@ -7,17 +8,17 @@
 	// a later batch): what they've taken that still counts, what they've
 	// planned that wouldn't, what the new degree still needs and where it
 	// could go, and whether it all still fits in time.
-	import { programmesFor, type Picks } from '$lib/planner/plan.svelte';
-	import type { StructureKind } from '$lib/types';
+	import { programmesFor } from '$lib/planner/plan.svelte';
 	import {
-		MAJOR_SUBJECTS,
-		MAX_TOTAL_3YR,
-		MAX_TOTAL_4YR,
-		OPEN_MINOR,
-		PROGRAMME_SUBJECTS,
-		byCode,
-		subjectById
-	} from '$lib/curriculum/data';
+		keepPicksDistinct,
+		optionLabel,
+		pickOptions,
+		ROLE_LABEL,
+		ROLES_OF,
+		type PickRole as Role
+	} from '$lib/planner/picks';
+	import type { StructureKind } from '$lib/types';
+	import { MAX_TOTAL_3YR, MAX_TOTAL_4YR, byCode, subjectById } from '$lib/curriculum/data';
 	import type { Verdict } from '$lib/planner/boardViews';
 
 	let { verdict }: { verdict: Verdict | null } = $props();
@@ -26,20 +27,6 @@
 	let tried = $derived(plan.whatIf!);
 
 	// ── the degree as roles: change one, drop one, add one ──
-	type Role = keyof Picks;
-	const ROLES_OF: Record<StructureKind, Role[]> = {
-		'single-major': ['major1'],
-		'double-major': ['major1', 'major2'],
-		'major-minor': ['major1', 'minor'],
-		'major-conc': ['major1', 'conc'],
-		'major-minor-conc': ['major1', 'minor', 'conc']
-	};
-	const ROLE_LABEL: Record<Role, string> = {
-		major1: 'major',
-		major2: 'second major',
-		minor: 'minor',
-		conc: 'concentration'
-	};
 	// which degree a set of roles is; null for one Krea doesn't offer
 	// (a double major with a minor)
 	function structureOf(roles: Set<Role>): StructureKind | null {
@@ -68,24 +55,10 @@
 		keepDistinct();
 	}
 
-	// an earlier role's subject never shows in a later role's list; a change
-	// that makes two collide moves the later one along, as the sidebar does
-	const optionsFor = (r: Role) =>
-		r === 'major1'
-			? MAJOR_SUBJECTS
-			: r === 'major2'
-				? MAJOR_SUBJECTS.filter((s) => s.id !== tried.picks.major1)
-				: r === 'minor'
-					? [OPEN_MINOR, ...PROGRAMME_SUBJECTS.filter((s) => s.id !== tried.picks.major1)]
-					: PROGRAMME_SUBJECTS.filter(
-							(s) => s.id !== tried.picks.major1 && (!roles.includes('minor') || s.id !== tried.picks.minor)
-						);
-	function keepDistinct() {
-		for (const r of ['major2', 'minor', 'conc'] as Role[]) {
-			const opts = optionsFor(r);
-			if (!opts.some((s) => s.id === tried.picks[r])) tried.picks[r] = opts[0]?.id ?? tried.picks[r];
-		}
-	}
+	// the sidebar's rules (planner/picks.ts): an earlier role's subject shows
+	// disabled in a later role's list, and a change that makes two collide
+	// moves the later one along
+	const keepDistinct = () => keepPicksDistinct(tried.structure, tried.picks);
 	const changedRole = (r: Role) => !mine.includes(r) || plan.picks[r] !== tried.picks[r];
 
 	let changed = $derived(
@@ -140,7 +113,9 @@
 		>
 			{#each [1, 2, 3] as t (t)}<option value={t}>T{t}</option>{/each}
 		</select>
-		{#if plan.trimNaming === 'degree'}<b class="wi-term">{plan.trimName(plan.here.year, plan.here.trim)}</b>{/if}
+		{#if plan.trimNaming === 'degree'}<b class="wi-term" transition:fade={{ duration: 180 }}
+				>{plan.trimName(plan.here.year, plan.here.trim)}</b
+			>{/if}
 		{#if guessed}
 			<span class="wi-note">guessed from your batch and today's date; change it if it's wrong</span>
 		{:else}
@@ -155,7 +130,10 @@
 				<li class:changed={changedRole(r)}>
 					<span class="wi-role">{ROLE_LABEL[r]}</span>
 					<select aria-label={ROLE_LABEL[r]} bind:value={tried.picks[r]} onchange={keepDistinct}>
-						{#each optionsFor(r) as s (s.id)}<option value={s.id}>{s.label}</option>{/each}
+						{#each pickOptions(tried.structure, tried.picks, r) as o (o.subject.id)}<option
+								value={o.subject.id}
+								disabled={!!o.heldAs}>{optionLabel(o)}</option
+							>{/each}
 					</select>
 					{#if mine.includes(r) && plan.picks[r] !== tried.picks[r]}
 						<span class="wi-was">was {subjectById(plan.picks[r]).label}</span>

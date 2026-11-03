@@ -63,6 +63,7 @@ export type Hint = {
 	kind: HintKind;
 	text: string;
 	codes: string[]; // courses involved, these get bolded / tinted on the grid
+	slots?: SlotKey[]; // trimesters it's about when no course is (an under-loaded, empty one), lit the same way
 	// stable identity for the RULE this hint reports (not for the wording, which
 	// carries the current slot). Present on every warn hint, and only on those:
 	// it is what a student's waiver is stored against, so a red hint they've

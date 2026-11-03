@@ -8,6 +8,7 @@ node_modules
 
 # generated data-pipeline artifacts (rebuilt by misc/*.py)
 /course-tree.html
+/misc
 misc/__pycache__/
 misc/.scrape_cache/
 *.pyc
@@ -21,3 +22,8 @@ vite.config.ts.timestamp-*
 .claude/
 /test-results/
 /playwright-report/
+.vercel
+.env*
+
+# supabase cli state for the linked project (project ref, pooler url)
+supabase/.temp/

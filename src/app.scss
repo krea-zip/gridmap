@@ -21,7 +21,7 @@
 		box-shadow 140ms ease;
 }
 // the tick box's pixel checkmark drawing itself in, a column of blocks at a
-// time (see the tick mixin) — global so every component's tick shares it
+// time (see the tick mixin), global so every component's tick shares it
 @keyframes kcal-tick-draw {
 	from {
 		clip-path: inset(0 100% 0 0);
@@ -69,7 +69,7 @@
 
 // Phones, one panel at a time: every control a full fingertip, even when
 // the desktop text-size preference is small. The desktop columns on a
-// tablet size theirs one by one instead — a 44px floor on every button
+// tablet size theirs one by one instead, a 44px floor on every button
 // would burst the course chips.
 @include mobile {
 	:root {

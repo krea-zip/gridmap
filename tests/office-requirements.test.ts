@@ -13,8 +13,12 @@ describe('requirement sets', () => {
 		expect(setFor(doc, 2025)?.id).toBe('fyup-2024');
 	});
 
+	test('2026 graduates under the website amendments', () => {
+		expect(setFor(doc, 2026)?.id).toBe('website-2026');
+	});
+
 	test('any other batch falls back to the default set', () => {
-		expect(setFor(doc, 2022)?.id).toBe('website');
+		expect(setFor(doc, 2021)?.id).toBe('website');
 	});
 
 	test('a programme is found by department and track', () => {

@@ -135,7 +135,7 @@
 							preview = null;
 						}}
 					>
-						<option value="">—</option>
+						<option value="">-</option>
 						{#each headers as h, i (i)}<option value={i}>{h || `Column ${i + 1}`}</option>{/each}
 					</select>
 				</label>

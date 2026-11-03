@@ -1,7 +1,8 @@
 <script lang="ts">
 	// The planner's shell: one plan, shared through context, and one CSS grid
-	// of four named areas, sidebar | catalogue | board | details, at 1 : 1 : 3 : 1
-	// of the window until a column edge is dragged. The page fills the board.
+	// of four named areas, sidebar | catalogue | board | details. The side
+	// columns are only as wide as they need to be and the board takes the rest,
+	// until a column edge is dragged. The page fills the board.
 	//
 	// Narrower windows keep the columns but slide the details (tablets), then
 	// the sidebar too (an iPad held upright), in over the board; phones show one
@@ -13,11 +14,12 @@
 	import { providePlan } from '$lib/planner/context';
 	import { viewport } from '$lib/planner/viewport.svelte';
 	import { plannerKeys } from '$lib/planner/shortcuts';
-	import { takeIncoming, arrivedWithSomething, type Incoming } from '$lib/planner/incoming';
+	import { takeIncoming, type Incoming } from '$lib/planner/incoming';
 	import { focusScope } from '$lib/ui/focusScope';
 	import { dragMotion } from '$lib/ui/dragMotion';
 	import { touchDrag } from '$lib/ui/touchDrag';
-	import { hasCode, PREVIEWING } from '$lib/curriculum/data';
+	import { hasCode, PREVIEWING, subjectById } from '$lib/curriculum/data';
+	import { nowHues } from '$lib/planner/hues';
 	import { loadDescriptions } from '$lib/curriculum/descriptions.svelte';
 	import PanelResizers, { type Panel, type PanelWidths } from '$lib/components/layout/PanelResizers.svelte';
 	import MobileNavigation from '$lib/components/layout/MobileNavigation.svelte';
@@ -26,7 +28,6 @@
 	import PixelIcon from '$lib/components/PixelIcon.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import FeedbackForm from '$lib/components/FeedbackForm.svelte';
-	import CanvasImportPanel from '$lib/components/CanvasImport.svelte';
 	import SharedPlanPrompt from '$lib/features/plans/SharedPlanPrompt.svelte';
 	import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
 	import DegreeProgress from '$lib/components/sidebar/DegreeProgress.svelte';
@@ -42,12 +43,18 @@
 
 	let ready = $state(false);
 	let incoming = $state<Incoming | null>(null);
-	let tour = $state(false);
-	let canvasOpen = $state(false);
 	let mobileView = $state<'catalogue' | 'board' | 'rail'>('catalogue');
 	let widths = $state<PanelWidths>({});
 	let resizing = $state<Panel | null>(null);
 	let detailsEl = $state<HTMLElement>();
+
+	// the "now" ring's colours, a subject on the plan in its colour there
+	let now = $derived(nowHues(plan.programmes, (s) => plan.hueFor(s) ?? subjectById(s).hue));
+
+	// a phone only plans: grades, what-if and the other views are laptop-only
+	$effect(() => {
+		if (!viewport.desktop && plan.view !== 'plan') plan.view = 'plan';
+	});
 
 	// a panel slid in over the others holds the focus until it's closed
 	let overlayDetails = $derived((!viewport.desktop || viewport.detailsSlide) && !!plan.selected);
@@ -99,7 +106,8 @@
 
 {#if ready}
 	<SharedPlanPrompt encoded={incoming?.sharedPlan ?? null} />
-	<Onboarding bind:tour skip={!!incoming && arrivedWithSomething(incoming)} />
+	<!-- a shared plan or a linked course opens straight over the planner instead -->
+	<Onboarding skip={!!(incoming?.course || incoming?.sharedPlan)} />
 {/if}
 
 <div
@@ -116,8 +124,10 @@
 	style:--rail-w={widths.rail && `${widths.rail}rem`}
 	style:--catalogue-w={widths.catalogue && `${widths.catalogue}rem`}
 	style:--details-w={widths.details && `${widths.details}rem`}
+	style:--now-a={now?.[0]}
+	style:--now-b={now?.[1]}
 >
-	<MobileNavigation bind:view={mobileView} credits={plan.totalPlacedCredits} />
+	<MobileNavigation bind:view={mobileView} />
 	<PanelResizers bind:widths bind:resizing />
 
 	<!-- where the sidebar doesn't fit (an iPad held upright) it folds to this
@@ -142,7 +152,7 @@
 		use:focusScope={overlayRail}
 		inert={viewport.desktop ? overlayDetails || (viewport.railSlide && !plan.railOpen) : covered('rail')}
 	>
-		<Sidebar ontour={() => (tour = true)} onimport={() => (canvasOpen = true)} />
+		<Sidebar />
 		<DegreeProgress />
 		<ChoicePools />
 		<Hints />
@@ -184,12 +194,6 @@
 	</Modal>
 {/if}
 
-<CanvasImportPanel
-	bind:open={canvasOpen}
-	initial={incoming?.canvas ?? null}
-	initialError={incoming?.canvasError ?? ''}
-/>
-
 <style lang="scss">
 	@use '$lib/styles/mixins' as *;
 
@@ -199,15 +203,22 @@
 	}
 
 	// The app is locked to the viewport and each column scrolls on its own, so
-	// nothing ever runs past the page. Each side column takes one share of the
-	// window and the board three (320 / 320 / 960 / 320 px on a 1920 laptop),
-	// never below its floor; a dragged edge pins that column to a width.
+	// nothing ever runs past the page. The sidebar and catalogue are as narrow
+	// as their widest fixed line (see .rail and Catalogue's .filters), measured
+	// in whatever font the device has; the details follow the window within
+	// readable limits; the board gets everything else. A dragged edge pins
+	// that column to a width.
 	.app {
-		--rail-w: minmax(22rem, 1fr);
-		--catalogue-w: minmax(24rem, 1fr);
-		--details-w: minmax(26rem, 1fr);
-		--board-w: minmax(48rem, 3fr);
+		--rail-w: minmax(max-content, 30rem); // a touch wider than the catalogue
+		--catalogue-w: max-content;
+		--details-w: clamp(24rem, 15vw, 38rem);
+		--board-w: minmax(48rem, 1fr);
 		--rail-strip-w: 5.2rem;
+		// the "now" trimester's ring, tag and number (see TrimesterCell),
+		// in the student's own colour. worked out here, where the hues are
+		// set, so every cell gets this plan's and not the page default's
+		--color-now: oklch(var(--now-l) var(--now-c) var(--now-a, var(--accent-hue)));
+		--color-now-end: oklch(var(--now-l) var(--now-c) var(--now-b, var(--now-a, var(--accent-hue))));
 		position: relative;
 		display: grid;
 		grid-template-areas: 'rail catalogue board details';
@@ -240,13 +251,26 @@
 		overflow-y: auto;
 	}
 
+	// the programme pickers alone set the sidebar's width (the longest
+	// subject, environmental studies, shows in full); everything else in it
+	// wraps to that width instead of asking for more
+	.rail > :global(:not(.pickers)) {
+		contain: inline-size;
+	}
+
 	.catalogue {
 		grid-area: catalogue;
 		overflow: hidden;
 	}
 
-	// the middle column is its own cool zone, a very pale blue-grey field
+	// the middle column is its own cool zone, a very pale blue-grey field.
+	// its bands (the bar, the grid) run edge to edge, but on a very wide
+	// screen what's in them stops at --board-max and centres: past that,
+	// trimesters only get emptier, not easier to read
 	.board {
+		--board-max: 150rem;
+		--board-gutter: max(3.2rem, (100cqi - var(--board-max)) / 2);
+		container: plan / inline-size;
 		grid-area: board;
 		display: flex;
 		flex-direction: column;
@@ -392,18 +416,16 @@
 	// Phones: one panel at a time under the tabs, the details over everything
 	@include mobile {
 		.app {
-			grid-template-areas: 'top' 'main' 'tabs';
+			grid-template-areas: 'main' 'tabs';
 			grid-template-columns: minmax(0, 1fr);
-			grid-template-rows: auto minmax(0, 1fr) auto;
+			grid-template-rows: minmax(0, 1fr) auto;
+			// the header that held the notch's inset is gone, so the panels do
+			padding-top: env(safe-area-inset-top);
 			overflow: hidden;
 		}
 
 		.catalogue {
 			container: catalogue / inline-size;
-		}
-
-		.board {
-			container: plan / inline-size;
 		}
 
 		.rail,

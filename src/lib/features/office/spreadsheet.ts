@@ -62,7 +62,7 @@ export const normalHeader = (v: string) => v.toLowerCase().replace(/\s+/g, ' ').
 export const codesIn = (v: string) => [
 	...new Set((v.toUpperCase().match(/\b[A-Z]{2,5}\s*\d{3}[A-Z]?\b/g) ?? []).map((c) => c.replace(/\s/g, '')))
 ];
-const blank = (v: string) => /^(?:|[-–—]+|none\.?|nil|n\/?a|tbd)$/i.test(v.trim());
+const blank = (v: string) => /^(?:|[-–\u2014]+|none\.?|nil|n\/?a|tbd)$/i.test(v.trim());
 export function eligibility(v: string): Eligibility {
 	if (/repeat/i.test(v)) return 'repeaters';
 	if (/permission|discretion/i.test(v)) return 'permission';
@@ -368,15 +368,18 @@ export function download(name: string, content: BlobPart, type = 'text/csv;chars
 	a.click();
 	setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-export async function exportWorkbook(name: string, rows: unknown[][]) {
+/** one workbook, a sheet per table, each with a frozen, filterable header */
+export async function exportWorkbook(name: string, sheets: { name: string; rows: unknown[][] }[]) {
 	const { default: ExcelJS } = await import('exceljs');
-	const book = new ExcelJS.Workbook(),
-		sheet = book.addWorksheet('Course list');
-	rows.forEach((row) => sheet.addRow(row.map((v) => v ?? '')));
-	sheet.views = [{ state: 'frozen', ySplit: 1 }];
-	sheet.getRow(1).font = { bold: true };
-	sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: rows[0]?.length ?? 1 } };
-	sheet.columns.forEach((c) => (c.width = 24));
+	const book = new ExcelJS.Workbook();
+	for (const { name: title, rows } of sheets) {
+		const sheet = book.addWorksheet(title);
+		rows.forEach((row) => sheet.addRow(row.map((v) => v ?? '')));
+		sheet.views = [{ state: 'frozen', ySplit: 1 }];
+		sheet.getRow(1).font = { bold: true };
+		sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: rows[0]?.length ?? 1 } };
+		sheet.columns.forEach((c) => (c.width = 24));
+	}
 	const data = await book.xlsx.writeBuffer();
 	download(name, new Uint8Array(data), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 }

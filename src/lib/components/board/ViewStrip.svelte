@@ -5,7 +5,7 @@
 	// pick a lecturer). Plan and grades have none; grades keeps its own
 	// first-visit note.
 	import { RECORDED_TERMS } from '$lib/curriculum/data';
-	import { EXIT_AWARDS, lecturersOnPlan, planEnd, runRecord, type Chain, type Verdict } from '$lib/planner/boardViews';
+	import { runRecord, type Chain, type Verdict } from '$lib/planner/boardViews';
 	import WhatIfBar from './WhatIfBar.svelte';
 
 	let { chain, verdict }: { chain: Chain | null; verdict: Verdict | null } = $props();
@@ -18,38 +18,10 @@
 		plan.view === 'runs' ? plan.placed.filter((p) => runRecord(p.code, p.trim).kind === 'never').map((p) => p.code) : []
 	);
 
-	// ── faculty ──
-	let people = $derived(plan.view === 'faculty' ? lecturersOnPlan(plan) : []);
-	let picked = $state<string | null>(null);
-	function pick(id: string, codes: string[]) {
-		picked = picked === id ? null : id;
-		plan.highlight = picked ? codes : [];
-	}
-	// a lecturer's courses stay lit until a click anywhere else
-	function clickAway(e: PointerEvent) {
-		if (!picked) return;
-		if ((e.target as Element | null)?.closest('.vs-people button[aria-pressed="true"]')) return;
-		picked = null;
-		plan.highlight = [];
-	}
-	// leaving the view lets go of what it lit
-	$effect(() => {
-		if (plan.view !== 'faculty' && picked) {
-			picked = null;
-			plan.highlight = [];
-		}
-	});
-
-	// ── milestones ──
-	let ends = $derived(planEnd(plan));
-	let offCount = $derived(Object.keys(plan.breaks).length);
-
 	// "lights" the courses a line is about, as a hint does, while pointed at
 	const light = (codes: string[]) => (plan.highlight = codes);
-	const unlight = () => (plan.highlight = picked ? (people.find((p) => p.id === picked)?.codes ?? []) : []);
+	const unlight = () => (plan.highlight = []);
 </script>
-
-<svelte:window onpointerdown={clickAway} />
 
 {#if plan.view === 'runs'}
 	<section class="view-strip" aria-label="will it run? view">
@@ -104,38 +76,6 @@
 	<section class="view-strip" aria-label="what-if view">
 		<WhatIfBar {verdict} />
 	</section>
-{:else if plan.view === 'faculty'}
-	<section class="view-strip" aria-label="faculty view">
-		<p class="vs-lead">
-			<b>faculty</b> each course shows who taught it most recently. Lecturers rotate, so it's a guide, not a promise. Click
-			a name to light their courses; click anywhere else to clear.
-		</p>
-		{#if people.length}
-			<div class="vs-people">
-				{#each people as p (p.id)}
-					<button aria-pressed={picked === p.id} onclick={() => pick(p.id, p.codes)}>
-						{p.name}<span>{p.codes.length}</span>
-					</button>
-				{/each}
-			</div>
-		{:else}
-			<p class="vs-now muted">no lecturers on record for the courses on your plan</p>
-		{/if}
-	</section>
-{:else if plan.view === 'milestones'}
-	<section class="view-strip" aria-label="milestones view">
-		<p class="vs-lead">
-			<b>milestones</b> where your plan leaves you at the end of each year, by the credits placed so far. The exit lines
-			are UGC's ({EXIT_AWARDS.map((e) => e.credits).join(' / ')} credits); Krea's own exit rules aren't in kcal's data, so
-			check them with the Academic Office.
-		</p>
-		{#if ends.end}
-			<p class="vs-now" class:vs-bad={ends.end.year > ends.limitYears}>
-				your plan ends in year {ends.end.year} T{ends.end.trim}; a {plan.minYears}-year degree has up to
-				{ends.limitYears} years{#if offCount}, with {offCount} trimester{offCount === 1 ? '' : 's'} off{/if}
-			</p>
-		{/if}
-	</section>
 {/if}
 
 <style lang="scss">
@@ -145,7 +85,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.8rem;
-		margin: 1.6rem 3.2rem 0;
+		margin: 1.6rem var(--board-gutter, 3.2rem) 0;
 		padding: 1.2rem 1.6rem;
 		font-size: 1.3rem;
 		line-height: 1.5;
@@ -213,45 +153,6 @@
 
 		&.late {
 			border-top: 2px dashed var(--color-danger);
-		}
-	}
-
-	.vs-people {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.6rem;
-
-		button {
-			display: flex;
-			align-items: center;
-			gap: 0.6rem;
-			padding: 0.4rem 1rem;
-			font: inherit;
-			font-size: 1.25rem;
-			color: var(--color-text);
-			background: var(--color-bg-light);
-			border: 1px solid var(--color-border-card);
-			border-radius: 999px;
-			cursor: pointer;
-
-			span {
-				font-size: 1.1rem;
-				color: var(--color-text-muted);
-			}
-
-			&:hover {
-				border-color: var(--color-accent);
-			}
-
-			&[aria-pressed='true'] {
-				color: var(--color-on-accent);
-				background: var(--color-accent);
-				border-color: var(--color-accent);
-
-				span {
-					color: inherit;
-				}
-			}
 		}
 	}
 </style>

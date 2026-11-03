@@ -4,6 +4,7 @@
 	import { TRIM_HARD_MAX, TRIM_MIN, byCode, isAttemptId } from '$lib/curriculum/data';
 	import { flip } from 'svelte/animate';
 	import { courseIn, courseOut, courseShift } from '$lib/ui/transitions';
+	import { carried, carry } from '$lib/ui/courseDrag';
 	import { academicYear, termMonths } from '$lib/planner/calendar';
 
 	let { touchLayout = false }: { touchLayout?: boolean } = $props();
@@ -47,7 +48,7 @@
 	function drop(e: DragEvent) {
 		e.preventDefault();
 		plan.dragging = null;
-		const code = e.dataTransfer?.getData('text/plain');
+		const code = carried(e);
 		if (!code) return;
 		plan.place(code, year, trim);
 		// a refused drop (a core-only slot) must not leave a canvas position
@@ -61,8 +62,7 @@
 	}
 
 	function dragstart(e: DragEvent, code: string) {
-		e.dataTransfer?.setData('text/plain', code);
-		if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+		carry(e, code);
 		plan.dragging = code;
 	}
 

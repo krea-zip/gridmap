@@ -36,11 +36,14 @@
 {/each}
 
 <!-- hidden outside the plan view: grades and the other views are about what
-     you have, not what you could add -->
+     you have, not what you could add. mid-drag they fade out of the way, so
+     the only dashed course left is the one in hand; they keep their room,
+     after every chip, so nothing under the cursor moves -->
 {#if plan.view === 'plan'}
 	{#each plan.suggestionsFor(year, trim) as code (code)}
 		<button
 			class="ghost"
+			class:away={plan.dragging !== null}
 			class:titled={plan.showTitles}
 			data-type={plan.courseType(code)}
 			title="suggested here, click to add {plan.courseLabel(code)}"
@@ -78,7 +81,13 @@
 			background-color 0.15s ease,
 			color 0.15s ease,
 			border-color 0.15s ease,
+			opacity 0.15s ease,
 			transform 0.25s var(--spring);
+
+		&.away {
+			opacity: 0;
+			pointer-events: none;
+		}
 
 		&[data-type='core'] {
 			--edge: var(--color-course-core-deep);
