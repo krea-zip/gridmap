@@ -402,6 +402,21 @@ $shape-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 	}
 }
 
+// The planner's flat dropdown (sidebar pickers, the welcome): no gloss, a
+// faint well
+@mixin flat-select {
+	width: 100%;
+	min-width: 0; // long option labels must not push past the panel edge
+	font-size: var(--text-body);
+	color: var(--color-text);
+	padding: 0.45rem 0.6rem;
+	background-color: var(--color-bg-light);
+	border: 1px solid var(--color-border-card);
+	border-radius: var(--rail-radius, 4px);
+	box-shadow: var(--shadow-well);
+	cursor: pointer;
+}
+
 // The layouts, keep these queries aligned with lib/layout.ts.
 // Phones get one panel at a time, behind tabs.
 @mixin mobile {

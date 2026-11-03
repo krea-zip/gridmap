@@ -4,6 +4,7 @@
 	import { MAJOR_SUBJECTS } from '$lib/curriculum/data';
 	import { optionLabel, type PickRole } from '$lib/planner/picks';
 	import Settings from '$lib/components/Settings.svelte';
+	import FourYearToggle from '$lib/components/FourYearToggle.svelte';
 
 	const plan = usePlan();
 
@@ -41,7 +42,7 @@
 {/if}
 
 <div class="pickers" data-tour="programme">
-	<!-- the 4-year switch rides on the batch line: an outline while off, lit while on -->
+	<!-- the 4-year switch rides on the batch line -->
 	<div class="row">
 		<label class="row-label" for="batch">batch</label>
 		<div class="batch-line">
@@ -50,17 +51,7 @@
 					<option value={year}>{year}-{String(year + (plan.fourYear ? 4 : 3)).slice(-2)}</option>
 				{/each}
 			</select>
-			<button
-				class="four-year"
-				aria-pressed={plan.fourYear}
-				title={plan.fourYear
-					? '4-year degree, click for the 3-year track'
-					: '3-year degree, click for the 4-year track'}
-				onclick={() => {
-					plan.fourYear = !plan.fourYear;
-					distinct();
-				}}>4yup</button
-			>
+			<FourYearToggle onchange={distinct} />
 		</div>
 	</div>
 
@@ -154,18 +145,8 @@
 		min-width: 100%;
 	}
 
-	// plain flat dropdowns, no gloss, no shadow
 	select {
-		width: 100%;
-		min-width: 0; // long option labels must not push past the panel edge
-		font-size: var(--text-body);
-		color: var(--color-text);
-		padding: 0.45rem 0.6rem;
-		background-color: var(--color-bg-light);
-		border: 1px solid var(--color-border-card);
-		border-radius: var(--rail-radius, 4px);
-		box-shadow: var(--shadow-well);
-		cursor: pointer;
+		@include flat-select;
 	}
 
 	.batch-line {
@@ -173,36 +154,6 @@
 		align-items: center;
 		gap: 0.6rem;
 		min-width: 0;
-	}
-
-	// off it's an empty dashed outline, on it's the app's lit plum key (the
-	// codes / titles switches'), so which it is reads at a glance
-	.four-year {
-		flex: none;
-		padding: 0.3rem 0.7rem;
-		font-size: 1.1rem;
-		font-weight: 650;
-		color: var(--color-text-muted);
-		background: transparent;
-		border: 1px dashed var(--color-border-card);
-		border-radius: 999px;
-		cursor: pointer;
-		transition:
-			color 0.2s ease,
-			background-color 0.2s ease,
-			border-color 0.2s ease;
-
-		&:hover {
-			color: var(--color-text);
-			border-color: var(--color-accent);
-		}
-
-		&[aria-pressed='true'] {
-			color: var(--color-on-accent);
-			background-color: var(--color-accent);
-			border: 1px solid var(--color-control-deep);
-			@include glossy-accent;
-		}
 	}
 
 	// by finger: the programme pickers a fingertip tall

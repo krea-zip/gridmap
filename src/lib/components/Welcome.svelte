@@ -10,6 +10,7 @@
 	import { optionLabel, type PickRole } from '$lib/planner/picks';
 	import type { ProgrammeRole } from '$lib/types';
 	import Modal from './Modal.svelte';
+	import FourYearToggle from './FourYearToggle.svelte';
 
 	let { ondone }: { ondone: () => void } = $props();
 	const plan = usePlan();
@@ -60,9 +61,9 @@
 </script>
 
 <!-- an answered role holds its subject; one still unanswered holds nothing yet -->
-{#snippet pick(role: PickRole, label: string)}
-	<label class="field">
-		<span>{label}</span>
+{#snippet pick(role: PickRole, label: string, title?: string)}
+	<label class="row">
+		<span class="row-label" {title}>{label}</span>
 		<select
 			value={answered[role] ? plan.picks[role] : ''}
 			onchange={(e) => ((plan.picks[role] = e.currentTarget.value), answer(role))}
@@ -85,28 +86,24 @@
 			<span class="n" aria-hidden="true">1</span>
 			<div class="q">
 				<span class="ask">when did you start?</span>
+				<!-- the sidebar's own rows, so the two read as one control set -->
 				<div class="fields">
-					<label class="field">
-						<span>batch</span>
-						<select
-							value={answered.batch ? plan.batchStartYear : ''}
-							onchange={(e) => ((plan.batchStartYear = Number(e.currentTarget.value)), answer('batch'))}
-						>
-							{#if !answered.batch}<option value="" disabled>choose…</option>{/if}
-							{#each BATCHES as year (year)}
-								<option value={year}>{year}-{String(year + (plan.fourYear ? 4 : 3)).slice(-2)}</option>
-							{/each}
-						</select>
-					</label>
-					<label class="check">
-						<input
-							type="checkbox"
-							class="tick"
-							bind:checked={plan.fourYear}
-							onchange={() => answered.batch && answer('batch')}
-						/>
-						4-year degree
-					</label>
+					<div class="row">
+						<label class="row-label" for="welcome-batch">batch</label>
+						<div class="batch-line">
+							<select
+								id="welcome-batch"
+								value={answered.batch ? plan.batchStartYear : ''}
+								onchange={(e) => ((plan.batchStartYear = Number(e.currentTarget.value)), answer('batch'))}
+							>
+								{#if !answered.batch}<option value="" disabled>choose…</option>{/if}
+								{#each BATCHES as year (year)}
+									<option value={year}>{year}-{String(year + (plan.fourYear ? 4 : 3)).slice(-2)}</option>
+								{/each}
+							</select>
+							<FourYearToggle onchange={() => answered.batch && answer('batch')} />
+						</div>
+					</div>
 				</div>
 			</div>
 		</li>
@@ -116,8 +113,8 @@
 			<div class="q">
 				<span class="ask">what are you studying?</span>
 				<div class="fields">
-					<label class="field">
-						<span>degree</span>
+					<label class="row">
+						<span class="row-label">degree</span>
 						<select
 							value={answered.degree ? plan.structure : ''}
 							onchange={(e) => ((plan.structure = e.currentTarget.value as typeof plan.structure), answer('degree'))}
@@ -126,14 +123,14 @@
 							<option value="single-major">single major</option>
 							<option value="double-major">double major</option>
 							<option value="major-minor">major + minor</option>
-							<option value="major-conc">major + concentration</option>
-							<option value="major-minor-conc">major + minor + concentration</option>
+							<option value="major-conc">major + conc.</option>
+							<option value="major-minor-conc">major + minor + conc.</option>
 						</select>
 					</label>
 					{@render pick('major1', 'major')}
-					{#if asked.major2}{@render pick('major2', 'second major')}{/if}
+					{#if asked.major2}{@render pick('major2', 'major')}{/if}
 					{#if asked.minor}{@render pick('minor', 'minor')}{/if}
-					{#if asked.conc}{@render pick('conc', 'concentration')}{/if}
+					{#if asked.conc}{@render pick('conc', 'conc.', 'concentration')}{/if}
 				</div>
 			</div>
 		</li>
@@ -201,49 +198,36 @@
 		line-height: 2.4rem; // centred on its number
 	}
 
+	// the sidebar's pickers: a narrow label column, the dropdown beside it
 	.fields {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-end;
-		gap: 1rem 1.6rem;
-	}
-
-	.field {
-		display: flex;
 		flex-direction: column;
-		gap: 0.4rem;
-		min-width: 16rem;
-
-		span {
-			font-size: 1.15rem;
-			color: var(--color-text-muted);
-		}
+		gap: 1rem;
+		max-width: 32rem;
 	}
 
-	// flat dropdowns, the sidebar's own
-	select {
-		width: 100%;
+	.row {
+		display: grid;
+		grid-template-columns: 5.4rem 1fr;
+		align-items: center;
+		gap: 1rem;
 		font-size: var(--text-body);
-		color: var(--color-text);
-		padding: 0.5rem 0.6rem;
-		background-color: var(--color-bg-light);
-		border: 1px solid var(--color-border-card);
-		border-radius: 4px;
-		box-shadow: var(--shadow-well);
 		cursor: pointer;
 	}
 
-	.check {
+	.row-label {
+		color: var(--color-text);
+	}
+
+	.batch-line {
 		display: flex;
 		align-items: center;
-		gap: 0.7rem;
-		padding-bottom: 0.6rem;
-		font-size: var(--text-body);
-		cursor: pointer;
+		gap: 0.6rem;
+		min-width: 0;
 	}
 
-	.tick {
-		@include tick(1.6rem);
+	select {
+		@include flat-select;
 	}
 
 	.note {

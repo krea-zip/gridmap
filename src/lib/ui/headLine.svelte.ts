@@ -5,18 +5,19 @@
 const KEY = 'kcal.headLine';
 
 class HeadLine {
-	// the server can't see the saved choice, so every page starts shown and
-	// restore() swaps the saved one in once the page has hydrated
-	shown = $state(true);
+	// hidden by default (a faint ··· to bring them back). the server can't see
+	// the saved choice, so every page starts hidden and restore() swaps the
+	// saved one in once the page has hydrated
+	shown = $state(false);
 	#restored = false;
 
 	restore() {
 		if (this.#restored) return;
 		this.#restored = true;
 		try {
-			this.shown = localStorage.getItem(KEY) !== 'hidden';
+			this.shown = localStorage.getItem(KEY) === 'shown';
 		} catch {
-			// storage blocked → shown
+			// storage blocked → hidden
 		}
 	}
 

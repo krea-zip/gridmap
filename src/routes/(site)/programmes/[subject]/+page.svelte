@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CourseList from '$lib/components/site/CourseList.svelte';
+	import { REPS_YEAR } from '$lib/curriculum/reps';
 
 	let { data } = $props();
 	const credits = (n: number) => `${n} credit${n === 1 ? '' : 's'}`;
@@ -16,6 +17,9 @@
 <header style:--hue={data.subject.hue}>
 	<a class="up" href="/programmes">← all programmes</a>
 	<h1>{data.subject.label}</h1>
+	{#if data.reps.length}
+		<p class="reps">Student reps ({REPS_YEAR}): <b>{data.reps.join(', ')}</b></p>
+	{/if}
 	<p class="lede">The rules for the {data.batches} batches. Jump to a programme:</p>
 	<nav aria-label="programmes">
 		{#each data.programmes as p (p.key)}<a href="#{p.key}">{p.label}</a>{/each}
@@ -64,6 +68,17 @@
 		font-size: 3.4rem;
 		letter-spacing: -0.02em;
 		color: oklch(0.42 0.08 var(--hue, 300));
+	}
+
+	.reps {
+		margin-top: 0.6rem;
+		font-size: 1.4rem;
+		color: var(--color-text-muted);
+
+		b {
+			font-weight: 600;
+			color: var(--color-text);
+		}
 	}
 
 	.lede {

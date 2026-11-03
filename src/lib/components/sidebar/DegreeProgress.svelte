@@ -4,6 +4,7 @@
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { subjectById } from '$lib/curriculum/data';
+	import { repsFor, REPS_YEAR } from '$lib/curriculum/reps';
 	import { usePlan } from '$lib/planner/context';
 	import { reducedMotion } from '$lib/ui/transitions';
 	import Progress from './Progress.svelte';
@@ -73,6 +74,13 @@
 						{/if}
 						{#if s.electiveNeeded > 0}
 							<div class="row"><span>{electives}</span><b>{left(s.electiveDone, s.electiveNeeded)}</b></div>
+						{/if}
+						<!-- who to ask: the discipline's student reps -->
+						{#if repsFor(s.subject).length}
+							<div class="reps" title="student reps, {REPS_YEAR}">
+								<span>reps</span>
+								<b>{repsFor(s.subject).join(', ')}</b>
+							</div>
 						{/if}
 					</div>
 				{/if}
@@ -201,6 +209,20 @@
 			font-weight: 600;
 			color: var(--color-text);
 			font-variant-numeric: tabular-nums;
+		}
+	}
+
+	// the reps' names wrap under their label rather than pushing it aside
+	.reps {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 0.8rem;
+		color: var(--color-text-muted);
+
+		b {
+			font-weight: 600;
+			text-align: right;
+			color: var(--color-text);
 		}
 	}
 

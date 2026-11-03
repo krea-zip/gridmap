@@ -1,6 +1,7 @@
 // Page data for the public site (/courses, /lecturers, /programmes). Runs at
 // build time only, those pages are prerendered and ship no JavaScript, so
 // it may read the whole curriculum freely.
+import { repsFor } from '$lib/curriculum/reps';
 import descriptions from '$lib/data/course-descriptions.json';
 import {
 	COURSES,
@@ -117,6 +118,7 @@ export function programmeIndex() {
 export function programmePage(subject: Subject) {
 	return {
 		subject: { label: subject.label, hue: subject.hue ?? null },
+		reps: repsFor(subject.id),
 		batches: currentBatches(),
 		programmes: variantsOf(subject).flatMap((v) => programmeView(subject, v) ?? [])
 	};

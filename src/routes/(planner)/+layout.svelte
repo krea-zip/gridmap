@@ -209,7 +209,7 @@
 	// readable limits; the board gets everything else. A dragged edge pins
 	// that column to a width.
 	.app {
-		--rail-w: minmax(max-content, 30rem); // a touch wider than the catalogue
+		--rail-w: minmax(max-content, 28rem); // a touch wider than the catalogue
 		--catalogue-w: max-content;
 		--details-w: clamp(24rem, 15vw, 38rem);
 		--board-w: minmax(48rem, 1fr);
