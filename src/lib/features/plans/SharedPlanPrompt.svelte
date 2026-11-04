@@ -1,100 +1,170 @@
 <script lang="ts">
-	// A plan someone shared (#plan=…), waiting for the student's say-so: it is
-	// opened as a copy, never a silent overwrite of their own board.
 	import Modal from '$lib/components/Modal.svelte';
-	import { hasCode } from '$lib/curriculum/data';
-	import { usePlan } from '$lib/planner/context';
+	import { byCode, hasCode, SUBJECTS } from '$lib/curriculum/data';
 	import { readSharedPlan } from './share';
-	import { savedPlans } from './local-plans.svelte';
+	import { planDocument } from './document';
+	import { account, accountRequest } from './account.svelte';
+	// google sign-in is off for now, see Settings.svelte
+	// import AccountPanel from './AccountPanel.svelte';
 
-	let { encoded }: { encoded: string | null } = $props();
-	const plan = usePlan();
-
+	let { encoded = null, shareId = null }: { encoded?: string | null; shareId?: string | null } = $props();
 	let shared = $state<Record<string, unknown> | null>(null);
 	let error = $state('');
+	let loading = $state(false);
+	let closed = $state(false);
+	let saving = $state(false);
+	let copied = $state(false);
+	let copyError = $state('');
 
 	$effect(() => {
-		if (!encoded) return;
-		readSharedPlan(encoded)
-			.then((doc) => (shared = doc as Record<string, unknown>))
-			.catch((e) => (error = e instanceof Error ? e.message : 'This share link could not be read.'));
+		if (!encoded && !shareId) return;
+		let cancelled = false;
+		loading = true;
+		const request = shareId
+			? accountRequest<{ snapshot: unknown }>(`/api/shares/${encodeURIComponent(shareId)}`).then((data) =>
+					planDocument(data.snapshot)
+				)
+			: readSharedPlan(encoded!);
+		void request
+			.then((doc) => {
+				if (!cancelled) shared = doc as Record<string, unknown>;
+			})
+			.catch((e) => {
+				if (!cancelled) error = e.message;
+			})
+			.finally(() => {
+				if (!cancelled) loading = false;
+			});
+		return () => {
+			cancelled = true;
+		};
 	});
 
-	let summary = $derived.by(() => {
-		if (!shared) return '';
-		const placements = shared.placements as Record<string, string[]>;
-		const courses = Object.values(placements).flat().filter(hasCode).length;
-		const years = shared.fourYear === false ? '3-year' : '4-year';
-		const batch = typeof shared.batchStartYear === 'number' ? `, batch ${shared.batchStartYear}` : '';
-		return `${courses} course${courses === 1 ? '' : 's'} on a ${years} plan${batch}.`;
-	});
+	let terms = $derived(
+		Object.entries((shared?.placements ?? {}) as Record<string, string[]>).sort(([a], [b]) => a.localeCompare(b))
+	);
+	let courseCount = $derived(terms.reduce((total, [, codes]) => total + codes.filter(hasCode).length, 0));
+	let subjects = $derived(
+		[...new Set(Object.values((shared?.picks ?? {}) as Record<string, unknown>))]
+			.map((id) => SUBJECTS.find((s) => s.id === id)?.label)
+			.filter(Boolean)
+			.join(' · ')
+	);
 
-	function open() {
-		if (!shared) return;
-		// your own board is kept, as a saved copy you can load back
-		if (!savedPlans.full)
-			savedPlans.save(
-				`my plan, before a shared one (${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })})`,
-				plan.snapshot()
-			);
-		plan.restore({ ...plan.snapshot(), grades: {}, ...shared, touched: true });
-		shared = null;
+	async function copy() {
+		if (!account.eligible || !shared) return;
+		saving = true;
+		copyError = '';
+		try {
+			// Recheck availability at copy time so a revoked link cannot be copied from stale UI.
+			const snapshot = shareId
+				? (await accountRequest<{ snapshot: unknown }>(`/api/shares/${encodeURIComponent(shareId)}`)).snapshot
+				: shared;
+			await accountRequest('/api/plans', 'POST', { name: 'Copy of shared plan', snapshot });
+			copied = true;
+		} catch (e) {
+			copyError = e instanceof Error ? e.message : 'This plan could not be copied.';
+		} finally {
+			saving = false;
+		}
 	}
-
-	const close = () => ((shared = null), (error = ''));
 </script>
 
-{#if shared || error}
-	<Modal title="a shared plan" onclose={close}>
-		<div class="note">
-			{#if error}
-				<p>{error}</p>
-				<button onclick={() => (error = '')}>ok</button>
-			{:else}
-				<p>Someone shared their plan with you: {summary}</p>
-				<p class="aside">
-					{savedPlans.full
-						? 'Opening it replaces your board, your saved-plans list is full, so delete one in settings first to keep a copy.'
-						: 'Opening it keeps your current plan as a saved copy (settings → saved plans).'}
-				</p>
-				<div class="actions">
-					<button onclick={open}>open the shared plan</button>
-					<button class="secondary" onclick={() => (shared = null)}>keep my plan</button>
+{#if !closed && (loading || shared || error)}
+	<Modal
+		title="a shared plan"
+		width="60rem"
+		onclose={() => {
+			closed = true;
+			history.replaceState(history.state, '', '/');
+		}}
+	>
+		<div class="preview">
+			{#if loading}<p role="status">Loading shared plan…</p>
+			{:else if error}<p role="alert">{error}</p>
+			{:else if shared}
+				<span class="badge">read-only snapshot</span>
+				<h3>{courseCount} courses on a {shared.fourYear === false ? '3' : '4'}-year plan</h3>
+				<p>{subjects}</p>
+				<p>Your own draft is unchanged. This link does not give anyone access to edit the original plan.</p>
+				<div class="terms">
+					{#each terms as [slot, codes] (slot)}
+						{#if codes.length}<section>
+								<h4>Year {slot.split('-')[0]} · term {slot.split('-')[1]}</h4>
+								<ul>
+									{#each codes.filter((code) => hasCode(code) && !code.includes('~')) as code}<li>
+											<b>{code}</b>
+											{byCode(code).title}
+										</li>{/each}
+								</ul>
+							</section>{/if}
+					{/each}
 				</div>
+				{#if account.eligible}
+					<button disabled={saving || copied} onclick={copy}
+						>{copied ? 'Copied to your saved plans' : saving ? 'Copying…' : 'Copy to my plans'}</button
+					>
+					{#if copied}<p role="status">
+							Open Settings → saved plans to load your copy. Your current draft is still here.
+						</p>{/if}
+					<!-- {:else}
+					<p>Log in with your Krea account to save a copy to your plans.</p>
+					<AccountPanel /> -->
+				{/if}
+				{#if copyError}<p role="alert">{copyError}</p>{/if}
 			{/if}
 		</div>
 	</Modal>
 {/if}
 
-<style lang="scss">
-	@use '$lib/styles/mixins' as *;
-
-	.note {
-		display: grid;
-		gap: 2rem;
-		font-size: 1.6rem;
-		line-height: 1.6;
+<style>
+	.preview {
+		font-size: 1.3rem;
+		line-height: 1.55;
 	}
-
-	.aside {
-		font-size: 1.35rem;
+	p {
+		margin: 0.8rem 0 1.2rem;
 		color: var(--color-text-muted);
 	}
-
-	.actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 1rem;
+	h3 {
+		margin-top: 0.7rem;
+		font-size: 1.7rem;
 	}
-
+	.badge {
+		font-size: 1.1rem;
+		color: var(--color-accent);
+	}
+	.terms {
+		margin: 1.6rem 0;
+	}
+	section {
+		margin: 1rem 0;
+		padding: 1.2rem;
+		border: 1px solid var(--color-border-card);
+		border-radius: 6px;
+	}
+	h4 {
+		font-size: 1.3rem;
+	}
+	ul {
+		list-style: none;
+		padding: 0;
+	}
+	li {
+		padding-top: 0.6rem;
+	}
 	button {
-		@include modal-button;
-	}
-
-	.secondary {
+		min-height: 4.4rem;
+		padding: 0.8rem 1.4rem;
+		font: inherit;
 		color: var(--color-text);
+		border: 1px solid var(--color-border-card);
+		border-radius: 6px;
 		background: var(--color-bg-light);
-		background-image: none;
-		border-color: var(--color-border-card);
+		cursor: pointer;
+	}
+	button:disabled {
+		opacity: 0.6;
+		cursor: default;
 	}
 </style>

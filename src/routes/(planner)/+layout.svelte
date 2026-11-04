@@ -27,6 +27,8 @@
 	import PixelIcon from '$lib/components/PixelIcon.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import FeedbackForm from '$lib/components/FeedbackForm.svelte';
+	import Settings from '$lib/components/Settings.svelte';
+	import { account } from '$lib/features/plans/account.svelte';
 	import SharedPlanPrompt from '$lib/features/plans/SharedPlanPrompt.svelte';
 	import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
 	import DegreeProgress from '$lib/components/sidebar/DegreeProgress.svelte';
@@ -41,6 +43,7 @@
 	const onKeys = plannerKeys(plan);
 
 	let ready = $state(false);
+	let accountSettings = $state(false);
 	let incoming = $state<Incoming | null>(null);
 	let mobileView = $state<'catalogue' | 'board' | 'rail'>('catalogue');
 	let widths = $state<PanelWidths>({});
@@ -107,6 +110,9 @@
 
 	onMount(() => {
 		incoming = takeIncoming();
+		accountSettings = !!incoming.account && !incoming.shareId && !incoming.sharedPlan;
+		if (incoming.account === 'error')
+			account.error = 'Google sign-in was cancelled or could not finish. Your draft is unchanged. Please try again.';
 		if (incoming.course && hasCode(incoming.course)) plan.revealCourse(incoming.course);
 		ready = true;
 		void tick().then(() => plan.startHistory());
@@ -160,9 +166,13 @@
 <svelte:window onkeydown={onWindowKeys} onpointerdowncapture={notePress} onclick={closeIfNothingPicked} />
 
 {#if ready}
-	<SharedPlanPrompt encoded={incoming?.sharedPlan ?? null} />
+	<SharedPlanPrompt encoded={incoming?.sharedPlan ?? null} shareId={incoming?.shareId ?? null} />
+	{#if accountSettings}<Settings onclose={() => (accountSettings = false)} />{/if}
 	<!-- a shared plan or a linked course opens straight over the planner instead -->
-	<Onboarding skip={!!(incoming?.course || incoming?.sharedPlan)} replay={incoming?.welcome} />
+	<Onboarding
+		skip={!!(incoming?.course || incoming?.sharedPlan || incoming?.shareId || incoming?.account)}
+		replay={incoming?.welcome}
+	/>
 {/if}
 
 <div

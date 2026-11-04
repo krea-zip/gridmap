@@ -7,21 +7,41 @@ import { sharedPlanIn } from '$lib/features/plans/share';
 export type Incoming = {
 	course: string | null;
 	sharedPlan: string | null;
+	shareId: string | null;
+	account: string | null;
 	welcome: boolean;
 };
 
 export function takeIncoming(): Incoming {
-	const url = new URL(location.href);
+	let url = new URL(location.href);
+	if (url.searchParams.has('account')) {
+		try {
+			const saved = sessionStorage.getItem('kcal-auth-return');
+			sessionStorage.removeItem('kcal-auth-return');
+			if (saved) {
+				const next = new URL(saved, location.origin);
+				if (next.origin === location.origin && next.pathname === '/') {
+					next.searchParams.set('account', url.searchParams.get('account')!);
+					url = next;
+					history.replaceState(history.state, '', url);
+				}
+			}
+		} catch {
+			/* The saved board still restores independently. */
+		}
+	}
 	const course = url.searchParams.get('course');
+	const shareId = url.searchParams.get('share');
+	const account = url.searchParams.get('account');
+	url.searchParams.delete('account');
 	const welcome = url.searchParams.has('welcome');
-	if (course || welcome) {
+	if (course || welcome || account) {
 		url.searchParams.delete('course');
 		url.searchParams.delete('welcome');
 		history.replaceState(history.state, '', url);
 	}
 
 	const sharedPlan = sharedPlanIn(location.hash);
-	if (sharedPlan) history.replaceState(history.state, '', location.pathname + location.search);
 
-	return { course, sharedPlan, welcome };
+	return { course, sharedPlan, shareId, account, welcome };
 }

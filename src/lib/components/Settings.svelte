@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
 	import { settings, TEXT_SIZES, type ThemeChoice } from '$lib/ui/settings.svelte';
-	import { savedPlans, MAX_SAVES } from '$lib/features/plans/local-plans.svelte';
-	import { shareLink } from '$lib/features/plans/share';
+	import { savedPlans } from '$lib/features/plans/local-plans.svelte';
+	// google sign-in is off for now; bring this and the panel below back to turn it on
+	// import AccountPanel from '$lib/features/plans/AccountPanel.svelte';
+	import CloudPlans from '$lib/features/plans/CloudPlans.svelte';
+	import { printPlan } from '$lib/features/plans/print';
 	import { byCode, subjectById } from '$lib/curriculum/data';
 	import Modal from './Modal.svelte';
 	import FeedbackForm from './FeedbackForm.svelte';
@@ -15,21 +18,6 @@
 		{ id: 'dark', label: 'dark' },
 		{ id: 'system', label: 'auto' }
 	];
-
-	// ── saved plans ──
-	// The board keeps ONE plan, autosaved. Saving here keeps a copy of it under
-	// a name, so "what would a double major look like" is: save this, change
-	// the degree, and load the old one back if you liked it better.
-	let saveName = $state('');
-	// a name you'd actually recognise in a list: the degree it is
-	let suggestedName = $derived(
-		[plan.programmes.map((pr) => subjectById(pr.subject).short).join(' + '), plan.fourYear ? '4yr' : '3yr'].join(' · ')
-	);
-
-	function saveNow() {
-		savedPlans.save(saveName.trim() || suggestedName, plan.snapshot());
-		saveName = '';
-	}
 
 	// loading replaces what is on the board, so it asks twice, same guard as
 	// "start over", for the same reason
@@ -80,7 +68,7 @@
 		const lines = [`${degree} · ${plan.fourYear ? '4' : '3'}-year · batch ${plan.batchStartYear}`, ''];
 		for (const y of plan.years)
 			for (const t of plan.trims) {
-				const codes = plan.slotCourses(y, t);
+				const codes = plan.slotCourses(y, t).filter((code) => !code.includes('~'));
 				if (codes.length)
 					lines.push(
 						`${plan.trimName(y, t)} (${plan.slotCredits(y, t)} cr): ${codes.map((c) => `${byCode(c).code} ${byCode(c).title}`).join('; ')}`
@@ -92,22 +80,17 @@
 			shared = true;
 			setTimeout(() => (shared = false), 1800);
 		} catch {
-			// clipboard blocked, nothing else to fall back to here
+			exportError = 'Your browser blocked the clipboard. Try exporting a PDF.';
 		}
 	}
 
-	// a link that opens a copy of this plan, for a friend or an advisor, no
-	// account needed. Their own board is never replaced without asking.
-	let linkCopied = $state(false);
-	let linkError = $state('');
-	async function copyShareLink() {
-		linkError = '';
+	let exportError = $state('');
+	function exportPdf() {
+		exportError = '';
 		try {
-			await navigator.clipboard.writeText(await shareLink(plan.snapshot(), location.origin));
-			linkCopied = true;
-			setTimeout(() => (linkCopied = false), 1800);
-		} catch {
-			linkError = 'The link could not be copied. Your browser may be blocking the clipboard.';
+			printPlan(plan);
+		} catch (e) {
+			exportError = e instanceof Error ? e.message : 'The PDF preview could not open.';
 		}
 	}
 
@@ -130,6 +113,8 @@
 </script>
 
 <Modal title="settings" {onclose}>
+	<!-- <AccountPanel snapshot={() => plan.snapshot()} /> -->
+	<CloudPlans />
 	<section>
 		<h3>appearance</h3>
 
@@ -169,31 +154,13 @@
 		<FeedbackForm />
 	</section>
 
-	<section>
-		<h3>saved plans</h3>
-		<p class="note">
-			your board autosaves on its own. this keeps a named copy you can come back to, all in this browser, nothing leaves
-			it.
-		</p>
-
-		<div class="save-new">
-			<input
-				type="text"
-				placeholder={suggestedName}
-				bind:value={saveName}
-				onkeydown={(e) => e.key === 'Enter' && saveNow()}
-			/>
-			<button onclick={saveNow} disabled={savedPlans.full}>save this plan</button>
-		</div>
-
-		{#if savedPlans.full}
-			<p class="note warn">that's {MAX_SAVES} saved plans, delete one to save another.</p>
-		{/if}
-		{#if savedPlans.error}
-			<p class="note warn">{savedPlans.error}</p>
-		{/if}
-
-		{#if savedPlans.items.length}
+	{#if savedPlans.items.length}
+		<section>
+			<h3>browser copies & backups</h3>
+			<p class="note">
+				Your existing local copies remain here. Load one, then use “Save this plan” to keep it in your Krea account.
+			</p>
+			{#if savedPlans.error}<p class="note warn">{savedPlans.error}</p>{/if}
 			<ul class="saves">
 				{#each savedPlans.items as p (p.id)}
 					<li>
@@ -208,25 +175,22 @@
 					</li>
 				{/each}
 			</ul>
-		{:else}
-			<p class="note empty">nothing saved yet.</p>
-		{/if}
-	</section>
+		</section>
+	{/if}
 
 	<section>
 		<h3>your plan</h3>
 		<p class="note">
-			saved in this browser only. share a link, whoever opens it gets their own copy, without your grades, or copy it as
-			text.
+			Export your current draft without signing in. PDFs and copied text exclude your grades and email.
 		</p>
 		<div class="actions">
-			<button onclick={copyShareLink}>{linkCopied ? 'link copied ✓' : 'copy share link'}</button>
+			<button onclick={exportPdf}>Save as PDF</button>
 			<button onclick={copyPlan}>{shared ? 'copied ✓' : 'copy plan as text'}</button>
 			<button class="danger" onclick={startOver}>
 				{confirming ? 'really start over?' : 'start over'}
 			</button>
 		</div>
-		{#if linkError}<p class="note warn">{linkError}</p>{/if}
+		{#if exportError}<p class="note warn" role="alert">{exportError}</p>{/if}
 	</section>
 </Modal>
 
@@ -250,36 +214,6 @@
 	h3 {
 		@include section-label;
 		margin-bottom: 1rem;
-	}
-
-	.save-new {
-		display: flex;
-		gap: 0.8rem;
-		margin-top: 0.8rem;
-
-		input {
-			flex: 1;
-			min-width: 0;
-			padding: 0.6rem 0.8rem;
-			font: inherit;
-			font-size: 1.3rem;
-			color: var(--color-text);
-			background: var(--color-bg);
-			border: 1px solid var(--color-border-card);
-			border-radius: 5px;
-		}
-
-		button {
-			padding: 0.6rem 1.2rem;
-			font: inherit;
-			font-size: 1.3rem;
-			@include store-button;
-
-			&:disabled {
-				opacity: 0.6;
-				cursor: default;
-			}
-		}
 	}
 
 	.saves {
@@ -326,10 +260,6 @@
 		color: var(--color-danger);
 	}
 
-	.note.empty {
-		font-style: italic;
-	}
-
 	.row {
 		display: grid;
 		grid-template-columns: 8rem 1fr;
@@ -368,6 +298,7 @@
 
 	.actions {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 0.8rem;
 		margin-top: 1rem;
 

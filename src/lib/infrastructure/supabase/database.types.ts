@@ -24,6 +24,12 @@ type ReviewRow = {
 export type Database = {
 	public: {
 		Tables: {
+			plan_shares: {
+				Row: { id: string; user_id: string; name: string; snapshot: Json; created_at: string };
+				Insert: { user_id: string; snapshot: Json };
+				Update: never;
+				Relationships: [];
+			};
 			plans: {
 				Row: PlanRow;
 				Insert: Pick<PlanRow, 'user_id' | 'name' | 'snapshot'>;
@@ -38,7 +44,10 @@ export type Database = {
 			};
 		};
 		Views: { [_ in never]: never };
-		Functions: { can_review: { Args: Record<string, never>; Returns: boolean } };
+		Functions: {
+			can_review: { Args: Record<string, never>; Returns: boolean };
+			read_plan_share: { Args: { share_id: string }; Returns: { name: string; snapshot: Json; created_at: string }[] };
+		};
 		Enums: { [_ in never]: never };
 		CompositeTypes: { [_ in never]: never };
 	};

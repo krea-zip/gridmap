@@ -25,8 +25,7 @@ Nothing passes the plan down by prop.
 
 Feature repositories are the only place that query feature tables. Components
 render state and invoke actions. Cloud state ignores stale responses after a panel
-closes or the signed-in account changes. Authentication has no review-specific
-eligibility logic; the review repository checks that separately.
+closes or the signed-in account changes. Student APIs and RLS reuse the verified Krea Google identity check (`can_review`) for private saves and sharing.
 
 Browser storage keys remain stable so existing users retain their plans. Local
 storage errors are surfaced. Saved copies detach from live reactive data. A backup
