@@ -402,6 +402,42 @@ $shape-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 	}
 }
 
+// a small switch: a faint dashed pill that turns solid glossy plum when on.
+// set aria-pressed on the button
+@mixin toggle-pill {
+	flex: none;
+	padding: 0.3rem 0.7rem;
+	font-family: inherit;
+	font-size: 1.1rem;
+	font-weight: 650;
+	color: var(--color-text-muted);
+	background: transparent;
+	border: 1px dashed var(--color-border-card);
+	border-radius: 999px;
+	cursor: pointer;
+	transition:
+		color 0.2s ease,
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		transform 0.18s var(--spring);
+
+	&:hover {
+		color: var(--color-text);
+		border-color: var(--color-accent);
+	}
+
+	&:active {
+		transform: scale(0.94);
+	}
+
+	&[aria-pressed='true'] {
+		color: var(--color-on-accent);
+		background-color: var(--color-accent);
+		border: 1px solid var(--color-control-deep);
+		@include glossy-accent;
+	}
+}
+
 // The planner's flat dropdown (sidebar pickers, the welcome): no gloss, a
 // faint well
 @mixin flat-select {

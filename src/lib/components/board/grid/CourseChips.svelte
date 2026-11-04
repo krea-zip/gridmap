@@ -46,7 +46,7 @@
 		class="chip"
 		class:faded={(!!board.chain && !board.chain.nodes.has(code)) || (!!board.spotCodes && !board.spotCodes.has(code))}
 		class:chain-root={board.chain?.root === code}
-		class:selected={(plan.selectedId ?? plan.selected?.code) === code}
+		class:lit={board.spotCodes?.has(code) || (plan.selectedId ?? plan.selected?.code) === code}
 		class:is-audit={plan.isAudit(code)}
 		class:is-attempt={attempt}
 		class:retake={!attempt && plan.attemptsOf(code).length > 0}
@@ -184,8 +184,14 @@
 			opacity: 0.3;
 		}
 
-		&.chain-root,
-		&.selected {
+		// the dimming does the work, so what stays only needs a soft edge
+		&.lit {
+			outline: 2px solid color-mix(in srgb, var(--color-board-text) 35%, transparent);
+			outline-offset: 2px;
+		}
+
+		// the chain's start has to stand apart from the rest of the chain
+		&.chain-root {
 			box-shadow:
 				0 0 0 2px var(--color-accent),
 				var(--shadow-card);

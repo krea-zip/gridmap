@@ -8,7 +8,7 @@ import { restoreBoard, saveBoard } from '$lib/features/plans/autosave';
 // the board's motion is a plan concern: only the plan knows when a change is
 // one course moving (worth watching fly) and when it is a whole-board redraw
 import { quietRedraw } from '$lib/ui/transitions';
-import { selectCatalogue } from '$lib/planner/catalogue';
+import { selectCatalogue, type CatalogueSort, type CourseKind, type QuickFilter } from '$lib/planner/catalogue';
 import { guessNow, slotAt, slotOrder, trimName, trimSpelled, type Here, type TrimNaming } from '$lib/planner/calendar';
 import {
 	CORE_COURSES,
@@ -44,7 +44,9 @@ import {
 	requiredSetFor,
 	batchRuleFor,
 	satisfiedBy,
-	subjectById
+	subjectById,
+	STUDENT_BATCHES,
+	offeredTo
 } from '$lib/curriculum/data';
 import { GRADE_POINTS, isGradeLetter, isGradeMark, recovery, weightedGpa, type GradeMark } from '$lib/planner/grades';
 import { planHints } from '$lib/planner/rules';
@@ -220,6 +222,12 @@ export class Plan {
 	}
 
 	filters = $state<string[]>([]); // checked catalogue subject filters
+	// checked course kinds; not saved, or a reload could quietly hide courses
+	kinds = $state<CourseKind[]>([]);
+	quick = $state<QuickFilter[]>([]); // not saved either
+	catalogueTerms = $state<TrimNum[]>([]);
+	catalogueCredits = $state<number[]>([]);
+	catalogueSort = $state<CatalogueSort>('relevance');
 	#selected = $state<Course | null>(null); // course shown in the details bar
 	/** which attempt of it the bar is about, when that is a failed one (COMP201~1) */
 	selectedId = $state<string | null>(null);
@@ -441,8 +449,7 @@ export class Plan {
 		this.batchStartYear =
 			typeof parsed.batchStartYear === 'number' &&
 			Number.isInteger(parsed.batchStartYear) &&
-			parsed.batchStartYear >= 2022 &&
-			parsed.batchStartYear <= 2026
+			STUDENT_BATCHES.includes(parsed.batchStartYear)
 				? parsed.batchStartYear
 				: 2026;
 		if (
@@ -453,7 +460,7 @@ export class Plan {
 		// older saves stored subject codes ("BUSI"), only accept current ids,
 		// and majors additionally must be subjects offered as a major
 		const isSubject = (v: unknown) => SUBJECTS.some((s) => s.id === v);
-		const isMajor = (v: unknown) => SUBJECTS.some((s) => s.id === v && s.majorable);
+		const isMajor = (v: unknown) => SUBJECTS.some((s) => s.id === v && offeredTo(s, 'major', this.batchStartYear));
 		for (const k of Object.keys(this.picks) as (keyof typeof this.picks)[]) {
 			const ok = k === 'major1' || k === 'major2' ? isMajor : isSubject;
 			const pick = parsed.picks?.[k];
@@ -1461,13 +1468,13 @@ export class Plan {
 
 	/** what a role's dropdown lists, see planner/picks.ts */
 	pickOptions(role: PickRole) {
-		return pickOptions(this.structure, this.picks, role);
+		return pickOptions(this.structure, this.picks, role, this.batchStartYear);
 	}
 
 	/** no two roles may hold the same subject: after a pick or a change of
 	 *  degree, a later role on an earlier one's subject moves along */
 	ensureDistinctPicks() {
-		keepPicksDistinct(this.structure, this.picks);
+		keepPicksDistinct(this.structure, this.picks, this.batchStartYear);
 	}
 
 	/** fill the grid with the suggested path for the chosen programmes (see
@@ -1726,6 +1733,27 @@ export class Plan {
 		this.#setFlash(flash);
 	}
 
+	/** is any filter narrowing the catalogue */
+	get narrowed(): boolean {
+		return !!(
+			this.catalogueSubject ||
+			this.filters.length ||
+			this.quick.length ||
+			this.kinds.length ||
+			this.catalogueTerms.length ||
+			this.catalogueCredits.length
+		);
+	}
+
+	clearNarrowing() {
+		this.catalogueSubject = '';
+		this.filters = [];
+		this.quick = [];
+		this.kinds = [];
+		this.catalogueTerms = [];
+		this.catalogueCredits = [];
+	}
+
 	toggleFilter(subjectId: string) {
 		if (this.filters.includes(subjectId)) {
 			this.filters = this.filters.filter((f) => f !== subjectId);
@@ -1960,10 +1988,55 @@ export class Plan {
 
 	// ── catalogue (filtered + sorted) ──
 	catalogueSubject = $state('');
+
+	// the trimesters still open to you, after the one you're in
+	laterSlots = $derived(
+		this.years
+			.flatMap((year) => this.trims.map((trim) => ({ year, trim })))
+			.filter(
+				({ year, trim }) =>
+					slotOrder(year, trim) > slotOrder(this.here.year, this.here.trim) && !this.breaks[slotKey(year, trim)]
+			)
+	);
+	#neededCodes = $derived(new Set(this.missingRequiredCodes.map((code) => byCode(code).code)));
+
+	/** canDrop lets an unplaced prerequisite through with a warning; ready doesn't */
+	#readyAt(course: Course, year: number, trim: TrimNum): boolean {
+		const order = slotOrder(year, trim);
+		return (
+			this.canDrop(course.code, year, trim) &&
+			course.prereqs.filter(hasCode).every((pre) => {
+				const met = [pre, ...satisfiedBy(pre)];
+				return this.placed.some((p) => met.includes(p.code) && slotOrder(p.year, p.trim) < order);
+			})
+		);
+	}
+
+	#passesQuick(course: Course): boolean {
+		return this.quick.every((filter) => {
+			if (filter === 'needed')
+				return (
+					this.#neededCodes.has(course.code) &&
+					this.laterSlots.some(({ trim }) => !course.offered.length || course.offered.includes(trim))
+				);
+			if (this.placedCodes.has(course.code)) return false;
+			if (filter === 'next') {
+				const next = this.laterSlots[0];
+				return !!next && this.canDrop(course.code, next.year, next.trim);
+			}
+			return filter === 'unplanned' || this.laterSlots.some(({ year, trim }) => this.#readyAt(course, year, trim));
+		});
+	}
+
 	catalogue: Course[] = $derived(
 		selectCatalogue({
 			search: this.search,
 			filters: this.filters,
+			kinds: this.kinds,
+			terms: this.catalogueTerms,
+			credits: this.catalogueCredits,
+			sort: this.catalogueSort,
+			quick: (course) => this.#passesQuick(course),
 			selectedSubjects: this.selectedSubjects,
 			subject: this.catalogueSubject,
 			trim: this.zoom?.trim,

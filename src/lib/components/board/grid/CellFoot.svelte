@@ -18,9 +18,12 @@
 	let tgpa = $derived(plan.gradeMode ? plan.slotTgpa(year, trim) : null);
 	// year 1 and breaks sit outside the load rules, so they never go red
 	const TOO_LIGHT = 8;
-	let offLoad = $derived(
-		!plan.gradeMode && load.status !== 'exempt' && (credits < TOO_LIGHT || credits > TRIM_HARD_MAX)
-	);
+	// the line a far-off load crossed, shown beside its credits
+	let limit = $derived.by(() => {
+		if (plan.gradeMode || load.status === 'exempt') return null;
+		if (credits < TOO_LIGHT) return TOO_LIGHT;
+		return credits > TRIM_HARD_MAX ? TRIM_HARD_MAX : null;
+	});
 </script>
 
 <!-- always there, so the number can fade in and out on its own instead of
@@ -37,11 +40,11 @@
 		>
 	{/if}
 	{#if credits > 0}
-		<span class="cell-credits" class:off-load={offLoad}>
+		<span class="cell-credits" class:off-load={limit !== null}>
 			{#if plan.gradeMode}
 				<span title="term GPA, this trimester's grade average">TGPA {tgpa === null ? '–' : tgpa.toFixed(2)}</span>
 			{:else}
-				<span class="credits" title={load.note || undefined}>{credits} cr</span>
+				<span class="credits" title={load.note || undefined}>{credits}{limit ? `/${limit}` : ''} cr</span>
 			{/if}
 			<button
 				class="clear"
@@ -107,9 +110,10 @@
 	// shows on hover only, so a full board isn't a field of ×s
 	.clear {
 		padding: 0 0.2rem;
-		font-size: 1.3rem;
+		font-size: 1.8rem;
+		font-weight: 700;
 		line-height: 1;
-		color: var(--color-text-muted);
+		color: var(--color-text);
 		background: none;
 		border: none;
 		opacity: 0;
@@ -123,8 +127,9 @@
 			opacity: 1;
 		}
 
+		// it empties the whole trimester, so it warns before the click
 		&:hover {
-			color: var(--color-text);
+			color: var(--color-danger);
 		}
 	}
 

@@ -9,6 +9,7 @@
 	import Keys from './Keys.svelte';
 	import LabelKeys from './LabelKeys.svelte';
 	import { viewport } from '$lib/planner/viewport.svelte';
+	import { slotOrder } from '$lib/planner/calendar';
 	import { armed } from '../grid/armed.svelte';
 
 	const plan = usePlan();
@@ -36,11 +37,46 @@
 	] as const;
 
 	type Row = { id: string; noun: string; match: (code: string) => boolean };
+	type MiscRow = Row & { label: string; note: string };
 
 	let root: HTMLDivElement;
 	let trigger: HTMLButtonElement;
 	let open = $state(false);
 	let subjects = $derived(plan.programmes.map((p, i) => ({ ...p, i })).filter((p) => p.subject !== 'open'));
+
+	// the trimester you're in counts as neither taken nor to come
+	let hereOrder = $derived(slotOrder(plan.here.year, plan.here.trim));
+	let orders = $derived(new Map(plan.placed.map((p) => [p.code, slotOrder(p.year, p.trim)])));
+	const isTaken = (c: string) => (orders.get(c) ?? hereOrder) < hereOrder;
+
+	// cuts across the colours; a row with nothing to light isn't shown
+	let miscRows = $derived(
+		(
+			[
+				{
+					id: 'upcoming',
+					label: 'still to come',
+					noun: 'upcoming course',
+					note: 'courses after the trimester you are in now',
+					match: (c) => (orders.get(c) ?? hereOrder) > hereOrder
+				},
+				{
+					id: 'taken',
+					label: 'already taken',
+					noun: 'taken course',
+					note: 'courses before the trimester you are in now',
+					match: isTaken
+				},
+				{
+					id: 'audit',
+					label: 'audits',
+					noun: 'audit',
+					note: 'audited courses, which earn no credit',
+					match: (c) => plan.isAudit(c)
+				}
+			] satisfies MiscRow[]
+		).filter((r) => [...plan.placedCodes].some(r.match))
+	);
 
 	let rows = $derived<Row[]>([
 		...TYPE_KEYS.map((k) => ({ id: k.type, noun: k.noun, match: (c: string) => plan.courseType(c) === k.type })),
@@ -48,7 +84,8 @@
 			id: `${s.role}:${s.subject}`,
 			noun: `${subjectById(s.subject).label} course`,
 			match: (c: string) => plan.programmeOf(c) === s.i
-		}))
+		})),
+		...miscRows
 	]);
 
 	// picked rows, by id; ids outlive a programme being swapped out, so look
@@ -58,8 +95,9 @@
 	let pickedRows = $derived(rows.filter((r) => picked.includes(r.id)));
 	let pickedCodes = $derived([...plan.placedCodes].filter((c) => pickedRows.some((r) => r.match(c))));
 
-	// kccs and required take real work to put back, so those ask twice
-	let risky = $derived(pickedCodes.some((c) => ['core', 'required'].includes(plan.courseType(c))));
+	// kccs, required and anything already taken are real work to put back, so
+	// those ask twice
+	let risky = $derived(pickedCodes.some((c) => isTaken(c) || ['core', 'required'].includes(plan.courseType(c))));
 	let dropLabel = $derived.by(() => {
 		const n = pickedCodes.length;
 		const noun = pickedRows.length === 1 ? pickedRows[0].noun : 'course';
@@ -189,6 +227,23 @@
 					{/each}
 				</ul>
 			{/if}
+			{#if miscRows.length}
+				<ul class="legend misc" aria-label="other course selections">
+					{#each miscRows as r (r.id)}
+						<li>
+							<button
+								title={r.note}
+								aria-pressed={picked.includes(r.id)}
+								onclick={() => toggle(r.id)}
+								onmouseenter={() => (hovered = r.id)}
+								onmouseleave={() => (hovered = null)}
+							>
+								<i></i>{r.label}
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{/if}
 			{#if pickedCodes.length}
 				<div class="foot" transition:fade={{ duration: reducedMotion() ? 0 : 120 }}>
 					<button
@@ -198,6 +253,7 @@
 						onclick={() => (risky ? confirmDrop.press() : dropPicked())}
 						>{risky && confirmDrop.armed ? 'sure? click again' : `− drop ${dropLabel}`}</button
 					>
+					<button class="clear" title="unpin every row" onclick={() => (picked = [])}>clear</button>
 				</div>
 			{/if}
 		</div>
@@ -268,6 +324,12 @@
 		padding: 0 0.6rem 1.2rem;
 		margin-bottom: 0.4rem;
 		border-bottom: 1px solid var(--bar-edge);
+
+		// the segments share the menu's width, so no empty end is left over
+		:global(button) {
+			flex: 1;
+			justify-content: center;
+		}
 	}
 
 	.section-label {
@@ -343,13 +405,36 @@
 
 	// the drop sits under its own dotted rule, like the subjects do
 	.foot {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
 		margin-top: 0.4rem;
 		padding-top: 0.6rem;
 		border-top: 1px dotted color-mix(in srgb, var(--bar-text-muted) 55%, transparent);
 	}
 
+	// these aren't colours, so their swatch is an empty outline
+	.misc i {
+		border: 1px dotted var(--bar-text-muted);
+	}
+
+	.clear {
+		padding: 0.5rem 0.6rem;
+		font: inherit;
+		font-size: 1.2rem;
+		color: var(--color-text-muted);
+		background: none;
+		border: 0;
+		cursor: pointer;
+
+		&:hover {
+			color: var(--color-text);
+			text-decoration: underline;
+		}
+	}
+
 	.drop {
-		width: 100%;
+		flex: 1;
 		min-height: 3.2rem;
 		padding: 0.5rem 1.2rem;
 		font: inherit;

@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
+	import PixelIcon from '../PixelIcon.svelte';
 	import CourseFaculty from './CourseFaculty.svelte';
 	import {
+		DATA_UPDATED,
 		baseCode,
 		byCode,
 		canAudit,
@@ -224,7 +226,7 @@
 					aria-label={pinned ? 'unpin course details' : 'pin course details'}
 					aria-pressed={pinned}
 					title={pinned ? 'use a slide-out drawer' : 'keep details beside your plan'}
-					onclick={onTogglePin}>{pinned ? 'unpin' : 'pin'}</button
+					onclick={onTogglePin}><PixelIcon name="pin" snap /></button
 				>
 			{/if}
 			<button class="close" aria-label="close course details" title="close (Esc)" onclick={() => (plan.selected = null)}
@@ -563,6 +565,14 @@
 				{/if}
 
 				<CourseFaculty course={c} />
+				{#if DATA_UPDATED}<p class="catalogue-updated">
+						Catalogue updated {DATA_UPDATED.toLocaleDateString('en-GB', {
+							day: 'numeric',
+							month: 'short',
+							year: 'numeric',
+							timeZone: 'UTC'
+						})}
+					</p>{/if}
 			</section>
 		{/if}
 	</div>
@@ -570,6 +580,12 @@
 
 <style lang="scss">
 	@use '$lib/styles/mixins' as *;
+	.catalogue-updated {
+		font-size: 1.1rem;
+		color: var(--color-text-muted);
+		line-height: 1.5;
+		margin-top: 1.2rem;
+	}
 
 	.col-header {
 		@include card-header;
@@ -589,15 +605,11 @@
 		gap: 0.8rem;
 	}
 
+	// the same switch pill as the catalogue's filters: raised plum when on
 	.pin {
-		padding: 0.4rem 1rem;
-		font: inherit;
-		font-size: 1.2rem;
-		@include store-button;
-		&[aria-pressed='true'] {
-			color: var(--color-accent);
-			border-color: var(--color-accent);
-		}
+		@include toggle-pill;
+		display: flex;
+		padding: 0.4rem 0.8rem;
 	}
 
 	.close {

@@ -2,6 +2,7 @@
 	// the board bar's keys, an old-iphone segmented control: joined glossy
 	// segments with a hard crease across the middle, light pink when off, dark
 	// pink and sunk in when on. a single key is just a one-segment control.
+	// a key can be a link, where it goes somewhere rather than switches something.
 	// `plain` is for a key that opens a menu rather than switching anything,
 	// so it doesn't wear the toggles' pink.
 	import type { Snippet } from 'svelte';
@@ -29,7 +30,7 @@
 		box-shadow: 0 1px 0 var(--bar-hi);
 	}
 
-	.keys :global(button) {
+	.keys :global(:is(button, a)) {
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
@@ -38,6 +39,8 @@
 		font: inherit;
 		font-size: 1.2rem;
 		font-weight: 700;
+		white-space: nowrap;
+		text-decoration: none;
 		color: var(--bar-key-text);
 		text-shadow: 0 1px 0 var(--bar-hi); // embossed, faint on the dark theme
 		background-color: var(--bar-key);
@@ -64,7 +67,7 @@
 
 	// the pressed segment: dark pink and sunk in. its own rule, a nested
 	// :global(.active) doesn't survive the :global(button) around it
-	.keys :global(button.active) {
+	.keys :global(:is(button, a).active) {
 		color: var(--bar-key-on-text);
 		text-shadow: 0 -1px 0 rgba(60, 10, 35, 0.45);
 		background-color: var(--bar-key-on);
@@ -80,15 +83,15 @@
 	}
 
 	// a hairline groove between segments, lit on its right side
-	.keys :global(button + button) {
+	.keys :global(:is(button, a) + :is(button, a)) {
 		border-left: 1px solid var(--bar-key-edge);
 		box-shadow:
 			inset 0 1px 0 rgba(255, 255, 255, 0.7),
 			inset 1px 0 0 rgba(255, 255, 255, 0.45);
 	}
 
-	.keys :global(button + button.active),
-	.keys :global(button.active + button) {
+	.keys :global(:is(button, a) + :is(button, a).active),
+	.keys :global(:is(button, a).active + :is(button, a)) {
 		border-left-color: var(--bar-key-on-edge);
 	}
 
@@ -128,7 +131,7 @@
 
 	// a fingertip tall on a touch screen
 	@include touch {
-		.keys :global(button) {
+		.keys :global(:is(button, a)) {
 			min-height: 4rem;
 		}
 	}

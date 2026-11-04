@@ -23,6 +23,7 @@
 		     who they are and when to find them is what a student asks next -->
 {#if !isCore(c.code) && profs.length}
 	<div class="label">recently taught by</div>
+	<p class="d-muted">Past teaching records; the instructor for your term may differ.</p>
 	<div class="d-profs">
 		{#each profs as p, pi (p.id)}
 			{@const terms = taughtBy(p)}

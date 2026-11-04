@@ -299,24 +299,13 @@
 		align-items: center;
 		justify-content: center;
 		padding: 0;
-		font-size: 1.1rem;
+		font-size: 1.25rem;
 		line-height: 1;
-		color: var(--color-text-muted);
-		background: var(--color-bg-card-start);
-		border: 1px solid var(--color-border-divider);
-		border-radius: 4px;
-		cursor: pointer;
-		transition:
-			transform 0.15s ease,
-			color 0.15s ease;
+		@include store-button;
 
-		&:hover {
-			color: var(--color-text);
-			transform: scale(1.06);
-		}
-
-		&:active {
-			transform: translateY(1px);
+		// glossy at rest, sunk in while pressed
+		&:active:not(:disabled) {
+			box-shadow: var(--shadow-well);
 		}
 	}
 	.placed-open {

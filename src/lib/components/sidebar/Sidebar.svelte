@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
 	import PixelIcon from '../PixelIcon.svelte';
-	import { MAJOR_SUBJECTS } from '$lib/curriculum/data';
+	import { STUDENT_BATCHES } from '$lib/curriculum/data';
 	import { viewport } from '$lib/planner/viewport.svelte';
 	import { optionLabel, type PickRole } from '$lib/planner/picks';
 	import Settings from '$lib/components/Settings.svelte';
@@ -59,7 +59,7 @@
 		<label class="row-label" for="batch">batch</label>
 		<div class="batch-line">
 			<select id="batch" bind:value={plan.batchStartYear} onchange={distinct}>
-				{#each [2022, 2023, 2024, 2025, 2026] as year (year)}
+				{#each STUDENT_BATCHES as year (year)}
 					<option value={year}>{year}-{String(year + (plan.fourYear ? 4 : 3)).slice(-2)}</option>
 				{/each}
 			</select>
@@ -81,8 +81,8 @@
 	<label class="row">
 		<span class="row-label">major</span>
 		<select bind:value={plan.picks.major1} onchange={distinct}>
-			{#each MAJOR_SUBJECTS as s (s.id)}
-				<option value={s.id}>{s.label}</option>
+			{#each plan.pickOptions('major1') as o (o.subject.id)}
+				<option value={o.subject.id}>{optionLabel(o)}</option>
 			{/each}
 		</select>
 	</label>

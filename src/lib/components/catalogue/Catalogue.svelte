@@ -2,10 +2,12 @@
 	import { usePlan } from '$lib/planner/context';
 	import PixelIcon from '../PixelIcon.svelte';
 	import { tick } from 'svelte';
-	import { COURSES, SUBJECTS, subjectById } from '$lib/curriculum/data';
+	import { COURSES } from '$lib/curriculum/data';
 	import { offeredIn } from '$lib/planner/calendar';
 	import { carried } from '$lib/ui/courseDrag';
 	import CatalogueCard from './CatalogueCard.svelte';
+	import CatalogueFilters from './CatalogueFilters.svelte';
+	import CatalogueRibbon from './CatalogueRibbon.svelte';
 
 	let { mobile = false }: { mobile?: boolean } = $props();
 	const plan = usePlan();
@@ -31,11 +33,6 @@
 			cancelled = true;
 		};
 	});
-
-	// filter chips: one per distinct selected subject, plus the foundation
-	// core, always on offer, whatever the programmes are. The open minor
-	// has no courses of its own, so it gets no chip.
-	let filterSubjects = $derived([...new Set([...plan.selectedSubjects.filter((s) => s !== 'open'), 'core'])]);
 
 	// which subject's code a cross-listed course should be shown under: the
 	// active filter if it pins one down, else the single programme subject it
@@ -105,32 +102,9 @@
 			{/if}
 		</div>
 
-		<label class="department-filter">
-			<span>browse</span>
-			<select aria-label="browse department" bind:value={plan.catalogueSubject}>
-				<option value="">{plan.filters.length ? 'your programme filters' : 'all departments'}</option>
-				{#each SUBJECTS.filter((s) => s.id !== 'open') as subject (subject.id)}
-					<option value={subject.id}>{subject.label}</option>
-				{/each}
-			</select>
-		</label>
-		<div class="filters">
-			{#each filterSubjects as id (id)}
-				<label class="filter">
-					<input
-						type="checkbox"
-						class="tick"
-						checked={!plan.catalogueSubject && plan.filters.includes(id)}
-						onchange={() => {
-							plan.catalogueSubject = '';
-							plan.toggleFilter(id);
-						}}
-					/>
-					<span>{subjectById(id).short}</span>
-				</label>
-			{/each}
-		</div>
+		<CatalogueFilters />
 	</div>
+	<CatalogueRibbon />
 
 	{#if plan.zoom}
 		<div class="reveal-note">
@@ -165,8 +139,7 @@
 					<button
 						onclick={() => {
 							plan.search = '';
-							plan.filters = [];
-							plan.catalogueSubject = '';
+							plan.clearNarrowing();
 							plan.zoom = null;
 						}}>clear search & filters</button
 					>
@@ -188,8 +161,7 @@
 		overflow: hidden;
 
 		> :not(.controls),
-		.search-box,
-		.department-filter {
+		.search-box {
 			contain: inline-size;
 		}
 		background: linear-gradient(to bottom, var(--color-bg-warm-start), var(--color-bg-warm-end));
@@ -213,7 +185,9 @@
 	.controls {
 		flex-shrink: 0;
 		padding: 1.6rem 1.4rem 0;
-		border-bottom: 1px solid var(--color-border-light);
+		// every fold open on a short laptop still leaves room for the cards
+		max-height: 60%;
+		overflow-y: auto;
 	}
 
 	.scroll {
@@ -315,28 +289,6 @@
 		}
 	}
 
-	.filters {
-		--gap: 1rem;
-		display: flex;
-		gap: var(--gap);
-		flex-wrap: wrap;
-		min-inline-size: 0;
-		padding: 1.4rem 0.4rem 1.6rem;
-		font-size: var(--text-body);
-	}
-
-	.filter {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: var(--text-body);
-		cursor: pointer;
-	}
-
-	.tick {
-		@include tick(1.4rem);
-	}
-
 	.cards {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
@@ -385,24 +337,6 @@
 		border: 1px solid var(--color-border-card);
 		border-radius: 999px;
 	}
-	.department-filter {
-		display: flex;
-		align-items: center;
-		gap: 0.8rem;
-		margin-top: 1.2rem;
-		font-size: var(--text-body);
-		color: var(--color-text-muted);
-	}
-	.department-filter select {
-		min-width: 0;
-		width: 100%;
-		padding: 0.6rem;
-		font: inherit;
-		color: var(--color-text);
-		background: var(--color-bg-light);
-		border: 1px solid var(--color-border-card);
-		border-radius: 6px;
-	}
 	.empty-results {
 		grid-column: 1 / -1;
 		display: flex;
@@ -434,13 +368,6 @@
 		}
 		.clear-search {
 			width: 4rem;
-		}
-		.filter {
-			min-height: 4rem;
-		}
-		.tick {
-			width: 2rem;
-			height: 2rem;
 		}
 	}
 	@include mobile {
@@ -475,13 +402,6 @@
 			background: transparent;
 			color: var(--color-text-muted);
 			font-size: 2.4rem;
-		}
-		.filters {
-			padding-top: 0.6rem;
-			gap: 0.5rem 1.4rem;
-		}
-		.filter {
-			min-height: 4.4rem;
 		}
 		.scroll {
 			flex: 1;

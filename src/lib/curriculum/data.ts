@@ -9,6 +9,7 @@
 import snapshotData from '$lib/data/curriculum.json';
 import { previewSnapshot } from '$lib/curriculum/preview';
 import {
+	subjectOffered,
 	variantOf,
 	type ChoiceGroup,
 	type CreditShare,
@@ -39,6 +40,20 @@ export const MAJOR_SUBJECTS: Subject[] = SUBJECTS.filter((s) => s.majorable);
 export const PROGRAMME_SUBJECTS: Subject[] = SUBJECTS.filter((s) => s.id !== 'core' && s.id !== 'open');
 export const OPEN_MINOR: Subject = SUBJECTS.find((s) => s.id === 'open')!;
 export const OPEN_MINOR_CREDITS = 24; // a minor-sized allowance of free courses
+
+const batchProfiles = snapshot.batchProfiles ?? [];
+/** can this batch take the subject in this role (see subjectOffered) */
+export const offeredTo = (subject: Subject, role: ProgrammeRole, batch: number) =>
+	subjectOffered(subject, role, batch, batchProfiles);
+
+/** the batches a student can say they're in: the first with requirement data
+ *  through this year's, or further if the office has planned ahead */
+const LAST_BATCH = Math.max(
+	new Date().getFullYear(),
+	...batchProfiles.map((p) => p.batch),
+	...snapshot.requirementSets.flatMap((s) => s.batches ?? [])
+);
+export const STUDENT_BATCHES: number[] = Array.from({ length: LAST_BATCH - 2021 }, (_, i) => 2022 + i);
 
 export const subjectById = (id: string): Subject => {
 	const s = SUBJECTS.find((s) => s.id === id);

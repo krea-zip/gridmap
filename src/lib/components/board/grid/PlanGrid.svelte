@@ -67,6 +67,9 @@
 		// the year labels sit centred in their own column, which already reads
 		// as margin, so the left gutter gives a little of it back
 		padding-left: calc(var(--board-gutter, 3.2rem) - 1.2rem);
+		// matches the left padding, year column and gap, so the trimesters
+		// centre on the board rather than the labels pushing them right
+		padding-right: calc(var(--board-gutter, 3.2rem) + 5.8rem);
 	}
 
 	@include mobile {

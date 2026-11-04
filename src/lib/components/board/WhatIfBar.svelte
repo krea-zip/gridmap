@@ -18,7 +18,7 @@
 		type PickRole as Role
 	} from '$lib/planner/picks';
 	import type { StructureKind } from '$lib/types';
-	import { byCode, creditCeilingFor, subjectById } from '$lib/curriculum/data';
+	import { STUDENT_BATCHES, byCode, creditCeilingFor, subjectById } from '$lib/curriculum/data';
 	import type { Verdict } from '$lib/planner/boardViews';
 
 	let { verdict }: { verdict: Verdict | null } = $props();
@@ -58,7 +58,7 @@
 	// the sidebar's rules (planner/picks.ts): an earlier role's subject shows
 	// disabled in a later role's list, and a change that makes two collide
 	// moves the later one along
-	const keepDistinct = () => keepPicksDistinct(tried.structure, tried.picks);
+	const keepDistinct = () => keepPicksDistinct(tried.structure, tried.picks, tried.batch);
 	const changedRole = (r: Role) => !mine.includes(r) || plan.picks[r] !== tried.picks[r];
 
 	let changed = $derived(
@@ -130,7 +130,7 @@
 				<li class:changed={changedRole(r)}>
 					<span class="wi-role">{ROLE_LABEL[r]}</span>
 					<select aria-label={ROLE_LABEL[r]} bind:value={tried.picks[r]} onchange={keepDistinct}>
-						{#each pickOptions(tried.structure, tried.picks, r) as o (o.subject.id)}<option
+						{#each pickOptions(tried.structure, tried.picks, r, tried.batch) as o (o.subject.id)}<option
 								value={o.subject.id}
 								disabled={!!o.heldAs}>{optionLabel(o)}</option
 							>{/each}
@@ -174,7 +174,7 @@
 			<label class="wi-inline" title="rejoining after a break can mean finishing with a later batch">
 				batch
 				<select bind:value={tried.batch}>
-					{#each [2022, 2023, 2024, 2025, 2026] as b (b)}
+					{#each STUDENT_BATCHES as b (b)}
 						<option value={b}>{b}-{String(b + (tried.fourYear ? 4 : 3)).slice(-2)}</option>
 					{/each}
 				</select>

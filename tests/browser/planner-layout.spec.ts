@@ -149,20 +149,6 @@ test('display disclosure and plan menu preserve labels, highlights and undo', as
 	await expect(display).toBeFocused();
 	await expect(page.locator('#colour-key')).toHaveCount(0);
 	await expect(page.locator('.overview .chip.faded')).toHaveCount(0);
-
-	await expect(page.getByRole('button', { name: 'empty the grid', exact: true })).toHaveCount(0);
-	const menu = page.locator('.plan-menu > button');
-	await menu.click();
-	await page.keyboard.press('Escape');
-	await expect(menu).toBeFocused();
-	await menu.click();
-	const count = await page.locator('.overview .chip').count();
-	await page.getByRole('button', { name: 'empty the grid', exact: true }).click();
-	await expect(page.locator('.overview .chip')).toHaveCount(count);
-	await page.getByRole('button', { name: 'sure? click again', exact: true }).click();
-	await expect(page.locator('.overview .chip')).toHaveCount(0);
-	await page.getByRole('button', { name: 'undo', exact: true }).click();
-	await expect(page.locator('.overview .chip')).toHaveCount(count);
 });
 
 test('issue headings highlight courses, with advisories folded underneath', async ({ page }) => {

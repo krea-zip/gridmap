@@ -1,8 +1,8 @@
 <script lang="ts">
-	// the suggested path as a grid, under the board's own year and trimester
-	// headings, compared with your plan: a tick for what you have, colour and
-	// a click for what's missing. `plain` only shows the route, every course in
-	// its colour, for the welcome.
+	// the suggested path as a grid, compared with your plan: a tick for what you
+	// have, colour and a click for what's missing. `plain` only shows the route,
+	// every course in its colour, under the board's own year and trimester
+	// headings, for the welcome.
 	import { usePlan } from '$lib/planner/context';
 	import { byCode } from '$lib/curriculum/data';
 	import { academicYear, termMonths } from '$lib/planner/calendar';
@@ -18,21 +18,25 @@
 	<span class="rc-label"><b>{plan.shownCode(code)}</b> {byCode(code).title}</span>
 {/snippet}
 
-<div class="path" style="--cols: {plan.trims.length}">
-	<div></div>
-	{#each plan.trims as t (t)}
-		<!-- through the degree a column has no one number, so only its months -->
-		<div class="head">
-			{#if plan.trimNaming === 'year'}<b>t{t}</b>{/if}
-			<small>{termMonths(t)}</small>
-		</div>
-	{/each}
+<div class="path" class:plain style="--cols: {plan.trims.length}">
+	{#if plain}
+		<div></div>
+		{#each plan.trims as t (t)}
+			<!-- through the degree a column has no one number, so only its months -->
+			<div class="head">
+				{#if plan.trimNaming === 'year'}<b>t{t}</b>{/if}
+				<small>{termMonths(t)}</small>
+			</div>
+		{/each}
+	{/if}
 
 	{#each plan.years as y (y)}
-		<div class="head year">
-			<b>y{y}</b>
-			<small>{academicYear(plan.batchStartYear, y)}</small>
-		</div>
+		{#if plain}
+			<div class="head year">
+				<b>y{y}</b>
+				<small>{academicYear(plan.batchStartYear, y)}</small>
+			</div>
+		{/if}
 		{#each plan.trims as t (t)}
 			{@const codes = at(y, t)}
 			<div class="cell">
@@ -85,8 +89,12 @@
 		display: grid;
 		// minmax(0, …): a long title shortens with an ellipsis instead of
 		// stretching its column off the panel
-		grid-template-columns: 4.8rem repeat(var(--cols), minmax(0, 1fr));
+		grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
 		gap: 0.5rem;
+
+		&.plain {
+			grid-template-columns: 4.8rem repeat(var(--cols), minmax(0, 1fr));
+		}
 	}
 
 	// the board's headings: the name over the dates it falls on

@@ -23,30 +23,6 @@
 	@use '$lib/styles/mixins' as *;
 
 	.four-year {
-		flex: none;
-		padding: 0.3rem 0.7rem;
-		font-size: 1.1rem;
-		font-weight: 650;
-		color: var(--color-text-muted);
-		background: transparent;
-		border: 1px dashed var(--color-border-card);
-		border-radius: 999px;
-		cursor: pointer;
-		transition:
-			color 0.2s ease,
-			background-color 0.2s ease,
-			border-color 0.2s ease;
-
-		&:hover {
-			color: var(--color-text);
-			border-color: var(--color-accent);
-		}
-
-		&[aria-pressed='true'] {
-			color: var(--color-on-accent);
-			background-color: var(--color-accent);
-			border: 1px solid var(--color-control-deep);
-			@include glossy-accent;
-		}
+		@include toggle-pill;
 	}
 </style>

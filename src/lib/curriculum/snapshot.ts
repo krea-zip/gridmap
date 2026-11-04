@@ -22,6 +22,9 @@ export type CurriculumSnapshot = {
 	/** how a course counting for two of a student's programmes is credited by
 	 *  default; set in the office, absent from older releases */
 	creditSharing?: CreditShare;
+	/** what each batch changes about which programmes it can take; absent
+	 *  from older releases */
+	batchProfiles?: BatchProfile[];
 };
 
 export type CreditShare = 'one' | 'all';
@@ -119,6 +122,26 @@ export type RequirementSet = {
 	batches: number[] | null;
 	programmes: ProgrammeRequirements[];
 };
+
+/** A batch's changes to who can study what: only the differences, so
+ *  `philosophy: { major: true }` opens a major from that batch on. */
+export type BatchOffers = Record<string, Partial<Record<ProgrammeRole, boolean>>>;
+export type BatchProfile = { batch: number; offers: BatchOffers };
+
+/** can this batch take the subject in this role? the newest batch up to this
+ *  one that says so decides, so a major opened for 2027 stays open for later
+ *  batches until one closes it. nothing said, the subject's own default holds */
+export function subjectOffered(
+	subject: Subject,
+	role: ProgrammeRole,
+	batch: number,
+	profiles: BatchProfile[] = []
+): boolean {
+	const stated = profiles
+		.filter((p) => p.batch <= batch && p.offers[subject.id]?.[role] !== undefined)
+		.sort((a, b) => b.batch - a.batch)[0];
+	return stated ? stated.offers[subject.id][role]! : role !== 'major' || subject.majorable;
+}
 
 /** A rule for one batch only ("ENVS201 for the 2022 batch"). */
 export type BatchRuleRecord = {
