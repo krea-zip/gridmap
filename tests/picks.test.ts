@@ -33,11 +33,6 @@ test("the first role's list holds nothing back", () => {
 	expect(held(pickOptions('major-minor-conc', picks(), 'major1'))).toEqual([]);
 });
 
-test('a role not yet answered holds nothing', () => {
-	const options = pickOptions('major-minor', picks(), 'minor', (r) => r !== 'major1');
-	expect(held(options)).toEqual([]);
-});
-
 test('a collision moves the later role to a free real subject', () => {
 	const p = picks({ minor: 'mathematics' });
 	keepPicksDistinct('major-minor', p);

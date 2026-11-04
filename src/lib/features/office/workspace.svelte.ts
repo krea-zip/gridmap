@@ -5,14 +5,7 @@
 // silently overwrite each other.
 import { createContext } from 'svelte';
 import { invalidate } from '$app/navigation';
-import {
-	DEFAULT_POLICIES,
-	publication,
-	changesBetween,
-	type OfficeDocument,
-	type OfficeRole,
-	type WorkspacePayload
-} from './model';
+import { DEFAULT_POLICIES, publication, changesBetween, type OfficeDocument, type WorkspacePayload } from './model';
 import { validateOffice } from './validation';
 import { PREVIEW_KEY } from '$lib/curriculum/preview';
 
@@ -24,8 +17,8 @@ export class Workspace {
 	baseline = $state<OfficeDocument | null>(null);
 	revision = $state(0);
 	status = $state('draft');
-	role = $state<OfficeRole>('editor');
-	department = $state('');
+	/** who signed in, as they typed it */
+	name = $state('');
 	deployment = $state('');
 	release = $state('');
 	/** the term most office pages are about */
@@ -40,17 +33,13 @@ export class Workspace {
 	errors = $derived(this.issues.filter((i) => i.severity === 'error'));
 	dirty = $derived(!!this.document && JSON.stringify(this.document) !== JSON.stringify(this.saved));
 	changes = $derived(this.document && this.baseline ? changesBetween(this.baseline, this.document) : []);
-	canReview = $derived(['admin', 'publisher', 'reviewer'].includes(this.role));
-	canPublish = $derived(['admin', 'publisher'].includes(this.role));
-	canEdit = $derived(this.role !== 'contributor');
 
 	/** take the draft the server loaded. a form action anywhere in the office
 	 *  reloads it, so unsaved edits are kept and only the draft's standing
 	 *  updates; a revision someone else saved meanwhile is caught on save */
-	load(payload: WorkspacePayload, role: OfficeRole) {
-		this.role = role;
+	load(payload: WorkspacePayload, name: string) {
+		this.name = name;
 		this.status = payload.status;
-		this.department = payload.department;
 		this.deployment = payload.deployment;
 		this.release = payload.release;
 		if (this.dirty && !this.#replace) return;
@@ -78,7 +67,7 @@ export class Workspace {
 	#replace = false;
 
 	async save(note = 'Updated academic records') {
-		if (this.busy || !this.document || !this.canEdit) return false;
+		if (this.busy || !this.document) return false;
 		const draft = $state.snapshot(this.document);
 		return this.#run(async () => {
 			const data = await this.#post('workspace', { document: draft, revision: this.revision, note });

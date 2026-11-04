@@ -2,6 +2,7 @@
 	import { usePlan } from '$lib/planner/context';
 	import PixelIcon from '../PixelIcon.svelte';
 	import { MAJOR_SUBJECTS } from '$lib/curriculum/data';
+	import { viewport } from '$lib/planner/viewport.svelte';
 	import { optionLabel, type PickRole } from '$lib/planner/picks';
 	import Settings from '$lib/components/Settings.svelte';
 	import FourYearToggle from '$lib/components/FourYearToggle.svelte';
@@ -32,7 +33,18 @@
 
 <header class="col-header">
 	<h2>kcal</h2>
-	<button class="gear" aria-label="settings" title="settings" onclick={() => (showSettings = true)}>
+	{#if viewport.desktop}
+		<button class="gear help" title="what's what" aria-label="what's what" onclick={() => (plan.guiding = true)}
+			>?</button
+		>
+	{/if}
+	<button
+		class="gear"
+		data-tour="settings"
+		aria-label="settings"
+		title="settings"
+		onclick={() => (showSettings = true)}
+	>
 		<PixelIcon name="gear" size="1.6rem" snap />
 	</button>
 </header>
@@ -85,10 +97,12 @@
 
 	.col-header {
 		@include card-header;
-		justify-content: space-between;
+		justify-content: flex-end;
+		gap: 0.2rem;
 		border-bottom: 1px solid var(--color-border);
 
 		h2 {
+			margin-right: auto;
 			font-size: 1.8rem;
 			font-weight: 600;
 			color: var(--color-text);
@@ -112,6 +126,12 @@
 
 		&:hover {
 			color: var(--color-text);
+		}
+
+		&.help {
+			font: inherit;
+			font-size: 1.6rem;
+			font-weight: 700;
 		}
 	}
 

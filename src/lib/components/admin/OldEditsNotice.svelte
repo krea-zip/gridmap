@@ -9,7 +9,7 @@
 	let found = $state<OldEdits | null>(null);
 
 	onMount(() => {
-		if (office.canEdit) found = findOldEdits();
+		found = findOldEdits();
 	});
 
 	function add() {

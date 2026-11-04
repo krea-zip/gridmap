@@ -28,16 +28,17 @@
 
 <div class="office-table-scroll">
 	<table>
-		<thead><tr><th>Published</th><th>Release</th><th></th></tr></thead>
+		<thead><tr><th>Published</th><th>By</th><th>Release</th><th></th></tr></thead>
 		<tbody>
 			{#each data.history as h (h.revision)}
 				<tr>
 					<td
 						>{when(h.created_at)}{#if h.revision === office.revision}<span class="office-badge">current</span>{/if}</td
 					>
+					<td>{h.actor_name || '-'}</td>
 					<td>{h.note}</td>
 					<td>
-						{#if h.revision !== office.revision && office.canEdit}
+						{#if h.revision !== office.revision}
 							<form
 								method="POST"
 								action="?/open"
@@ -56,7 +57,7 @@
 					</td>
 				</tr>
 			{:else}
-				<tr><td colspan="3" class="office-empty">Nothing published yet.</td></tr>
+				<tr><td colspan="4" class="office-empty">Nothing published yet.</td></tr>
 			{/each}
 		</tbody>
 	</table>

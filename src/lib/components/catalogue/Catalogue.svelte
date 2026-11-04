@@ -116,7 +116,7 @@
 		</label>
 		<div class="filters">
 			{#each filterSubjects as id (id)}
-				<label class="filter" class:core={id === 'core'}>
+				<label class="filter">
 					<input
 						type="checkbox"
 						class="tick"
@@ -148,19 +148,7 @@
 	<div class="scroll">
 		<div class="cards">
 			{#each plan.catalogue as course (course.code)}
-				<!-- card width IS the credit weight: 4cr fills the row, 2cr ½,
-				     1cr ¼, so they pack into rows of 4 (2+2, 2+1+1, …). A 3cr
-				     course (the KCCS foundation set) also takes the full row:
-				     span-3 cards would strand a dead quarter-column beside
-				     every one of them, since nothing 1cr sits nearby to fill it -->
-				<div
-					class="cell"
-					class:revealed={plan.catalogueReveal?.code === course.code}
-					data-course={course.code}
-					style="grid-column: span {(course.pendingCredits && course.credits === 0) || course.credits >= 3
-						? 4
-						: Math.max(1, course.credits)};"
-				>
+				<div class="cell" class:revealed={plan.catalogueReveal?.code === course.code} data-course={course.code}>
 					<CatalogueCard
 						{mobile}
 						{course}
@@ -191,9 +179,7 @@
 <style lang="scss">
 	@use '$lib/styles/mixins' as *;
 
-	// the planner gives the catalogue only the width its filter row needs at
-	// its fullest (see .filters); nothing else in it may ask for more, the
-	// cards and the search fit to whatever that is
+	// Search, filters and cards fit the column, including a custom dragged width.
 	.catalogue {
 		display: flex;
 		flex-direction: column;
@@ -329,15 +315,12 @@
 		}
 	}
 
-	// sized for the most a degree can have, a major, a minor and a
-	// concentration, plus kccs: four ticks, four short names (a name is four
-	// letters, under 3.8ch in any font) and the gaps, so the column holds
-	// still when the degree changes
 	.filters {
+		--gap: 1rem;
 		display: flex;
-		gap: 1.2rem;
+		gap: var(--gap);
 		flex-wrap: wrap;
-		min-inline-size: calc(4 * (1.4rem + 0.5rem + 3.8ch) + 3 * 1.2rem + 1.4rem + 1px + 0.8rem);
+		min-inline-size: 0;
 		padding: 1.4rem 0.4rem 1.6rem;
 		font-size: var(--text-body);
 	}
@@ -348,14 +331,6 @@
 		gap: 0.5rem;
 		font-size: var(--text-body);
 		cursor: pointer;
-
-		// kccs is a different beast (all-or-nothing core view), set it
-		// apart from the subject chips with a gap and a divider
-		&.core {
-			margin-left: auto;
-			padding-left: 1.4rem;
-			border-left: 1px solid var(--color-border-card);
-		}
 	}
 
 	.tick {
@@ -364,9 +339,8 @@
 
 	.cards {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr); // one column per credit
-		grid-auto-flow: row dense; // a later small card backfills a half-empty row
-		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0.65rem;
 	}
 
 	.reveal-note {

@@ -28,7 +28,8 @@ before(async () => {
     grant execute on all functions in schema auth to anon, authenticated, service_role;
   `);
 	await db.query('insert into auth.users values ($1), ($2)', [admin, student]);
-	await db.exec(await readFile(new URL('../supabase/migrations/202611010001_curriculum.sql', import.meta.url), 'utf8'));
+	for (const migration of ['202611010001_curriculum.sql', '202611030001_capstones.sql'])
+		await db.exec(await readFile(new URL(`../supabase/migrations/${migration}`, import.meta.url), 'utf8'));
 });
 after(() => db.close());
 

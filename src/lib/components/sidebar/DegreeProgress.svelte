@@ -15,7 +15,7 @@
 	// the same count as the hints' ▲ and ■ badges, so the two always agree
 	let problems = $derived(plan.hints.filter((h) => h.kind === 'warn' || h.kind === 'caution').length);
 
-	const left = (done: number, needed: number) => (done >= needed ? '✓ done' : `${needed - done} cr left`);
+	const tally = (done: number, needed: number) => `${done >= needed ? '✓ ' : ''}${done}/${needed} cr`;
 	const toHints = () =>
 		document
 			.querySelector('[data-tour="hints"]')
@@ -56,23 +56,10 @@
 				{#if open}
 					<div class="detail" transition:slide={{ duration: reducedMotion() ? 0 : 210, easing: cubicOut }}>
 						{#if s.requiredNeeded > 0}
-							<div class="row"><span>required</span><b>{left(s.requiredDone, s.requiredNeeded)}</b></div>
-							{#if s.requiredLeft.length}
-								<div class="tags">
-									{#each s.requiredLeft as code (code)}
-										<button
-											class="tag"
-											data-type={plan.courseType(code)}
-											style:--hue={plan.hueOf(code)}
-											title="show {plan.courseLabel(code)}"
-											onclick={() => plan.revealCourse(code)}>{plan.shownCode(code)}</button
-										>
-									{/each}
-								</div>
-							{/if}
+							<div class="row"><span>required</span><b>{tally(s.requiredDone, s.requiredNeeded)}</b></div>
 						{/if}
 						{#if s.electiveNeeded > 0}
-							<div class="row"><span>{electives}</span><b>{left(s.electiveDone, s.electiveNeeded)}</b></div>
+							<div class="row"><span>{electives}</span><b>{tally(s.electiveDone, s.electiveNeeded)}</b></div>
 						{/if}
 					</div>
 				{/if}
@@ -183,7 +170,8 @@
 		margin: -0.2rem 0 0;
 	}
 
-	// what's left, under the bar: one line per part, required courses by name
+	// under the bar: one line per part, done of needed. the courses still to
+	// place are named in the hints, not twice here
 	.detail {
 		display: flex;
 		flex-direction: column;
@@ -202,23 +190,5 @@
 			color: var(--color-text);
 			font-variant-numeric: tabular-nums;
 		}
-	}
-
-	.tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-		margin-bottom: 0.2rem;
-	}
-
-	.tag {
-		@include course-tag;
-		font-family: inherit;
-		cursor: pointer;
-	}
-
-	// buttons here, so no edge: the fill alone says what kind of course
-	.tags .tag {
-		border: 0;
 	}
 </style>

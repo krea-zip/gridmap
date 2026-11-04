@@ -38,16 +38,10 @@ export type PickOption = { subject: Subject; heldAs?: string };
 
 /** everything a role's dropdown lists. a subject an earlier role holds stays
  *  in the list, disabled and named by that role, so it reads as taken rather
- *  than missing. `holds` narrows which roles count as holding their pick yet
- *  (the welcome only counts the questions answered) */
-export function pickOptions(
-	structure: StructureKind,
-	picks: Picks,
-	role: PickRole,
-	holds: (role: PickRole) => boolean = () => true
-): PickOption[] {
+ *  than missing */
+export function pickOptions(structure: StructureKind, picks: Picks, role: PickRole): PickOption[] {
 	const roles = ROLES_OF[structure];
-	const earlier = roles.slice(0, Math.max(0, roles.indexOf(role))).filter(holds);
+	const earlier = roles.slice(0, Math.max(0, roles.indexOf(role)));
 	const name = (r: PickRole) => (r === 'major1' && roles.includes('major2') ? 'first major' : ROLE_LABEL[r]);
 	return POOL[role].map((subject) => {
 		const by = earlier.find((r) => picks[r] === subject.id);

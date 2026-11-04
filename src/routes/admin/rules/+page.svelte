@@ -42,7 +42,7 @@
 					<label>
 						{info.label}
 						<span class="office-help">{info.help}</span>
-						<input type="number" min="0" max={info.max} bind:value={rules[key]} disabled={!office.canEdit} />
+						<input type="number" min="0" max={info.max} bind:value={rules[key]} />
 					</label>
 				{/each}
 			</div>
@@ -72,14 +72,7 @@
 		<h2>Grades and standing</h2>
 		<div class="office-form">
 			<label
-				>CGPA to graduate<input
-					type="number"
-					step="0.1"
-					min="0"
-					max="10"
-					bind:value={policies.graduationCgpa}
-					disabled={!office.canEdit}
-				/></label
+				>CGPA to graduate<input type="number" step="0.1" min="0" max="10" bind:value={policies.graduationCgpa} /></label
 			>
 			<label
 				>CGPA to keep financial aid<input
@@ -88,18 +81,10 @@
 					min="0"
 					max="10"
 					bind:value={policies.aidCgpa}
-					disabled={!office.canEdit}
 				/></label
 			>
 			<label
-				>CGPA for an exit award<input
-					type="number"
-					step="0.1"
-					min="0"
-					max="10"
-					bind:value={policies.exitCgpa}
-					disabled={!office.canEdit}
-				/></label
+				>CGPA for an exit award<input type="number" step="0.1" min="0" max="10" bind:value={policies.exitCgpa} /></label
 			>
 			<label
 				>Foundation courses per trimester (year 1)<input
@@ -107,14 +92,12 @@
 					min="0"
 					max="12"
 					bind:value={policies.foundationMax}
-					disabled={!office.canEdit}
 				/></label
 			>
 			<label
 				>Course sizes that can be audited <span class="office-help">credits, comma-separated</span>
 				<input
 					value={list(policies.auditCredits)}
-					disabled={!office.canEdit}
 					onchange={(e) => (policies.auditCredits = parts(e.currentTarget.value).map(Number).filter(Number.isFinite))}
 				/></label
 			>
@@ -122,7 +105,6 @@
 				>Never auditable <span class="office-help">course numbers, e.g. 391, 490</span>
 				<input
 					value={list(policies.auditExcluded)}
-					disabled={!office.canEdit}
 					onchange={(e) => (policies.auditExcluded = parts(e.currentTarget.value))}
 				/></label
 			>
@@ -140,7 +122,7 @@
 						min="0"
 						max="10"
 						bind:value={policies.gradePoints[grade]}
-						disabled={!office.canEdit || grade === 'U'}
+						disabled={grade === 'U'}
 					/></label
 				>
 			{/each}
@@ -151,16 +133,13 @@
 	<section class="office-card">
 		<h2>Where these come from</h2>
 		<div class="office-form">
-			<label>Effective from<input type="date" bind:value={policies.effectiveFrom} disabled={!office.canEdit} /></label>
+			<label>Effective from<input type="date" bind:value={policies.effectiveFrom} /></label>
 			<label
 				>Reference <span class="office-help">the regulation or circular</span><input
 					bind:value={policies.reference}
-					disabled={!office.canEdit}
 				/></label
 			>
-			<label class="wide"
-				>Notes<textarea rows="3" bind:value={policies.notes} disabled={!office.canEdit}></textarea></label
-			>
+			<label class="wide">Notes<textarea rows="3" bind:value={policies.notes}></textarea></label>
 		</div>
 	</section>
 {/if}

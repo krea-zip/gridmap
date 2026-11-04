@@ -1,6 +1,5 @@
 import type { CurriculumSnapshot, SnapshotCourse, Lecturer, Variant } from '../../curriculum/snapshot';
 
-export type OfficeRole = 'admin' | 'publisher' | 'reviewer' | 'editor' | 'contributor';
 export type Approval = 'draft' | 'clarification' | 'submitted' | 'approved' | 'cancelled';
 export const APPROVALS: { value: Approval; label: string }[] = [
 	{ value: 'draft', label: 'Draft' },
@@ -107,7 +106,6 @@ export type WorkspacePayload = {
 	document: OfficeDocument;
 	revision: number;
 	status: string;
-	department: string;
 	deployment: string;
 	release: string;
 };
@@ -116,21 +114,9 @@ export type OfficeRevision = {
 	revision: number;
 	action: string;
 	note: string;
-	actor: string | null;
+	actor_name: string;
 	created_at: string;
 	status: string;
-};
-export type StaffMember = { email: string; role: OfficeRole; department: string | null; active: boolean };
-export type Submission = {
-	id: string;
-	author: string;
-	department: string;
-	course: string;
-	term: string;
-	request: string;
-	status: 'submitted' | 'clarification' | 'accepted' | 'declined';
-	response: string;
-	created_at: string;
 };
 export const VARIANTS: { id: Variant; label: string }[] = [
 	{ id: 'single_major_4yr', label: 'Single major · 4 years' },

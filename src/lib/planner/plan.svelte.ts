@@ -16,8 +16,7 @@ import {
 	CREDIT_SHARE_DEFAULT,
 	SUBJECTS,
 	HEAVY_TRIMS_ALLOWED,
-	MAX_TOTAL_3YR,
-	MAX_TOTAL_4YR,
+	creditCeilingFor,
 	MIN_TOTAL_3YR,
 	MIN_TOTAL_4YR,
 	TRIM_HARD_MAX,
@@ -29,6 +28,8 @@ import {
 	attemptNumber,
 	baseCode,
 	byCode,
+	capstoneFor,
+	isCapstone,
 	isCore,
 	isTranscriptOnly,
 	choiceGroupsFor,
@@ -67,6 +68,9 @@ import {
 
 // bump only when the saved shape changes in a way applySave can't read
 const SAVE_VERSION = 1;
+// a trimester's foot marks the running pace only past one ordinary course
+// either way
+const PACE_SLACK = 4;
 // the most years the grid can run to: a 4-year degree plus one
 /** the longest any plan runs: a 4-year degree's n + 2 years (a 3-year
  *  degree stops at 5, see Plan.maxYears) */
@@ -78,9 +82,9 @@ export const MAX_YEARS = 6;
 export const BOARD_VIEWS = [
 	{ id: 'plan', group: 'yours', label: 'plan', note: 'arrange your courses' },
 	{ id: 'grades', group: 'yours', label: 'grades', note: 'your grades, TGPA and CGPA' },
-	{ id: 'runs', group: 'explore', label: 'will it run?', note: 'how often it ran in that trimester' },
-	{ id: 'prereqs', group: 'explore', label: 'prerequisites', note: 'what a course needs and leads to' },
-	{ id: 'whatif', group: 'explore', label: 'what-if', note: 'try another programme on your plan' }
+	{ id: 'runs', group: 'explore', label: 'will it run?', note: 'how often it ran in that trimester', wip: true },
+	{ id: 'prereqs', group: 'explore', label: 'prerequisites', note: 'what a course needs and leads to', wip: true },
+	{ id: 'whatif', group: 'explore', label: 'what-if', note: 'try another programme on your plan', wip: true }
 ] as const;
 export type BoardView = (typeof BOARD_VIEWS)[number]['id'];
 const isBoardView = (v: unknown): v is BoardView => BOARD_VIEWS.some((b) => b.id === v);
@@ -96,6 +100,11 @@ export const BREAK_KINDS: Record<BreakKind, { label: string; note: string }> = {
 	away: { label: 'away', note: 'an exchange or study-abroad term; its credits come back with you' }
 };
 const isBreakKind = (v: unknown): v is BreakKind => v === 'break' || v === 'suspension' || v === 'away';
+
+/** a course of the department, which a major counts as a general elective
+ *  even when its lists don't name it. not a capstone: that counts only where
+ *  the programme's document takes one (Plan.#setsFor) */
+const ofSubject = (c: Course, subject: string): boolean => c.subjects.includes(subject) && !isCapstone(c.code);
 
 /** the programmes a degree structure and its picks add up to */
 export function programmesFor(structure: StructureKind, picks: Picks): Programme[] {
@@ -160,11 +169,6 @@ export class Plan {
 	showGradeLabels = $state(true); // show the grade on each chip (only ever in grade view)
 	// students count trimesters by year or through the degree; see calendar.ts
 	trimNaming = $state<TrimNaming>('year');
-	// the load the student is aiming for each trimester. The university's own
-	// numbers are fixed (12 min / 20 cap); this is the line THEY want to sit
-	// on, and it's what the grid colours a trimester against, 16 is the
-	// registration the drop form recommends.
-	targetLoad = $state(TRIM_NORMAL_MAX);
 	// Has the student changed anything yet? The grid arrives pre-filled with the
 	// department's recommended path, so until they touch it their plan and the
 	// recommendation are the same thing and a programme change should re-lay it
@@ -175,6 +179,11 @@ export class Plan {
 	// the first-visit welcome is open: the board shows only what's been
 	// answered, not the suggested path for the defaults behind the questions
 	welcoming = $state(false);
+	// every part of the app is labelled, after the welcome or from the ? key
+	guiding = $state(false);
+	// the welcome replayed (?welcome) empties the board, so nothing is saved
+	// from then on and a reload brings the student's own plan back
+	rehearsing = $state(false);
 	// warn hints the student has waived, a broken prerequisite is a real rule,
 	// but plenty of students hold a waiver for one, so a red hint can be crossed
 	// off. Keyed by the hint's rule id, so it stays crossed off across reloads
@@ -248,6 +257,7 @@ export class Plan {
 		}
 
 		$effect(() => {
+			if (this.rehearsing) return;
 			const json = JSON.stringify(this.snapshot());
 			try {
 				this.storageError = saveBoard(localStorage, json) ? '' : 'Your browser could not save the latest changes.';
@@ -284,7 +294,6 @@ export class Plan {
 			grades,
 			audited,
 			waived,
-			targetLoad,
 			touched,
 			breaks,
 			now
@@ -299,7 +308,6 @@ export class Plan {
 			grades,
 			audited,
 			waived,
-			targetLoad,
 			touched,
 			breaks,
 			now
@@ -380,7 +388,6 @@ export class Plan {
 			gradeMode: this.gradeMode, // older builds read this, keep writing it
 			showGradeLabels: this.showGradeLabels,
 			trimNaming: this.trimNaming,
-			targetLoad: this.targetLoad,
 			creditTargetMode: this.creditTargetMode,
 			showCodes: this.showCodes,
 			showTitles: this.showTitles,
@@ -521,8 +528,6 @@ export class Plan {
 		// never matches, so an old id costs nothing and is kept
 		const waived = (parsed as { waived?: unknown }).waived;
 		if (Array.isArray(waived)) this.waived = waived.filter((v): v is string => typeof v === 'string');
-		const target = (parsed as { targetLoad?: unknown }).targetLoad;
-		if (typeof target === 'number' && target >= TRIM_MIN && target <= TRIM_HARD_MAX) this.targetLoad = target;
 		this.ensureDistinctPicks();
 	}
 
@@ -585,7 +590,7 @@ export class Plan {
 		) + CORE_CREDITS
 	);
 
-	creditCeiling = $derived(this.fourYear ? MAX_TOTAL_4YR : MAX_TOTAL_3YR);
+	creditCeiling = $derived(creditCeilingFor(this.fourYear, this.isDouble));
 	/** the fewest credits to graduate: the degree's own minimum (120 / 160),
 	 *  or what the chosen programmes add up to when that is more */
 	creditMinimum = $derived(Math.max(this.fourYear ? MIN_TOTAL_4YR : MIN_TOTAL_3YR, this.degreeTotal));
@@ -695,6 +700,10 @@ export class Plan {
 			// `required` = what reads as required (lavender); `requiredAll` also
 			// carries cross-department prereqs for the credit budget.
 			const required = new Set(requiredSetFor(p.subject, p.role, fourYear, double, batch));
+			// a capstone joins the programme's own lists: required where the
+			// document says so, else one of the electives it stands in for
+			const capstone = capstoneFor(p.subject, p.role, fourYear, double, batch);
+			if (capstone?.required) required.add(capstone.code);
 			const requiredAll = new Set(required);
 			// the degree's stated required-credit figure, prereqs only fill
 			// the budget up to it, so a course's biology prereq (BIOS201 for an
@@ -725,7 +734,10 @@ export class Plan {
 				requiredAll,
 				// 'choose N from' pools, required choices, coloured as required
 				pick: new Set(pickSetFor(p.subject, p.role, fourYear, double, batch)),
-				elective: new Set(electiveSetFor(p.subject, p.role, fourYear, double, batch))
+				elective: new Set([
+					...electiveSetFor(p.subject, p.role, fourYear, double, batch),
+					...(capstone && !capstone.required ? [capstone.code] : [])
+				])
 			};
 		});
 	}
@@ -749,7 +761,7 @@ export class Plan {
 			// major/minor's own department (a general subject elective),
 			// either way it's not 'other'. 'other' (untinted) is reserved for a
 			// different department.
-			if (c.codes.some((x) => s.elective.has(x)) || c.subjects.includes(s.subject)) role = 'elective';
+			if (c.codes.some((x) => s.elective.has(x)) || ofSubject(c, s.subject)) role = 'elective';
 		}
 		return role;
 	}
@@ -825,10 +837,7 @@ export class Plan {
 	whatIfHue(code: string): number | undefined {
 		const c = byCode(code);
 		for (const s of this.whatIfSets)
-			if (
-				c.codes.some((x) => s.required.has(x) || s.pick.has(x) || s.elective.has(x)) ||
-				c.subjects.includes(s.subject)
-			)
+			if (c.codes.some((x) => s.required.has(x) || s.pick.has(x) || s.elective.has(x)) || ofSubject(c, s.subject))
 				return s.subject === 'open' ? undefined : this.#whatIfHues.get(s.subject);
 		return undefined;
 	}
@@ -957,10 +966,7 @@ export class Plan {
 		if (claimed?.length && this.programmes[claimed[0]]?.subject !== 'open') return claimed[0];
 		for (let i = 0; i < this.programmeSets.length; i++) {
 			const s = this.programmeSets[i];
-			if (
-				c.codes.some((x) => s.required.has(x) || s.pick.has(x) || s.elective.has(x)) ||
-				c.subjects.includes(s.subject)
-			)
+			if (c.codes.some((x) => s.required.has(x) || s.pick.has(x) || s.elective.has(x)) || ofSubject(c, s.subject))
 				return i;
 		}
 		return -1;
@@ -997,9 +1003,11 @@ export class Plan {
 			const label = subjectById(subject).label;
 			const mine = this.programmes.find((p) => p.subject === subject);
 			const read = (role: ProgrammeRole, double: boolean): 'required' | 'elective' => {
+				const capstone = capstoneFor(subject, role, this.fourYear, double, this.batchStartYear);
 				const required = new Set([
 					...requiredSetFor(subject, role, this.fourYear, double, this.batchStartYear),
-					...pickSetFor(subject, role, this.fourYear, double, this.batchStartYear)
+					...pickSetFor(subject, role, this.fourYear, double, this.batchStartYear),
+					...(capstone?.required ? [capstone.code] : [])
 				]);
 				// listed as required, or else an elective, a general one when the
 				// department doesn't list it, exactly as courseType reads it
@@ -1210,6 +1218,49 @@ export class Plan {
 		return { credits, status: 'ok', note: '' };
 	}
 
+	/** the running credit balance at the end of each trimester, against an
+	 *  even spread of the credit target over the years on the grid: + ahead,
+	 *  − behind. the deficit/surplus column students kept by hand in the
+	 *  ministry of learning's spreadsheet. spread over the degree's own years,
+	 *  or further once a later year holds courses (a 3-year degree shows a
+	 *  spare fourth). year 1 is the foundation core, so the pace starts at
+	 *  year 2; a break or suspension expects nothing, an away term counts the
+	 *  credits it brings back. */
+	pace = $derived.by(() => {
+		const out: Partial<Record<SlotKey, number>> = {};
+		const lastYear = Math.max(
+			this.minYears,
+			...this.placed.map((p) => p.year),
+			...this.years.filter((y) => TRIMS.some((t) => this.breaks[slotKey(y, t)]))
+		);
+		const slots = this.years
+			.filter((y) => y !== 1 && y <= lastYear)
+			.flatMap((year) => TRIMS.map((trim) => ({ year, trim, key: slotKey(year, trim) })));
+		const expecting = slots.filter(({ key }) => !this.breaks[key] || this.breaks[key].kind === 'away');
+		if (!expecting.length) return out;
+		const yearOne = TRIMS.reduce((n, t) => n + this.slotCredits(1, t), 0);
+		const each = Math.max(0, this.creditTarget - yearOne) / expecting.length;
+		let balance = 0;
+		for (const { year, trim, key } of slots) {
+			const b = this.breaks[key];
+			if (b && b.kind !== 'away') continue;
+			balance += (b ? (b.credits ?? 0) : this.slotCredits(year, trim)) - each;
+			out[key] = balance;
+		}
+		return out;
+	});
+
+	/** the pace balance worth showing on a trimester's foot, whole credits;
+	 *  null while it's within a course of even (rounding and 2-credit
+	 *  courses shouldn't make a normal plan look off), and past "now": a
+	 *  future term is still short until its electives are picked, and the
+	 *  total and hints already say so, the pace is about what's been taken */
+	slotPace(year: number, trim: TrimNum): number | null {
+		if (slotOrder(year, trim) > slotOrder(this.here.year, this.here.trim)) return null;
+		const b = Math.round(this.pace[slotKey(year, trim)] ?? 0);
+		return Math.abs(b) >= PACE_SLACK ? b : null;
+	}
+
 	/** trimester GPA for a slot, credit-weighted over its letter-graded,
 	 *  non-audit courses; null when nothing there carries a grade */
 	slotTgpa(year: number, trim: TrimNum): number | null {
@@ -1358,7 +1409,6 @@ export class Plan {
 		this.selected = null;
 		this.zoom = null;
 		this.zoomPos = {}; // nothing is where the student put it any more
-		this.targetLoad = TRIM_NORMAL_MAX;
 		this.yearCount = 4;
 		this.waived = []; // waived rules were about courses that are now gone
 		// start over = the fresh-visit state exactly: the recommended path on
@@ -1410,8 +1460,8 @@ export class Plan {
 	}
 
 	/** what a role's dropdown lists, see planner/picks.ts */
-	pickOptions(role: PickRole, holds?: (role: PickRole) => boolean) {
-		return pickOptions(this.structure, this.picks, role, holds);
+	pickOptions(role: PickRole) {
+		return pickOptions(this.structure, this.picks, role);
 	}
 
 	/** no two roles may hold the same subject: after a pick or a change of
@@ -1587,7 +1637,7 @@ export class Plan {
 			if (!this.canDrop(code, year, trim)) return false;
 			return this.coreOnly(year, trim)
 				? (next[key] ?? []).length < Y1_CORE_MAX
-				: load(key) + byCode(code).credits <= this.targetLoad;
+				: load(key) + byCode(code).credits <= TRIM_NORMAL_MAX;
 		};
 		const put = (code: string, key: SlotKey) => (next[key] = [...(next[key] ?? []), code]);
 
@@ -1625,7 +1675,7 @@ export class Plan {
 		this.placements = next;
 		this.#setFlash(
 			unplaced.length
-				? `filled in, but no trimester has room for ${unplaced.map((c) => this.courseLabel(c)).join(', ')} under your target load`
+				? `filled in, but no trimester has room for ${unplaced.map((c) => this.courseLabel(c)).join(', ')} under the recommended load`
 				: 'filled in: every required course is on your plan'
 		);
 	}
@@ -1761,7 +1811,7 @@ export class Plan {
 			// every course in the department, so cross-listed or extra
 			// department courses don't inflate its credits
 			if (prog.role === 'minor') return inLists;
-			return c.subjects.includes(prog.subject) || inLists;
+			return ofSubject(c, prog.subject) || inLists;
 		};
 		// …unless /admin has set the course (or the whole site) to share its
 		// credits: then it counts toward EVERY declared programme it satisfies.

@@ -56,6 +56,9 @@ export type PlannerRules = {
 	MIN_TOTAL_3YR: number;
 	MIN_TOTAL_4YR: number;
 	MAX_TOTAL_3YR: number;
+	/** a double major may stretch a three-year tenure this far; absent from
+	 *  releases before the rule was added */
+	MAX_TOTAL_3YR_DOUBLE?: number;
 	MAX_TOTAL_4YR: number;
 };
 
@@ -101,7 +104,12 @@ export type ProgrammeRequirements = {
 	choices: ChoiceGroup[];
 	/** the suggested placement of required courses */
 	pathway: { year: number; trim: TrimNum; code: string }[];
+	/** a capstone project the document states, which the catalogue has no
+	 *  code for; optional ones stand in for electives. absent = none */
+	capstone?: Capstone;
 };
+
+export type Capstone = { credits: number; required: boolean };
 
 /** The rules a run of batches graduates under. `batches: null` is the
  *  default set, for any batch no other set names. */

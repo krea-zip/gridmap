@@ -3,7 +3,8 @@
 	"source": "08 FYUP - Literature.docx",
 	"notes": [
 		"Translation is LITT308, not LITT316 Introduction to Translation.",
-		"The concentration is any four literature courses."
+		"The concentration is any four literature courses.",
+		"The 4-year majors take an optional 12-credit capstone project in place of three electives (the university website's credit table); it has no course code yet."
 	],
 	"programmes": {
 		"single_major_4yr": {
@@ -21,7 +22,11 @@
 				"LITT308",
 				"LITT241"
 			],
-			"choices": []
+			"choices": [],
+			"capstone": {
+				"credits": 12,
+				"required": false
+			}
 		},
 		"double_major_4yr": {
 			"credits": {
@@ -38,7 +43,11 @@
 				"LITT308",
 				"LITT241"
 			],
-			"choices": []
+			"choices": [],
+			"capstone": {
+				"credits": 12,
+				"required": false
+			}
 		},
 		"single_major_3yr": {
 			"credits": {

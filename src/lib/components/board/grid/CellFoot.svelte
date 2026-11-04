@@ -1,7 +1,8 @@
 <script lang="ts">
 	// a trimester's footer: through the degree, its number on the left; its
-	// credits on the right, coloured only when the load is off (light, heavy,
-	// over), so a normal trimester's number stays quiet.
+	// credits on the right, red only when the load is far off, so a normal
+	// trimester's number stays quiet.
+	import { TRIM_HARD_MAX } from '$lib/curriculum/data';
 	import { academicYear } from '$lib/planner/calendar';
 	import { usePlan } from '$lib/planner/context';
 	import type { TrimNum } from '$lib/types';
@@ -15,6 +16,11 @@
 	let load = $derived(plan.slotLoad(year, trim));
 	let numbered = $derived(plan.trimNaming === 'degree');
 	let tgpa = $derived(plan.gradeMode ? plan.slotTgpa(year, trim) : null);
+	// year 1 and breaks sit outside the load rules, so they never go red
+	const TOO_LIGHT = 8;
+	let offLoad = $derived(
+		!plan.gradeMode && load.status !== 'exempt' && (credits < TOO_LIGHT || credits > TRIM_HARD_MAX)
+	);
 </script>
 
 <!-- always there, so the number can fade in and out on its own instead of
@@ -31,11 +37,10 @@
 		>
 	{/if}
 	{#if credits > 0}
-		<span class="cell-credits" data-status={plan.gradeMode ? undefined : load.status}>
+		<span class="cell-credits" class:off-load={offLoad}>
 			{#if plan.gradeMode}
 				<span title="term GPA, this trimester's grade average">TGPA {tgpa === null ? '–' : tgpa.toFixed(2)}</span>
 			{:else}
-				<!-- amber when light or heavy, red when over; hover says why -->
 				<span class="credits" title={load.note || undefined}>{credits} cr</span>
 			{/if}
 			<button
@@ -89,12 +94,7 @@
 		font-weight: 700;
 		color: var(--color-text-muted);
 
-		&[data-status='under'],
-		&[data-status='heavy'] {
-			color: color-mix(in srgb, var(--color-hint-caution-deep) 65%, var(--color-text));
-		}
-
-		&[data-status='over'] {
+		&.off-load {
 			color: var(--color-danger);
 		}
 	}

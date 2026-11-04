@@ -137,6 +137,7 @@
 		"MIN_TOTAL_3YR": 120,
 		"MIN_TOTAL_4YR": 160,
 		"MAX_TOTAL_3YR": 128,
+		"MAX_TOTAL_3YR_DOUBLE": 132,
 		"MAX_TOTAL_4YR": 176
 	},
 	"courses": [
@@ -24943,7 +24944,11 @@
 						"CHEM225"
 					],
 					"choices": [],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": false
+					}
 				},
 				{
 					"subject": "biology",
@@ -24985,7 +24990,11 @@
 						"CHEM225"
 					],
 					"choices": [],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": false
+					}
 				},
 				{
 					"subject": "biology",
@@ -25482,7 +25491,11 @@
 						"CHEM433"
 					],
 					"choices": [],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": true
+					}
 				},
 				{
 					"subject": "chemistry",
@@ -28571,7 +28584,11 @@
 						"LITT431"
 					],
 					"choices": [],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": false
+					}
 				},
 				{
 					"subject": "literature",
@@ -28600,7 +28617,11 @@
 						"LITT431"
 					],
 					"choices": [],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": false
+					}
 				},
 				{
 					"subject": "literature",
@@ -30227,7 +30248,11 @@
 							]
 						}
 					],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": false
+					}
 				},
 				{
 					"subject": "political science",
@@ -31810,7 +31835,11 @@
 						"CHEM225"
 					],
 					"choices": [],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": false
+					}
 				},
 				{
 					"subject": "biology",
@@ -31852,7 +31881,11 @@
 						"CHEM225"
 					],
 					"choices": [],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": false
+					}
 				},
 				{
 					"subject": "biology",
@@ -32389,7 +32422,11 @@
 						"CHEM433"
 					],
 					"choices": [],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": true
+					}
 				},
 				{
 					"subject": "chemistry",
@@ -35478,7 +35515,11 @@
 						"LITT431"
 					],
 					"choices": [],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": false
+					}
 				},
 				{
 					"subject": "literature",
@@ -35507,7 +35548,11 @@
 						"LITT431"
 					],
 					"choices": [],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": false
+					}
 				},
 				{
 					"subject": "literature",
@@ -37134,7 +37179,11 @@
 							]
 						}
 					],
-					"pathway": []
+					"pathway": [],
+					"capstone": {
+						"credits": 12,
+						"required": false
+					}
 				},
 				{
 					"subject": "political science",
@@ -38415,5 +38464,5 @@
 			}
 		}
 	],
-	"release": "6ace70982553"
+	"release": "0715de862c2b"
 }

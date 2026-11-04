@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	export type Panel = 'rail' | 'catalogue' | 'details';
+	export type Panel = 'rail' | 'catalogue';
 	export type PanelWidths = Partial<Record<Panel, number>>;
 </script>
 
@@ -11,11 +11,9 @@
 	import { onMount } from 'svelte';
 
 	const PANEL_KEY = 'kcal-panel-widths';
-	const PANELS: { id: Panel; label: string; min: number; max: number; side: 1 | -1 }[] = [
-		{ id: 'rail', label: 'sidebar', min: 20, max: 40, side: 1 },
-		{ id: 'catalogue', label: 'catalogue', min: 22, max: 52, side: 1 },
-		// its edge is on its left, so dragging left widens it
-		{ id: 'details', label: 'details', min: 24, max: 52, side: -1 }
+	const PANELS: { id: Panel; label: string; min: number; max: number }[] = [
+		{ id: 'rail', label: 'sidebar', min: 20, max: 40 },
+		{ id: 'catalogue', label: 'catalogue', min: 22, max: 52 }
 	];
 	const BOARD_MIN = 48; // rem
 
@@ -87,7 +85,7 @@
 		}}
 		onpointermove={(e) => {
 			if (resizing !== p.id) return;
-			setWidth(p.id, from.width + (p.side * (e.clientX - from.x)) / from.rootPx, from.rootPx);
+			setWidth(p.id, from.width + (e.clientX - from.x) / from.rootPx, from.rootPx);
 		}}
 		onpointerup={() => {
 			if (resizing !== p.id) return;
@@ -103,7 +101,7 @@
 			if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
 			e.preventDefault();
 			const px = rootPx();
-			setWidth(p.id, drawn(p.id, px) + (e.key === 'ArrowRight' ? 1.6 : -1.6) * p.side, px);
+			setWidth(p.id, drawn(p.id, px) + (e.key === 'ArrowRight' ? 1.6 : -1.6), px);
 			save();
 		}}
 	></div>
@@ -132,12 +130,6 @@
 			grid-area: catalogue;
 			justify-self: end;
 			translate: 50% 0;
-		}
-
-		&[data-for='details'] {
-			grid-area: details;
-			justify-self: start;
-			translate: -50% 0;
 		}
 
 		&::after {
@@ -170,12 +162,6 @@
 	}
 
 	// a panel that slides in over the board has no edge to drag
-	@include details-overlay {
-		.resizer[data-for='details'] {
-			display: none;
-		}
-	}
-
 	@include rail-overlay {
 		.resizer[data-for='rail'] {
 			display: none;

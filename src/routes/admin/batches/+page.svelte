@@ -86,7 +86,6 @@
 				max={programme?.credits.total}
 				placeholder={String(programme?.credits.required ?? 'inherited')}
 				value={rule?.requiredCredits ?? ''}
-				disabled={!office.canEdit}
 				onchange={(e) => {
 					const v = e.currentTarget.value;
 					update((r) => (r.requiredCredits = v === '' ? undefined : Math.max(0, Math.round(Number(v)))));
@@ -115,7 +114,6 @@
 								<select
 									aria-label="Requirement for {c.code}"
 									value={rule?.courses[c.code] ?? ''}
-									disabled={!office.canEdit}
 									onchange={(e) => setCourse(c.code, e.currentTarget.value)}
 								>
 									<option value="">inherit</option>

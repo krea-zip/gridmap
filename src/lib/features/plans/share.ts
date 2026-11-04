@@ -15,8 +15,7 @@ const SHARED = [
 	'yearCount',
 	'batchStartYear',
 	'audited',
-	'waived',
-	'targetLoad'
+	'waived'
 ];
 /** a link this long is already far past any real plan */
 const MAX_ENCODED = 12_000;

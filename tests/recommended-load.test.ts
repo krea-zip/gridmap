@@ -49,10 +49,10 @@ test('a double major leaves no year nearly empty while others are full', () => {
 	expect(Math.max(...l) - Math.min(...l)).toBeLessThan(16);
 });
 
-test('fill in respects the target load on a plan the student has already filled', () => {
+test('fill in stays within the normal load on a plan the student has already filled', () => {
 	const plan = planFor('major-minor', 'economics', 'data science');
 	plan.placements = recommendedPath(plan);
 	plan.picks = { ...plan.picks, minor: 'psychology' }; // the degree changes under a full plan
 	plan.fillIn();
-	for (const l of loads(plan, plan.placements)) expect(l).toBeLessThanOrEqual(plan.targetLoad);
+	for (const l of loads(plan, plan.placements)) expect(l).toBeLessThanOrEqual(TRIM_NORMAL_MAX);
 });

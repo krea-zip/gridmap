@@ -19,6 +19,7 @@
 {#each board.neededIn(year, trim) as n (n.code)}
 	<button
 		class="ghost"
+		class:faded={!!board.spotCodes && !board.spotCodes.has(n.code)}
 		class:titled={plan.showTitles}
 		data-type={plan.whatIfType(n.code)}
 		style:--hue={plan.whatIfHue(n.code)}
@@ -44,6 +45,7 @@
 		<button
 			class="ghost"
 			class:away={plan.dragging !== null}
+			class:faded={!!board.spotCodes && !board.spotCodes.has(code)}
 			class:titled={plan.showTitles}
 			data-type={plan.courseType(code)}
 			title="suggested here, click to add {plan.courseLabel(code)}"
@@ -83,6 +85,11 @@
 			border-color 0.15s ease,
 			opacity 0.15s ease,
 			transform 0.25s var(--spring);
+
+		// a pointed-at hint or colour names other courses
+		&.faded {
+			opacity: 0.3;
+		}
 
 		&.away {
 			opacity: 0;

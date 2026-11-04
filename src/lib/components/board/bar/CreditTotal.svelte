@@ -21,7 +21,7 @@
 		{#if plan.cgpa === null}enter grades{:else}<span class="cgpa">CGPA</span> {plan.cgpa.toFixed(2)}{/if}
 	</button>
 {:else}
-	<div class="goal">
+	<div class="goal" data-tour="credits">
 		<button
 			class="pill total"
 			class:over={plan.totalPlacedCredits > plan.creditTarget}

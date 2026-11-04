@@ -14,8 +14,7 @@
 			'Manage degree requirements',
 			'Edit batch curricula, required courses, choices and suggested pathways.'
 		],
-		['/admin/approvals', 'Review requests', 'Check approvals, clarification requests and department submissions.'],
-		['/admin/changes', 'Review & publish', 'Preview the student planner, approve a revision and publish it.']
+		['/admin/changes', 'Review & publish', 'Check the saved draft, preview the student planner and publish it.']
 	];
 </script>
 
@@ -30,7 +29,7 @@
 			>Offerings in selected term</span
 		></a
 	>
-	<a href="/admin/approvals"
+	<a href="/admin/offerings"
 		><b
 			>{office.document?.offerings.filter((o) => o.approval === 'submitted' || o.approval === 'clarification')
 				.length}</b
@@ -48,9 +47,8 @@
 	<h2>How changes reach students</h2>
 	<ol class="office-steps">
 		<li><b>Edit</b><span>Update records or import a spreadsheet.</span></li>
-		<li><b>Save draft</b><span>Keep work for the office to review.</span></li>
-		<li><b>Review & approve</b><span>Check changes and the student preview.</span></li>
-		<li><b>Publish</b><span>Release approved information and update the website.</span></li>
+		<li><b>Save draft</b><span>Keep the work in the shared draft.</span></li>
+		<li><b>Publish</b><span>Check the student preview, then release it and update the website.</span></li>
 	</ol>
 </section>
 {#if office.issues.length}<section class="office-card">

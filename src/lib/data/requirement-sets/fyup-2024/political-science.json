@@ -5,7 +5,8 @@
 		"Indian Politics I is POLT202 and Global Politics I is POLT207 (the document says POLT205); Methods I is SOCL304 (qualitative) and Methods II SOCL355 (quantitative).",
 		"Part II of a subfield: Indian Politics II (POLT309), Political Theory II (POLT317), Comparative Politics II (POLT307), Global Politics II (POLT308).",
 		"For the 4-year minor the document only says students may opt for courses marked W, Y and Z; reading it as any two keeps the stated 16 required credits.",
-		"The concentration is not detailed in the document; the website rules stay."
+		"The concentration is not detailed in the document; the website rules stay.",
+		"The 4-year double major includes an optional capstone project (the university website's credit table, which gives no credits; taken as 12, like literature's); it has no course code yet."
 	],
 	"programmes": {
 		"single_major_4yr": {
@@ -64,7 +65,11 @@
 						"POLT308"
 					]
 				}
-			]
+			],
+			"capstone": {
+				"credits": 12,
+				"required": false
+			}
 		},
 		"single_major_3yr": {
 			"credits": {

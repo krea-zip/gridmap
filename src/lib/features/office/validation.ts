@@ -168,6 +168,8 @@ export function validateOffice(raw: unknown): OfficeIssue[] {
 			add('Policies', '', 'Minimum, normal and maximum trimester loads contradict one another.');
 		if (r.MIN_TOTAL_3YR > r.MAX_TOTAL_3YR || r.MIN_TOTAL_4YR > r.MAX_TOTAL_4YR)
 			add('Policies', '', 'Graduation minimum cannot exceed the maximum.');
+		if (r.MAX_TOTAL_3YR_DOUBLE !== undefined && r.MAX_TOTAL_3YR_DOUBLE < r.MAX_TOTAL_3YR)
+			add('Policies', '', 'The double-major ceiling cannot be below the three-year ceiling.');
 		const policy = c.policies;
 		if (policy) {
 			for (const n of [policy.graduationCgpa, policy.aidCgpa, policy.exitCgpa])

@@ -328,11 +328,6 @@
 		color: var(--color-text);
 		border: 1px dashed var(--color-zone-border);
 		border-radius: 10px;
-		background-image: repeating-linear-gradient(
-			135deg,
-			transparent 0 10px,
-			color-mix(in srgb, var(--color-text-muted) 6%, transparent) 10px 11px
-		);
 
 		b {
 			font-size: 1.6rem;

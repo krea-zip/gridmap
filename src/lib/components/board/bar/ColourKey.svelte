@@ -1,14 +1,14 @@
 <script lang="ts">
-	// what the chip colours mean, folded into one key. laid out along the bar
-	// it read as a row of checkboxes and pushed the credit count onto a line
-	// of its own. hovering a row lights its chips, the way hovering a hint does;
-	// clicking pins them, and the foot offers to drop whatever's pinned.
+	// Course labels and the colour legend share one display disclosure.
+	// Hovering a legend row previews its courses; clicking pins the highlight.
 	import { fade, scale } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
 	import { subjectById } from '$lib/curriculum/data';
 	import { usePlan } from '$lib/planner/context';
 	import { reducedMotion } from '$lib/ui/transitions';
 	import Keys from './Keys.svelte';
+	import LabelKeys from './LabelKeys.svelte';
+	import { viewport } from '$lib/planner/viewport.svelte';
 	import { armed } from '../grid/armed.svelte';
 
 	const plan = usePlan();
@@ -38,6 +38,7 @@
 	type Row = { id: string; noun: string; match: (code: string) => boolean };
 
 	let root: HTMLDivElement;
+	let trigger: HTMLButtonElement;
 	let open = $state(false);
 	let subjects = $derived(plan.programmes.map((p, i) => ({ ...p, i })).filter((p) => p.subject !== 'open'));
 
@@ -82,6 +83,9 @@
 		}
 	}
 
+	// the guide shows the key open: the colours are the first thing worth knowing
+	$effect(() => setOpen(plan.guiding));
+
 	const toggle = (id: string) => (picked = picked.includes(id) ? picked.filter((p) => p !== id) : [...picked, id]);
 
 	function dropPicked() {
@@ -95,15 +99,32 @@
 	onpointerdown={(e) => {
 		if (open && !root.contains(e.target as Node)) setOpen(false);
 	}}
-	onkeydown={(e) => {
-		if (e.key === 'Escape' && open) setOpen(false);
-	}}
 />
 
 <!-- the type rows wear the major's hue, the colour you'll see most -->
-<div class="colour-key" bind:this={root} style:--hue={plan.programmes[0] && plan.hueFor(plan.programmes[0].subject)}>
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+<div
+	class="colour-key"
+	role="group"
+	aria-label="display options"
+	bind:this={root}
+	style:--hue={plan.programmes[0] && plan.hueFor(plan.programmes[0].subject)}
+	onkeydown={(e) => {
+		if (e.key !== 'Escape' || !open) return;
+		e.preventDefault();
+		e.stopPropagation();
+		setOpen(false);
+		trigger.focus();
+	}}
+>
 	<Keys plain>
-		<button class:active={open} aria-expanded={open} aria-controls="colour-key" onclick={() => setOpen(!open)}>
+		<button
+			bind:this={trigger}
+			class:active={open}
+			aria-expanded={open}
+			aria-controls="colour-key"
+			onclick={() => setOpen(!open)}
+		>
 			<!-- just the essentials on its face: a square per subject, then
 			     required and elective; kccs and other dept. wait inside -->
 			{#if subjects.length}
@@ -114,7 +135,7 @@
 				</span>
 			{/if}
 			<span class="swatches" aria-hidden="true"><i data-type="required"></i><i data-type="elective"></i></span>
-			colours <span class="caret" aria-hidden="true">▾</span>
+			display <span class="caret" aria-hidden="true">▾</span>
 		</button>
 	</Keys>
 	{#if open}
@@ -124,6 +145,13 @@
 			in:scale={{ start: 0.94, duration: reducedMotion() ? 0 : 260, easing: backOut }}
 			out:fade={{ duration: reducedMotion() ? 0 : 100 }}
 		>
+			{#if viewport.desktop}
+				<div class="labels">
+					<p class="section-label">course labels</p>
+					<LabelKeys />
+				</div>
+			{/if}
+			<p class="section-label">colours</p>
 			<ul class="legend" aria-label="course colour legend">
 				{#each TYPE_KEYS as k (k.type)}
 					<li>
@@ -225,12 +253,28 @@
 		left: 0;
 		z-index: 3;
 		width: max-content;
+		max-width: min(34rem, calc(100vw - 3.2rem));
+		max-height: min(60rem, 70dvh);
+		overflow-y: auto;
 		padding: 0.5rem;
 		background: var(--color-bg-card-start);
 		border: 1px solid var(--bar-edge);
 		border-radius: 6px;
 		box-shadow: 0 6px 18px rgba(20, 30, 50, 0.18);
 		transform-origin: top left;
+	}
+
+	.labels {
+		padding: 0 0.6rem 1.2rem;
+		margin-bottom: 0.4rem;
+		border-bottom: 1px solid var(--bar-edge);
+	}
+
+	.section-label {
+		padding: 0.8rem 0.6rem;
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
 	}
 
 	.legend {

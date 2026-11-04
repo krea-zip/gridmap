@@ -4,7 +4,6 @@
 	// their colours mean, and where the plan stands at the far end
 	import { usePlan } from '$lib/planner/context';
 	import { viewport } from '$lib/planner/viewport.svelte';
-	import PixelIcon from '$lib/components/PixelIcon.svelte';
 	import Keys from './Keys.svelte';
 	import ViewPicker from './ViewPicker.svelte';
 	import ColourKey from './ColourKey.svelte';
@@ -25,23 +24,6 @@
 	{#if viewport.desktop}
 		<span class="rule" aria-hidden="true"></span>
 		<ViewPicker />
-		<span class="rule" aria-hidden="true"></span>
-
-		<Keys label="course labels">
-			<button class:active={plan.showCodes} aria-pressed={plan.showCodes} onclick={() => plan.toggleLabel('code')}
-				><PixelIcon name="code" />codes</button
-			>
-			<button class:active={plan.showTitles} aria-pressed={plan.showTitles} onclick={() => plan.toggleLabel('title')}
-				><PixelIcon name="title" />titles</button
-			>
-			{#if plan.gradeMode}
-				<button
-					class:active={plan.showGradeLabels}
-					aria-pressed={plan.showGradeLabels}
-					onclick={() => (plan.showGradeLabels = !plan.showGradeLabels)}><PixelIcon name="grade" />grades</button
-				>
-			{/if}
-		</Keys>
 	{/if}
 
 	<span class="rule" aria-hidden="true"></span>

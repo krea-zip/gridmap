@@ -1,19 +1,18 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
-	// The credit rules the ERP drop form imposes, checked against the plan
-	// that's actually on the grid, so "20 credits, twice in your tenure"
-	// arrives as "you've used 1 of 2" instead of as a paragraph to re-read.
-	// Below them, the standing and progression rules from the SIAS Exams &
-	// Assessments Manual, checked against whatever grades are entered.
+	// where the credits stand: the totals, then every trimester on one chart.
+	// a credit rule the plan breaks is the hints' job, so it isn't repeated
+	// here. below, the standing and progression rules from the SIAS Exams &
+	// Assessments Manual, which only this panel checks against the grades.
 	import type { TrimNum } from '$lib/types';
 	import {
 		AUDIT_LIMIT,
 		HEAVY_TRIMS_ALLOWED,
 		MAX_TOTAL_3YR,
-		MAX_TOTAL_4YR,
 		TRIM_HARD_MAX,
 		TRIM_MIN,
 		TRIM_NORMAL_MAX,
+		TRIM_STANDARD_MAX,
 		byCode
 	} from '$lib/curriculum/data';
 	import { AID_MIN_CGPA, EXIT_CGPA, GRAD_MIN_CGPA } from '$lib/planner/grades';
@@ -25,28 +24,11 @@
 	let { onclose }: { onclose: () => void } = $props();
 	const plan = usePlan();
 
-	type Slot = { y: number; t: TrimNum; credits: number };
-
-	// year 1 sits outside the min/max rules, same as everywhere else
-	let loads = $derived<Slot[]>(
-		plan.years
-			.filter((y) => y !== 1)
-			.flatMap((y) => plan.trims.map((t) => ({ y, t, credits: plan.slotCredits(y, t) })))
-			// past the degree's length (year 4 of a 3-year degree, a fifth year)
-			// an empty trimester is just one you're not enrolled for
-			.filter((s) => !(s.y > plan.minYears && s.credits === 0))
-	);
-
-	let thin = $derived(loads.filter((s) => s.credits < TRIM_MIN).length);
-	let heavy = $derived(loads.filter((s) => s.credits > TRIM_NORMAL_MAX && s.credits <= TRIM_HARD_MAX).length);
-	let over = $derived(loads.filter((s) => s.credits > TRIM_HARD_MAX).length);
 	let audits = $derived(plan.placed.filter((p) => plan.isAudit(p.code)).length);
-	let ceiling = $derived(plan.fourYear ? MAX_TOTAL_4YR : MAX_TOTAL_3YR);
+	let ceiling = $derived(plan.creditCeiling);
 	let left = $derived(Math.max(0, plan.creditMinimum - plan.totalPlacedCredits));
 
-	const LOADS = [12, 14, 16, 18, 20];
-
-	// a rule card jumps you to what it's about, the trimester, or the course
+	// a bar jumps you to its trimester, a standing rule to its course
 	function jump(year: number, trim: TrimNum) {
 		plan.zoom = { year, trim };
 		onclose();
@@ -67,30 +49,9 @@
 	);
 	const GUIDES = [
 		{ at: TRIM_MIN, label: 'min' },
-		{ at: TRIM_NORMAL_MAX, label: 'usual' },
 		{ at: TRIM_HARD_MAX, label: 'cap' }
 	];
 
-	type BarKind = 'exempt' | 'thin' | 'ok' | 'heavy' | 'over';
-	function barKind(y: number, credits: number): BarKind {
-		if (y === 1) return 'exempt';
-		if (credits < TRIM_MIN) return 'thin';
-		if (credits > TRIM_HARD_MAX) return 'over';
-		if (credits > TRIM_NORMAL_MAX) return heavy > HEAVY_TRIMS_ALLOWED ? 'over' : 'heavy';
-		return 'ok';
-	}
-	function barText(y: number, credits: number): string {
-		if (y === 1) return 'year 1 has no minimum or cap';
-		if (credits < TRIM_MIN) return `under the ${TRIM_MIN}-credit minimum`;
-		if (credits > TRIM_HARD_MAX) return `over the ${TRIM_HARD_MAX}-credit cap`;
-		if (credits > TRIM_NORMAL_MAX)
-			return heavy > HEAVY_TRIMS_ALLOWED
-				? `heavy, and past the ${HEAVY_TRIMS_ALLOWED} heavy trimesters allowed`
-				: `heavy, one of your ${HEAVY_TRIMS_ALLOWED}`;
-		return 'within the rules';
-	}
-
-	// ── the rule cards ──
 	type Kind = 'ok' | 'watch' | 'over' | 'info';
 	type Rule = {
 		kind: Kind;
@@ -98,43 +59,8 @@
 		status: string;
 		text: string;
 		meter?: { value: number; max: number };
-		slots?: Slot[]; // the trimesters this rule is flagging
-		codes?: string[]; // or the courses
+		codes?: string[]; // the courses this rule is flagging
 	};
-
-	let rules = $derived<Rule[]>([
-		{
-			kind: thin ? 'watch' : 'ok',
-			title: `${TRIM_MIN}+ credits every trimester`,
-			status: thin ? `${thin} below` : 'all good',
-			text: `What keeps you a full-time student. Year 1 is exempt.`,
-			slots: loads.filter((s) => s.credits < TRIM_MIN)
-		},
-		{
-			kind: over || heavy > HEAVY_TRIMS_ALLOWED ? 'over' : heavy ? 'watch' : 'ok',
-			title: `heavy trimesters (over ${TRIM_NORMAL_MAX} cr)`,
-			status: over ? `${over} over ${TRIM_HARD_MAX}` : `${heavy} of ${HEAVY_TRIMS_ALLOWED} used`,
-			text: `${TRIM_HARD_MAX} credits is the hard cap, and you may only go above ${TRIM_NORMAL_MAX} in ${HEAVY_TRIMS_ALLOWED} trimesters across your whole tenure.`,
-			meter: { value: heavy, max: HEAVY_TRIMS_ALLOWED },
-			slots: loads.filter((s) => s.credits > TRIM_NORMAL_MAX)
-		},
-		{
-			kind: plan.totalPlacedCredits > ceiling ? 'over' : 'ok',
-			title: `tenure ceiling`,
-			status: `${plan.totalPlacedCredits} / ${ceiling}`,
-			text: `Total credits can't pass ${ceiling} on the ${plan.fourYear ? 'four' : 'three'}-year programme. Talk to your mentor before adding a fifth course to a trimester.`,
-			meter: { value: plan.totalPlacedCredits, max: ceiling }
-		},
-		{
-			kind: audits > AUDIT_LIMIT ? 'over' : 'ok',
-			title: 'audits',
-			status: `${audits} of ${AUDIT_LIMIT} used`,
-			text: `2- or 4-credit courses only, never KCCS / 391 / 490 / 491. You need your academic advisor's and the instructor's permission (the instructor's by email), you take part in everything except the final exam, and an audit must be deleted before it can switch to credit.`,
-			meter: { value: audits, max: AUDIT_LIMIT }
-		}
-	]);
-
-	let problems = $derived(rules.filter((r) => r.kind !== 'ok').length);
 
 	// ── standing, from the exams manual ──
 	// every graded mark on the plan, with the year it sits in. U is the only
@@ -202,9 +128,9 @@
 	let standingProblems = $derived(standing.filter((r) => r.kind === 'watch' || r.kind === 'over').length);
 
 	// ── what's open ──
-	// The panel leads with what needs attention: a rule that's fine is one
-	// line (title + status) until you open it; one that isn't arrives open.
-	// The manual's sections stay folded unless they have something to say.
+	// a rule that's fine is one line (title + status) until you open it; one
+	// that isn't arrives open, and standing stays folded unless it has
+	// something to say
 	const needsLook = (r: Rule) => r.kind === 'watch' || r.kind === 'over';
 	let toggled = $state<Record<string, boolean>>({});
 	const isOpen = (r: Rule) => toggled[r.title] ?? needsLook(r);
@@ -213,12 +139,16 @@
 	let notesOpen = $state(false);
 	const unfold = () => ({ duration: reducedMotion() ? 0 : 240, easing: cubicOut });
 
-	const FORM_NOTES = [
+	let formNotes = $derived([
+		`${TRIM_MIN} credits a trimester keeps you a full-time student. Year 1 is exempt.`,
+		`${TRIM_HARD_MAX} credits is the hard cap, and you may only go above ${TRIM_STANDARD_MAX} in ${HEAVY_TRIMS_ALLOWED} trimesters across your whole tenure.`,
+		`Total credits can't pass ${ceiling} on the ${plan.fourYear ? 'four' : 'three'}-year programme${!plan.fourYear && plan.isDouble ? ', stretched from the usual ' + MAX_TOTAL_3YR + ' for a double major' : ''}. Talk to your mentor before adding a fifth course to a trimester.`,
+		`Audits are 2- or 4-credit courses only, never KCCS / 391 / 490 / 491. You need your academic advisor's and the instructor's permission (the instructor's by email), you take part in everything except the final exam, and an audit must be deleted before it can switch to credit.`,
 		`Registering for more than ${TRIM_NORMAL_MAX} or fewer than ${TRIM_MIN} credits needs prior approval from Dr Aahique Iqbal, forwarded to the Academic Office.`,
 		'The same course can’t be picked twice in a group.',
 		'Once the drop form is submitted nothing can be changed, check it twice.',
 		'Suspended students write to the Academic Office with their final course list inside the stated window.'
-	];
+	]);
 
 	const MANUAL_NOTES = [
 		'You need 75% attendance to sit a course’s end-term exam. Between 60% and 75% you still sit it, but a grade level lower unless a request letter (with documents) is accepted; under 60% you can’t.',
@@ -256,14 +186,9 @@
 							</div>
 						{/if}
 						<p>{rule.text}</p>
-						{#if rule.slots?.length || rule.codes?.length}
-							<div class="slots">
-								{#each rule.slots ?? [] as s (`${s.y}-${s.t}`)}
-									<button title="open {plan.trimSpelled(s.y, s.t)}" onclick={() => jump(s.y, s.t)}>
-										{plan.trimName(s.y, s.t)} · {s.credits} cr
-									</button>
-								{/each}
-								{#each rule.codes ?? [] as code (code)}
+						{#if rule.codes?.length}
+							<div class="codes">
+								{#each rule.codes as code (code)}
 									<button title="show {plan.courseLabel(code)}" onclick={() => show(code)}>
 										{plan.courseLabel(code)}
 									</button>
@@ -277,96 +202,56 @@
 	</ul>
 {/snippet}
 
-<Modal title="credits & the drop form" width="52rem" {onclose}>
-	<div class="stats">
-		<div class="stat">
-			<span class="v">{plan.totalPlacedCredits}</span>
-			<span class="l">placed</span>
+<Modal title="credits" width="52rem" {onclose}>
+	<p class="totals">
+		<b>{plan.totalPlacedCredits}</b> of
+		<span title="the most of the degree's own minimum and what your programmes add up to">{plan.creditMinimum} cr</span>
+		· {left} to go ·
+		<span title="the most credits you may register for across your whole degree">max {ceiling}</span>
+	</p>
+	<p class="allowances">heavy {plan.heavyTrimesters} of {HEAVY_TRIMS_ALLOWED} · audits {audits} of {AUDIT_LIMIT}</p>
+
+	<div class="chart" style="--max: {scale}; --trims: {plan.trims.length}">
+		<div class="plot">
+			{#each GUIDES as g (g.at)}
+				<div class="guide" style="--at: {g.at}">
+					<span>{g.at}</span><em>{g.label}</em>
+				</div>
+			{/each}
+
+			<div class="years">
+				{#each chartYears as y, yi (y)}
+					<div class="year">
+						{#each plan.trims as t, ti (t)}
+							{@const load = plan.slotLoad(y, t)}
+							{@const about = `${load.credits} credits${load.note ? `, ${load.note}` : ''}`}
+							<button
+								class="bar {load.status}"
+								style="--v: {load.credits}; --i: {yi * plan.trims.length + ti}"
+								title="{plan.trimName(y, t)}: {about}. Click to open."
+								aria-label="{plan.trimSpelled(y, t)}: {about}. Open it."
+								onclick={() => jump(y, t)}
+							>
+								<i></i>
+								{#if load.credits}<span class="n">{load.credits}</span>{/if}
+							</button>
+						{/each}
+					</div>
+				{/each}
+			</div>
 		</div>
-		<div class="stat">
-			<span class="v">{left}</span>
-			<span class="l">still to place</span>
-		</div>
-		<div class="stat" title="the most of the degree's own minimum and what your programmes add up to">
-			<span class="v">{plan.creditMinimum}</span>
-			<span class="l">to graduate</span>
-		</div>
-		<div class="stat" title="the most credits you may register for across your whole degree">
-			<span class="v">{ceiling}</span>
-			<span class="l">tenure ceiling</span>
+		<div class="xaxis">
+			{#each chartYears as y (y)}<span>y{y}</span>{/each}
 		</div>
 	</div>
 
-	<section>
-		<h3>trimester by trimester</h3>
-
-		<!-- every trimester's load against the three lines that matter, and
-		     the target you pick below as a fourth that slides into place -->
-		<div class="chart" style="--max: {scale}; --trims: {plan.trims.length}">
-			<div class="plot">
-				{#each GUIDES as g (g.at)}
-					<div class="guide" style="--at: {g.at}">
-						<span>{g.at}</span><em>{g.label}</em>
-					</div>
-				{/each}
-				<div class="guide target" style="--at: {plan.targetLoad}" aria-hidden="true">
-					<span>{plan.targetLoad}</span>
-				</div>
-
-				<div class="years">
-					{#each chartYears as y, yi (y)}
-						<div class="year">
-							{#each plan.trims as t, ti (t)}
-								{@const credits = plan.slotCredits(y, t)}
-								<button
-									class="bar {barKind(y, credits)}"
-									style="--v: {credits}; --i: {yi * plan.trims.length + ti}"
-									title="{plan.trimName(y, t)} · {credits} cr, {barText(y, credits)}. Click to open."
-									aria-label="{plan.trimSpelled(y, t)}: {credits} credits, {barText(y, credits)}. Open it."
-									onclick={() => jump(y, t)}
-								>
-									<i></i>
-									{#if credits}<span class="n">{credits}</span>{/if}
-								</button>
-							{/each}
-						</div>
-					{/each}
-				</div>
-			</div>
-			<div class="xaxis">
-				{#each chartYears as y (y)}<span>y{y}</span>{/each}
-			</div>
-		</div>
-
-		<ul class="key">
-			<li><i class="ok"></i>fine</li>
-			<li><i class="thin"></i>under {TRIM_MIN}</li>
-			<li><i class="heavy"></i>heavy</li>
-			<li><i class="over"></i>past the rules</li>
-			<li><i class="exempt"></i>year 1, exempt</li>
-		</ul>
-
-		<h4>the load you're aiming for</h4>
-		<div class="seg" role="group" aria-label="target credits per trimester">
-			{#each LOADS as n (n)}
-				<button class:active={plan.targetLoad === n} onclick={() => (plan.targetLoad = n)}>{n}</button>
-			{/each}
-		</div>
-		<p class="note">
-			The dashed line above. The grid turns a trimester's credit count red past it. {TRIM_NORMAL_MAX} is the registration
-			the drop form recommends; {TRIM_MIN}–{TRIM_HARD_MAX} is what it will accept.
-		</p>
-	</section>
-
-	<section>
-		<h3>
-			the rules, against your plan
-			<span class="summary" class:bad={problems}>
-				{problems ? `${problems} to look at` : 'all clear'}
-			</span>
-		</h3>
-		{@render ruleList(rules)}
-	</section>
+	<ul class="key">
+		<li><i class="ok"></i>fine</li>
+		<li><i class="under"></i>under {TRIM_MIN}</li>
+		<li><i class="heavy"></i>heavy</li>
+		<li><i class="over"></i>past the rules</li>
+		<li><i class="exempt"></i>exempt</li>
+	</ul>
 
 	<section>
 		<button class="disclose" aria-expanded={standingOpen} onclick={() => (showStanding = !standingOpen)}>
@@ -399,7 +284,7 @@
 			<div transition:slide={unfold()}>
 				<h4>the drop form</h4>
 				<ul class="notes">
-					{#each FORM_NOTES as note (note)}
+					{#each formNotes as note (note)}
 						<li>{note}</li>
 					{/each}
 				</ul>
@@ -421,35 +306,22 @@
 <style lang="scss">
 	@use '$lib/styles/mixins' as *;
 
-	.stats {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 0.8rem;
+	.totals {
+		font-size: 1.5rem;
+		color: var(--color-text-muted);
+		font-variant-numeric: tabular-nums;
+
+		b {
+			font-size: 2rem;
+			color: var(--color-text);
+		}
 	}
 
-	.stat {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		padding: 0.9rem 0.4rem;
-		background-color: var(--color-bg-light);
-		border: 1px solid var(--color-border-card);
-		border-radius: 6px;
-		@include glossy;
-
-		.v {
-			font-size: 2rem;
-			font-weight: 700;
-			color: var(--color-text);
-			font-variant-numeric: tabular-nums;
-		}
-
-		.l {
-			font-size: 1.1rem;
-			color: var(--color-text-muted);
-			text-transform: uppercase;
-			letter-spacing: 0.04em;
-		}
+	.allowances {
+		margin: 0.2rem 0 1.6rem;
+		font-size: 1.2rem;
+		color: var(--color-text-muted);
+		font-variant-numeric: tabular-nums;
 	}
 
 	section {
@@ -468,10 +340,6 @@
 		font-size: 1.15rem;
 		font-weight: 600;
 		color: var(--color-text);
-	}
-
-	.seg {
-		@include segmented;
 	}
 
 	.note {
@@ -527,23 +395,6 @@
 			color: var(--color-text-muted);
 			opacity: 0.75;
 		}
-
-		// your target: an accent dashed line that slides on a spring when
-		// you pick a different load
-		&.target {
-			z-index: 1;
-			border-top: 1.5px dashed var(--color-accent);
-			transition: bottom 0.42s var(--spring);
-
-			span {
-				margin-right: 0.2rem;
-				padding: 0 0.4rem;
-				font-weight: 700;
-				color: var(--color-on-accent);
-				background: var(--color-accent);
-				border-radius: 3px;
-			}
-		}
 	}
 
 	.years {
@@ -581,7 +432,7 @@
 			background: var(--color-hover-medium);
 		}
 
-		&.thin {
+		&.under {
 			--tone: var(--color-hint-caution);
 			--tone-deep: var(--color-hint-caution-deep);
 		}
@@ -692,7 +543,7 @@
 				--tone: var(--color-hint-good);
 				--tone-deep: var(--color-hint-good-deep);
 			}
-			&.thin {
+			&.under {
 				--tone: var(--color-hint-caution);
 				--tone-deep: var(--color-hint-caution-deep);
 			}
@@ -886,9 +737,9 @@
 		}
 	}
 
-	// the exact trimesters (or courses) a rule is about, each one opens it,
-	// so there is nothing to hunt for
-	.slots {
+	// the exact courses a rule is about, each one opens it, so there is
+	// nothing to hunt for
+	.codes {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.4rem;

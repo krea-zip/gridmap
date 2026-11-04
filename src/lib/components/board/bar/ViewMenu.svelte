@@ -87,7 +87,14 @@
 			<span class="vm-head" aria-hidden="true">{group.label}</span>
 			{#each BOARD_VIEWS.filter((v) => v.group === group.id) as v (v.id)}
 				{@const on = plan.view === v.id}
-				<button role="radio" aria-checked={on} tabindex={on ? 0 : -1} class:on onclick={() => onpick(v.id)}>
+				<button
+					role="radio"
+					aria-checked={on}
+					tabindex={on ? 0 : -1}
+					class:on
+					class:wip={'wip' in v}
+					onclick={() => onpick(v.id)}
+				>
 					<span class="vm-sample" aria-hidden="true">
 						{#if v.id === 'plan'}
 							<span class="with-x">{@render chip(sample.code)}<span class="x">×</span></span>
@@ -106,7 +113,14 @@
 							{@render chip(sample.code, 'other', undefined)}<i class="wi-mark" data-change="stops">−</i>
 						{/if}
 					</span>
-					<span class="vm-text"><b>{v.label}</b><span>{v.note}</span></span>
+					<span class="vm-text"
+						><b>
+							<!-- still being built: the view works, but it's unfinished -->
+							{#if 'wip' in v}<i class="wip-mark" role="img" aria-label="under construction" title="under construction"
+									>🚧</i
+								>{/if}{v.label}
+						</b><span>{v.note}</span></span
+					>
 					<span class="vm-check" aria-hidden="true">{on ? '✓' : ''}</span>
 				</button>
 			{/each}
@@ -207,6 +221,27 @@
 			font-size: 1.15rem;
 			color: var(--color-text-muted);
 		}
+	}
+
+	// unfinished views step back, and come forward again under the pointer
+	button.wip:not(.on) {
+		.vm-sample,
+		.vm-text {
+			opacity: 0.6;
+			transition: opacity 120ms ease;
+		}
+
+		&:hover .vm-sample,
+		&:hover .vm-text,
+		&:focus-visible .vm-sample,
+		&:focus-visible .vm-text {
+			opacity: 0.9;
+		}
+	}
+
+	.wip-mark {
+		margin-right: 0.4rem;
+		font-style: normal;
 	}
 
 	.vm-check {

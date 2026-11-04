@@ -18,7 +18,7 @@
 		type PickRole as Role
 	} from '$lib/planner/picks';
 	import type { StructureKind } from '$lib/types';
-	import { MAX_TOTAL_3YR, MAX_TOTAL_4YR, byCode, subjectById } from '$lib/curriculum/data';
+	import { byCode, creditCeilingFor, subjectById } from '$lib/curriculum/data';
 	import type { Verdict } from '$lib/planner/boardViews';
 
 	let { verdict }: { verdict: Verdict | null } = $props();
@@ -78,7 +78,7 @@
 	const label = (code: string) => plan.courseLabel(code);
 	const cr = (codes: string[]) => codes.reduce((sum, c) => sum + byCode(c).credits, 0);
 	let years = $derived(tried.fourYear ? 4 : 3);
-	let ceiling = $derived(tried.fourYear ? MAX_TOTAL_4YR : MAX_TOTAL_3YR);
+	let ceiling = $derived(creditCeilingFor(tried.fourYear, tried.structure === 'double-major'));
 	let unplaced = $derived(verdict ? verdict.needed.filter((n) => !n.at) : []);
 	let addable = $derived(
 		verdict ? verdict.needed.flatMap((n) => (n.at ? [{ code: n.code, year: n.at.year, trim: n.at.trim }] : [])) : []

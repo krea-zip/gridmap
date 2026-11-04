@@ -5,6 +5,7 @@ import type { Plan } from '$lib/planner/plan.svelte';
 import type { Programme } from '$lib/types';
 import {
 	byCode,
+	capstoneFor,
 	CORE_COURSES,
 	hasCode,
 	isCore,
@@ -111,9 +112,12 @@ export function recommendedPath(plan: Plan, programmes: Programme[] = plan.progr
 	// these, so the elective credits the table allows stay OPEN for the
 	// student to fill (maths: 52 required placed, 8 left, not pre-filled)
 	const requiredUnion = new Set(
-		programmes.flatMap((prog) =>
-			requiredSetFor(prog.subject, prog.role, plan.fourYear, plan.isDouble, plan.batchStartYear)
-		)
+		programmes.flatMap((prog) => {
+			const args = [prog.subject, prog.role, plan.fourYear, plan.isDouble, plan.batchStartYear] as const;
+			// a required capstone (chemistry's) is seeded like any required course
+			const capstone = capstoneFor(...args);
+			return [...requiredSetFor(...args), ...(capstone?.required ? [capstone.code] : [])];
+		})
 	);
 	// two programmes can ask for the same material under different codes.
 	// A maths + computer-science student is required to do maths' Linear

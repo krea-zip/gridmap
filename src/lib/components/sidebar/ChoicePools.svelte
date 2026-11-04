@@ -159,7 +159,7 @@
 		min-width: 0;
 	}
 
-	// one pip per course to pick: filled once picked, a dotted ring until then
+	// one pip per course to pick: faded until picked, then filled
 	.pips {
 		display: flex;
 		flex: none;
@@ -168,21 +168,17 @@
 		i {
 			width: 0.75rem;
 			height: 0.75rem;
-			border: 1px dotted var(--color-text-muted);
+			background-color: color-mix(in srgb, var(--color-text-muted) 30%, transparent);
 			border-radius: 50%;
-			transition:
-				background-color 0.2s ease,
-				border-color 0.2s ease;
+			transition: background-color 0.2s ease;
 
 			&.on {
 				background-color: var(--color-text);
-				border: 1px solid var(--color-text);
 			}
 		}
 
 		.done & i.on {
 			background-color: var(--color-hint-good-deep);
-			border-color: var(--color-hint-good-deep);
 		}
 	}
 

@@ -61,9 +61,12 @@
 	.overview {
 		position: relative;
 		display: grid;
-		grid-template-columns: 6rem repeat(var(--cols), 1fr);
+		grid-template-columns: 6rem repeat(var(--cols), minmax(0, 1fr));
 		gap: 1rem;
-		padding: 2.4rem var(--board-gutter, 3.2rem);
+		padding: 2.4rem var(--board-gutter, 3.2rem) 1.2rem;
+		// the year labels sit centred in their own column, which already reads
+		// as margin, so the left gutter gives a little of it back
+		padding-left: calc(var(--board-gutter, 3.2rem) - 1.2rem);
 	}
 
 	@include mobile {

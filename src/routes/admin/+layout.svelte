@@ -1,14 +1,12 @@
 <script lang="ts">
-	// the academic office's frame: sidebar, toolbar and the page. the draft
-	// arrives with the page (see +layout.server.ts); a fresh copy from the
-	// server, after a reload or a sign-in, replaces what's on screen.
+	// the academic office's frame: sidebar, toolbar and the page, or the
+	// sign-in. the draft arrives with the page (see +layout.server.ts); a
+	// fresh copy from the server, after a reload or a sign-in, replaces
+	// what's on screen.
 	import '../../app.scss';
 	import './admin.scss';
 	import type { LayoutProps } from './$types';
-	import { page } from '$app/state';
 	import { beforeNavigate } from '$app/navigation';
-	import { onMount } from 'svelte';
-	import { account } from '$lib/features/auth/account.svelte';
 	import { Workspace, provideOffice } from '$lib/features/office/workspace.svelte';
 	import OfficeNav from '$lib/components/admin/OfficeNav.svelte';
 	import OfficeToolbar from '$lib/components/admin/OfficeToolbar.svelte';
@@ -17,18 +15,13 @@
 
 	let { data, children }: LayoutProps = $props();
 	const office = provideOffice(new Workspace());
-	// only staff sign in, so the browser's session is picked up here, not site-wide
-	onMount(() => void account.init());
 
 	$effect.pre(() => {
-		if (data.workspace && data.session.state === 'ok') office.load(data.workspace, data.session.role);
+		if (data.workspace && data.name) office.load(data.workspace, data.name);
 	});
 
 	let large = $state(false);
-	let signedIn = $derived(data.session.state === 'ok');
-	let contributorElsewhere = $derived(
-		office.role === 'contributor' && !page.url.pathname.startsWith('/admin/approvals')
-	);
+	let signedIn = $derived(!!data.name);
 
 	// unsaved edits live only on this screen, so leaving asks first
 	beforeNavigate(({ to, cancel, type }) => {
@@ -49,14 +42,8 @@
 	<div class="office-body">
 		{#if signedIn}<OfficeToolbar /><OldEditsNotice />{/if}
 		<main class="office-main">
-			{#if data.session.state === 'signed-out'}
+			{#if !signedIn}
 				<OfficeSignIn />
-			{:else if data.session.state === 'no-access'}
-				<OfficeSignIn email={data.session.email} />
-			{:else if contributorElsewhere}
-				<h1>Department submissions</h1>
-				<p>Submit course updates to the academic office and follow their review.</p>
-				<a class="button primary" href="/admin/approvals">Open department requests</a>
 			{:else}
 				{@render children()}
 			{/if}

@@ -38,16 +38,14 @@
 	never shown to students.
 </p>
 
-{#if office.canEdit}
-	<div class="office-row">
-		<label>New field<input bind:value={label} placeholder="e.g. Room" /></label>
-		<button class="primary" onclick={add}>Add field</button>
-	</div>
-{/if}
+<div class="office-row">
+	<label>New field<input bind:value={label} placeholder="e.g. Room" /></label>
+	<button class="primary" onclick={add}>Add field</button>
+</div>
 
 {#each fields as field (field.id)}
 	<section class="office-card">
-		<fieldset class="office-form" disabled={!office.canEdit}>
+		<fieldset class="office-form">
 			<label>Label<input bind:value={field.label} /></label>
 			<label
 				>Type
@@ -76,7 +74,7 @@
 				><input type="checkbox" bind:checked={field.required} />Required on every offering</label
 			>
 		</fieldset>
-		{#if office.canEdit}<button class="danger" onclick={() => remove(field.id)}>Remove</button>{/if}
+		<button class="danger" onclick={() => remove(field.id)}>Remove</button>
 	</section>
 {:else}
 	<p class="office-empty">No extra fields yet.</p>

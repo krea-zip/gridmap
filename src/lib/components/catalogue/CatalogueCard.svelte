@@ -4,6 +4,9 @@
 	import { codeFor } from '$lib/curriculum/data';
 	import { courseIn, courseOut } from '$lib/ui/transitions';
 	import { carry } from '$lib/ui/courseDrag';
+	import { tick } from 'svelte';
+	import { viewport } from '$lib/planner/viewport.svelte';
+	import { reducedMotion } from '$lib/ui/transitions';
 
 	let {
 		course,
@@ -24,38 +27,54 @@
 	// under history), and the other departments it's cross-listed with
 	let shownCode = $derived(codeFor(course, contextSubject));
 	let label = $derived(plan.courseLabel(course.code, shownCode));
-	// a quarter-width card only has room for one short line
-	let compactText = $derived(plan.showCodes ? shownCode : course.title);
 	let alsoCodes = $derived(course.codes.filter((c) => c !== shownCode));
 	// the tools courses are cross-listed across every department, showing
 	// all of them makes the card balloon, so cap it and count the rest
 	const XLIST_MAX = 2;
 	let xlistShown = $derived(alsoCodes.slice(0, XLIST_MAX));
 	let xlistExtra = $derived(alsoCodes.length - xlistShown.length);
-	// a 1-credit card is only a quarter of the row wide, too narrow for a
-	// title or crosslist row without clipping; clamp the title to two lines.
 	let pending = $derived(course.pendingCredits && course.credits === 0);
-	let compact = $derived(!mobile && !pending && course.credits <= 1);
-	// the fill alone doesn't say "required" to someone who hasn't read the
-	// legend, so required courses also lead with a dot (no room on a chip)
-	let showReq = $derived(type === 'required' && !compact);
+	// Every course gets room for its title; credit weight is an explicit label.
+	let showReq = $derived(type === 'required');
 
 	function dragstart(e: DragEvent) {
 		carry(e, course.code);
 		plan.dragging = course.code;
 	}
+
+	async function openPlaced() {
+		plan.highlight = [];
+		plan.highlightSlots = [];
+		plan.select(course.code);
+		if (!viewport.desktop) return;
+		plan.zoom = null;
+		await tick();
+		document
+			.querySelector(`.overview .chip[data-code="${CSS.escape(course.code)}"]`)
+			?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
+	}
 </script>
 
 {#if placed}
-	<!-- a course already on the grid leaves a dashed placeholder; the ↩ button
-	     lifts it back off, which flies it home to this slot (see the grid's
-	     out:sendCourse) -->
-	<div data-course-card tabindex="-1" class="card placed" class:compact title="{label} is already on your plan">
-		<button class="placed-open" onclick={() => (plan.selected = course)} aria-label="view {label}">
-			{#if plan.showCodes || compact}<span class="code">{compact ? compactText : shownCode}</span>{/if}
-			{#if !compact}
-				<span class="title">{course.title}</span>
-			{/if}
+	<!-- Planned courses stay discoverable as compact rows. -->
+	<div
+		data-course-card
+		tabindex="-1"
+		class="card placed"
+		class:titles-only={!plan.showCodes}
+		title="{label} is already on your plan"
+	>
+		<button class="placed-open" onclick={openPlaced} aria-label="view {label}">
+			{#if plan.showCodes}<span class="code"
+					><span class="planned-mark" role="img" aria-label="on your plan">✓</span>{shownCode}</span
+				>{/if}
+			<span class="title"
+				>{#if !plan.showCodes}<span class="planned-mark" role="img" aria-label="on your plan">✓</span>
+				{/if}{course.title}</span
+			>
+			<span class="credit-label" title={pending ? 'credits to confirm' : `${course.credits} credits`}
+				>{pending ? 'TBC' : `${course.credits} cr`}</span
+			>
 		</button>
 		<button
 			class="unplace"
@@ -72,7 +91,7 @@
 		type="button"
 		data-course-card
 		class="card"
-		class:compact
+		class:titles-only={!plan.showCodes}
 		class:dragging={plan.dragging === course.code}
 		data-type={type}
 		style:--hue={plan.hueOf(course.code)}
@@ -88,37 +107,37 @@
 				? `view ${label}`
 				: `drag ${label} onto the grid`}
 	>
-		{#if plan.showCodes || compact}
+		{#if plan.showCodes}
 			<span class="code">
 				{#if showReq}<span class="req-dot" role="img" aria-label="required" title="required by your programme"
 					></span>{/if}
-				{compact ? compactText : shownCode}
-				{#if alsoCodes.length && !compact}
+				{shownCode}
+				{#if alsoCodes.length}
 					<span class="xlist" title="cross-listed as {alsoCodes.join(', ')}">
 						⇄ {xlistShown.join(' · ')}{xlistExtra > 0 ? ` +${xlistExtra}` : ''}
 					</span>
 				{/if}
 			</span>
 		{/if}
-		{#if !compact}
-			<!-- with codes switched off there's no code row, so the dot leads the title -->
-			<span class="title"
-				>{#if showReq && !plan.showCodes}<span
-						class="req-dot"
-						role="img"
-						aria-label="required"
-						title="required by your programme"
-					></span>{/if}{course.title}</span
-			>
-			<!-- with codes off there's no code row to carry the cross-listing,
+		<!-- with codes switched off there's no code row, so the dot leads the title -->
+		<span class="title"
+			>{#if showReq && !plan.showCodes}<span
+					class="req-dot"
+					role="img"
+					aria-label="required"
+					title="required by your programme"
+				></span>{/if}{course.title}</span
+		>
+		<!-- with codes off there's no code row to carry the cross-listing,
 			     so it gets a line of its own under the title -->
-			{#if !plan.showCodes && alsoCodes.length}
-				<span class="xlist alone" title="cross-listed as {alsoCodes.join(', ')}">
-					⇄ {xlistShown.join(' · ')}{xlistExtra > 0 ? ` +${xlistExtra}` : ''}
-				</span>
-			{/if}
+		{#if !plan.showCodes && alsoCodes.length}
+			<span class="xlist alone" title="cross-listed as {alsoCodes.join(', ')}">
+				⇄ {xlistShown.join(' · ')}{xlistExtra > 0 ? ` +${xlistExtra}` : ''}
+			</span>
 		{/if}
-		{#if pending}<span class="pending">credits to confirm</span>{/if}
+		{#if !mobile}<span class="credit-label" title={pending ? 'credits to confirm' : `${course.credits} credits`}
+				>{pending ? 'TBC' : `${course.credits} cr`}</span
+			>{/if}
 		{#if mobile}<span class="mobile-meta"
 				><span
 					>{pending ? 'credits to confirm' : `${course.credits} credits`} · {course.offered
@@ -132,10 +151,15 @@
 <style lang="scss">
 	@use '$lib/styles/mixins' as *;
 
-	.pending {
-		font-size: var(--text-body);
+	.credit-label {
+		position: absolute;
+		top: 0.85rem;
+		right: 1rem;
+		font-size: 1.1rem;
+		line-height: 1.4;
+		font-variant-numeric: tabular-nums;
 		color: var(--color-text-muted);
-		margin-top: 0.5rem;
+		white-space: nowrap;
 	}
 	.card {
 		position: relative;
@@ -146,7 +170,7 @@
 		flex-direction: column;
 		min-width: 0;
 		overflow: hidden; // nothing (a long crosslist row) may spill outside
-		padding: 1rem 1.2rem;
+		padding: 0.75rem 1.1rem;
 		border-radius: 6px; // a touch rounder, so the shine reads as a curved face
 		cursor: grab;
 		transition:
@@ -174,33 +198,26 @@
 
 		&.placed {
 			background: transparent;
-			border: 1.5px dashed var(--color-border-card);
+			border: 0;
+			border-bottom: 1px solid var(--color-border-divider);
+			border-radius: 0;
+			padding: 0.65rem 1.1rem;
 			box-shadow: none;
 			color: var(--color-text-muted);
 			cursor: default;
 
 			&:hover {
 				transform: none;
+				background: color-mix(in srgb, var(--color-accent) 5%, transparent);
 			}
-		}
 
-		// 1-credit courses are a quarter-row wide, just the code, centred,
-		// so the little card reads as a neat chip instead of a cramped mess
-		&.compact {
-			align-items: center;
-			justify-content: center;
-			text-align: center;
-			padding: 1rem 0.4rem;
+			.credit-label {
+				top: 0.65rem;
+				right: 3.2rem;
+			}
 
 			.code {
-				// small enough that a full 7-char code (MATH061) fits the
-				// quarter-width card without clipping; a title ellipsizes
-				display: block;
-				overflow: hidden;
-				white-space: nowrap;
-				text-overflow: ellipsis;
-				font-size: 1.1rem;
-				letter-spacing: -0.02em;
+				padding-right: 5rem;
 			}
 		}
 	}
@@ -214,6 +231,20 @@
 		max-width: 100%;
 		font-size: var(--text-body);
 		font-weight: 700;
+		padding-right: 3.4rem;
+		width: 100%;
+	}
+
+	.titles-only > .title {
+		padding-right: 3.4rem;
+	}
+	.placed.titles-only .title {
+		padding-right: 5rem;
+	}
+
+	.planned-mark {
+		font-weight: 500;
+		color: var(--color-text-muted);
 	}
 
 	// the cross-listed departments, lighter weight so the code you're
@@ -286,11 +317,13 @@
 		align-items: flex-start;
 		text-align: left;
 		padding: 0;
+		padding-right: 1.4rem;
 		font: inherit;
 		color: inherit;
 		border: 0;
 		background: none;
 		cursor: pointer;
+		width: 100%;
 	}
 	.mobile-meta {
 		display: flex;
@@ -305,12 +338,19 @@
 	}
 	// by finger: the ↩ that lifts a placed course off has a fingertip's reach
 	@include touch {
+		.card.placed .credit-label {
+			right: 4.6rem;
+		}
 		.unplace {
 			min-width: 3.6rem;
 			height: 3.2rem;
 		}
 	}
 	@include mobile {
+		.card.placed .credit-label {
+			top: 1rem;
+			right: 7.2rem;
+		}
 		.card {
 			padding: 1.6rem;
 			border-radius: 1rem;

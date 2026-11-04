@@ -425,15 +425,14 @@ $shape-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 	}
 }
 
-// Tablets and laptops under 1500px keep the desktop columns, but the course
-// details slide in over the board instead of docking beside it…
+// Everything above a phone: the course details slide in over the board…
 @mixin details-overlay {
-	@media (min-width: 768px) and (max-width: 1499px) {
+	@media (min-width: 768px) {
 		@content;
 	}
 }
 
-// …and narrower still (an iPad held upright), the sidebar slides in too
+// …and on an iPad held upright, the sidebar slides in too
 @mixin rail-overlay {
 	@media (min-width: 768px) and (max-width: 1099px) {
 		@content;

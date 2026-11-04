@@ -58,7 +58,14 @@ export const AUDIT_LIMIT = RULES.AUDIT_LIMIT; // audits allowed over the whole d
 export const MIN_TOTAL_3YR = RULES.MIN_TOTAL_3YR; // credits to graduate, three-year programme
 export const MIN_TOTAL_4YR = RULES.MIN_TOTAL_4YR; // credits to graduate, four-year programme
 export const MAX_TOTAL_3YR = RULES.MAX_TOTAL_3YR; // total-credit ceiling, three-year programme
+// a double major in three years may stretch the ceiling (132); a release
+// from before the rule existed keeps the plain one
+export const MAX_TOTAL_3YR_DOUBLE = RULES.MAX_TOTAL_3YR_DOUBLE ?? RULES.MAX_TOTAL_3YR;
 export const MAX_TOTAL_4YR = RULES.MAX_TOTAL_4YR; // total-credit ceiling, four-year programme
+/** the most credits a tenure may hold: the degree length's ceiling, which a
+ *  three-year double major may stretch */
+export const creditCeilingFor = (fourYear: boolean, isDouble: boolean): number =>
+	fourYear ? MAX_TOTAL_4YR : isDouble ? MAX_TOTAL_3YR_DOUBLE : MAX_TOTAL_3YR;
 
 // ── Courses ──
 
@@ -82,8 +89,51 @@ export const ALL_COURSES: Course[] = snapshot.courses.map(toCourse);
 
 /** the live catalogue, everything the planner can show and place */
 export const COURSES: Course[] = ALL_COURSES.filter((c) => !c.retired);
-const index = new Map(COURSES.map((c) => [c.code, c]));
-const aliases = new Map(COURSES.flatMap((c) => c.codes.map((code) => [code, c] as const)));
+
+// ── Capstones ──
+// a department document can promise a capstone project (literature: 12
+// credits in place of three electives) that has no catalogue code yet. each
+// department whose programmes state one gets a stand-in the planner can
+// place in a final year. it is the planner's alone: the public site and the
+// office's course list never see it, so neither needs a made-up code.
+
+/** the letters a department's codes start with, LITT for literature */
+const prefixOf = (subject: string): string => {
+	const counts = new Map<string, number>();
+	for (const c of COURSES) {
+		const prefix = c.codesBySubject[subject]?.match(/^[A-Z]+/)?.[0];
+		if (prefix) counts.set(prefix, (counts.get(prefix) ?? 0) + 1);
+	}
+	return [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? subject.slice(0, 4).toUpperCase();
+};
+
+const capstoneCredits = new Map<string, number>();
+for (const set of snapshot.requirementSets)
+	for (const p of set.programmes) if (p.capstone) capstoneCredits.set(p.subject, p.capstone.credits);
+
+/** the placeable stand-ins, one per department that offers a capstone */
+export const CAPSTONES: Course[] = [...capstoneCredits].map(([subject, credits]) => {
+	const code = `${prefixOf(subject)}-CAP`;
+	return {
+		code,
+		title: 'Capstone project',
+		faculty: '',
+		subject,
+		subjects: [subject],
+		codes: [code],
+		codesBySubject: { [subject]: code },
+		credits,
+		required: false,
+		offered: [1, 2, 3],
+		eligibleYears: [4],
+		prereqs: [],
+		unlocks: []
+	};
+});
+const capstoneCodes = new Set(CAPSTONES.map((c) => c.code));
+
+const index = new Map([...COURSES, ...CAPSTONES].map((c) => [c.code, c]));
+const aliases = new Map([...COURSES, ...CAPSTONES].flatMap((c) => c.codes.map((code) => [code, c] as const)));
 
 // a retired course drops out of every prerequisite list, or it would be a
 // requirement no one could meet
@@ -271,6 +321,31 @@ const setFor = (batch: number | undefined): RequirementSet =>
 
 function programmeFor(subject: string, role: ProgrammeRole, fourYear: boolean, isDouble: boolean, batch?: number) {
 	return programmeAt(setFor(batch).id, subject, variantOf(role, fourYear, isDouble));
+}
+
+/** is this the capstone stand-in, not a catalogue course */
+export const isCapstone = (code: string): boolean => capstoneCodes.has(baseCode(code));
+
+/** what the details panel says about a capstone, it has no description */
+export const capstoneAbout = (code: string): string | undefined => {
+	if (!isCapstone(code)) return undefined;
+	const { credits } = byCode(code);
+	return `A ${credits}-credit project in your final year, supervised by your department. Where your programme makes it optional, it takes the place of ${credits / 4} electives. It has no course code yet, so this holds its place on your plan; the department sets the topic and when it runs.`;
+};
+
+/** the capstone a programme takes, if its document states one. the
+ *  requirement lists above leave it out, they're the site's too, and a
+ *  stand-in has no page there; the planner adds it to its own sets */
+export function capstoneFor(
+	subject: string,
+	role: ProgrammeRole,
+	fourYear: boolean,
+	isDouble: boolean,
+	batch?: number
+): { code: string; required: boolean } | undefined {
+	const stated = programmeFor(subject, role, fourYear, isDouble, batch)?.capstone;
+	const course = stated && CAPSTONES.find((c) => c.subject === subject);
+	return course ? { code: course.code, required: stated.required } : undefined;
 }
 
 type BatchRule = { courses: Record<string, 'required' | 'elective'>; requiredCredits?: number };

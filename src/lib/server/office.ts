@@ -1,75 +1,59 @@
-// the academic office's server side: who may do what, reading the shared
-// draft, and turning database failures into messages staff can act on.
-// every office route and load goes through here, so access is checked in
-// one place. row-level security in supabase is the real guard; these checks
-// give a clear error before the database refuses.
+// the academic office's server side: the shared-password session, reading
+// the shared draft, and turning database failures into messages staff can
+// act on. every office route and load goes through here, so access is
+// checked in one place. the database client holds the project's secret key,
+// so it lives only on the server and only after the password checks out.
 import { error, fail, isHttpError, type RequestEvent } from '@sveltejs/kit';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import {
-	makeOfficeDocument,
-	type OfficeDocument,
-	type OfficeRole,
-	type WorkspacePayload
-} from '$lib/features/office/model';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { env } from '$env/dynamic/private';
+import { env as publicEnv } from '$env/dynamic/public';
+import { makeOfficeDocument, type OfficeDocument, type WorkspacePayload } from '$lib/features/office/model';
 import { documentShape, validateOffice } from '$lib/features/office/validation';
 import type { CurriculumSnapshot } from '$lib/curriculum/snapshot';
+import { signedInName } from '$lib/server/officeAuth';
 import snapshot from '$lib/data/curriculum.json';
 import descriptions from '$lib/data/course-descriptions.json';
 
-/** everyone who edits; a contributor only sends requests */
-export const officeRoles: OfficeRole[] = ['admin', 'publisher', 'reviewer', 'editor'];
-export const reviewerRoles: OfficeRole[] = ['admin', 'publisher', 'reviewer'];
+export type OfficeSession = { state: 'signed-out' } | { state: 'ok'; db: SupabaseClient; name: string };
 
-export type OfficeSession =
-	| { state: 'signed-out' }
-	| { state: 'no-access'; email: string }
-	| { state: 'ok'; db: SupabaseClient; email: string; userId: string; role: OfficeRole };
+let client: SupabaseClient | undefined;
 
-// the office tables aren't in the generated types yet (see docs/backend.md)
-const database = (event: RequestEvent) => event.locals.supabase as SupabaseClient | null;
-
-/** who is signed in and their office role, without throwing, for page loads
- *  that show a sign-in screen rather than an error */
-export async function officeSession(event: RequestEvent): Promise<OfficeSession> {
-	const db = database(event);
-	if (!db) error(503, 'The academic office needs Supabase. Set PUBLIC_SUPABASE_URL and its key in Vercel.');
-	const user = await event.locals.getUser();
-	if (!user) return { state: 'signed-out' };
-	const { data: role, error: problem } = await db.rpc('office_role');
-	if (problem) error(503, 'The academic-office database needs its setup migration. Your catalogue is unchanged.');
-	const email = user.email ?? '';
-	return role ? { state: 'ok', db, email, userId: user.id, role } : { state: 'no-access', email };
+/** the shared password and the secret-key client, or a plain error saying
+ *  what vercel is missing */
+export function officeConfig() {
+	const url = publicEnv.PUBLIC_SUPABASE_URL;
+	const key = env.SUPABASE_SECRET_KEY;
+	const password = env.ADMIN_PASSWORD;
+	if (!url || !key || !password)
+		error(503, 'The academic office needs PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY and ADMIN_PASSWORD set in Vercel.');
+	client ??= createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+	return { db: client, password };
 }
 
-/** the session for an action or endpoint, refused unless the role may do it */
-export async function officeAccess(event: RequestEvent, roles?: OfficeRole[]) {
-	const session = await officeSession(event);
-	if (session.state === 'signed-out') error(401, 'Sign in with your staff account to open the academic office.');
-	if (session.state === 'no-access' || (roles && !roles.includes(session.role)))
-		error(403, 'Your account does not have access to this action.');
+/** who is signed in, without throwing, for page loads that show the
+ *  sign-in screen rather than an error */
+export function officeSession(event: RequestEvent): OfficeSession {
+	const { db, password } = officeConfig();
+	const name = signedInName(event.cookies, password);
+	return name ? { state: 'ok', db, name } : { state: 'signed-out' };
+}
+
+/** the session for an action or endpoint, refused when signed out */
+export function officeAccess(event: RequestEvent) {
+	const session = officeSession(event);
+	if (session.state === 'signed-out') error(401, 'Sign in to the academic office first.');
 	return session;
 }
 
-/** the shared draft as the office opens it. a contributor gets the published
- *  catalogue to refer to, never the draft in progress */
-export async function loadWorkspace(db: SupabaseClient, role: OfficeRole, email: string): Promise<WorkspacePayload> {
-	const { data: member } = await db
-		.from('office_staff')
-		.select('department')
-		.eq('email', email.toLowerCase())
-		.maybeSingle();
-	const department = member?.department ?? '';
-	const fresh = async () => ({ document: await publishedOffice(db), revision: 0, status: 'draft' });
-	if (role === 'contributor') return { ...(await fresh()), department, deployment: '', release: '' };
-
+/** the shared draft as the office opens it */
+export async function loadWorkspace(db: SupabaseClient): Promise<WorkspacePayload> {
 	const { data, error: problem } = await db.from('office_workspace').select('*').maybeSingle();
 	databaseError(problem);
-	const draft = data ?? (await fresh());
+	const draft = data ?? { document: await publishedOffice(db), revision: 0, status: 'draft' };
 	return {
 		document: draft.document,
 		revision: draft.revision,
 		status: draft.status,
-		department,
 		deployment: data?.deployment_message ?? '',
 		release: data?.published_release ?? ''
 	};
@@ -92,11 +76,10 @@ export async function officeBody(event: RequestEvent): Promise<Record<string, un
 	}
 }
 
-/** postgres errors the office expects: a stale revision and a role check */
+/** postgres errors the office expects: a stale revision first */
 export function databaseError(problem: { message: string; code?: string } | null) {
 	if (!problem) return;
 	if (problem.code === '40001') error(409, problem.message);
-	if (problem.code === '42501') error(403, 'Your staff role cannot make this change.');
 	error(400, problem.message);
 }
 
@@ -123,34 +106,15 @@ async function publishedOffice(db: SupabaseClient): Promise<OfficeDocument> {
 	);
 }
 
-/** move the saved draft along review: submitted, approved, or back to draft.
- *  nothing with errors goes up for approval */
-export async function transitionDraft(db: SupabaseClient, revision: number, status: string, note: string) {
-	if (!['draft', 'submitted', 'approved'].includes(status)) error(400, 'Unknown review action.');
-	if (status !== 'draft') {
-		const { data, error: problem } = await db.from('office_workspace').select('document').maybeSingle();
-		databaseError(problem);
-		const issues = validateOffice(data?.document).filter((i) => i.severity === 'error');
-		if (issues.length)
-			error(400, `Resolve ${issues.length} errors before submitting or approving. ${issues[0].message}`);
-	}
-	const { error: problem } = await db.rpc('office_transition', {
-		p_revision: revision,
-		p_status: status,
-		p_note: note
-	});
-	databaseError(problem);
-}
-
-/** publish the approved revision as the new release; the database builds
- *  the public snapshot, so office-only notes never leave it */
-export async function publishDraft(db: SupabaseClient, revision: number): Promise<string> {
+/** publish the saved revision as the new release; the database builds the
+ *  public snapshot, so office-only notes never leave it */
+export async function publishDraft(db: SupabaseClient, revision: number, name: string): Promise<string> {
 	const { data, error: problem } = await db.from('office_workspace').select('document,revision').single();
 	databaseError(problem);
 	if (!data || data.revision !== revision) error(409, 'The draft changed. Reload it before publishing.');
 	const issues = validateOffice(data.document).filter((i) => i.severity === 'error');
 	if (issues.length) error(400, `Resolve ${issues.length} errors before publishing.`);
-	const result = await db.rpc('office_publish', { p_revision: revision });
+	const result = await db.rpc('office_publish', { p_revision: revision, p_actor: name });
 	databaseError(result.error);
 	return result.data;
 }
@@ -189,7 +153,7 @@ export async function publishedDocument(db: SupabaseClient): Promise<OfficeDocum
 	return publishedOffice(db);
 }
 
-/** run an office step inside a form action: a refusal (no access, a stale
+/** run an office step inside a form action: a refusal (signed out, a stale
  *  revision, errors in the draft) comes back as the form's message instead
  *  of an error page, so staff stay where they were */
 export async function attempt<T>(step: () => Promise<T>) {

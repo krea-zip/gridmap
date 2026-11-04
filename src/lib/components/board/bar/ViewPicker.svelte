@@ -35,7 +35,7 @@
 	}}
 />
 
-<div class="view-pick" bind:this={root}>
+<div class="view-pick" data-tour="views" bind:this={root}>
 	<Keys>
 		<button
 			bind:this={button}

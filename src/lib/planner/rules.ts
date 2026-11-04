@@ -15,8 +15,6 @@ import {
 	isCore,
 	isTranscriptOnly,
 	MATHS_COVERS,
-	MAX_TOTAL_3YR,
-	MAX_TOTAL_4YR,
 	satisfiedBy,
 	subjectById,
 	TRIM_HARD_MAX,
@@ -248,7 +246,7 @@ export function planHints(plan: Plan): Hint[] {
 	// law 2.7, the chosen structure can't fit under the university's own
 	// ceiling. Not something the student can fix by moving courses around,
 	// so it's said once, up front, rather than as a per-trimester nag.
-	const structureCap = plan.fourYear ? MAX_TOTAL_4YR : MAX_TOTAL_3YR;
+	const structureCap = plan.creditCeiling;
 	if (plan.degreeTotal > structureCap) {
 		hints.push({
 			kind: 'caution',
@@ -320,8 +318,9 @@ export function planHints(plan: Plan): Hint[] {
 	}
 
 	// law 5, degree credit total, and the drop form's hard ceiling on
-	// extra credits (128 for a 3-year tenure, 176 for a 4-year one)
-	const tenureCap = plan.fourYear ? MAX_TOTAL_4YR : MAX_TOTAL_3YR;
+	// extra credits (128 for a 3-year tenure, 132 for a 3-year double major,
+	// 176 for a 4-year one)
+	const tenureCap = plan.creditCeiling;
 	if (plan.totalPlacedCredits > tenureCap) {
 		hints.push({
 			kind: 'warn',

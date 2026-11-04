@@ -10,6 +10,7 @@
 
 <button
 	class="four-year"
+	data-tour="four-year"
 	aria-pressed={plan.fourYear}
 	title={plan.fourYear ? '4-year degree, click for the 3-year track' : '3-year degree, click for the 4-year track'}
 	onclick={() => {

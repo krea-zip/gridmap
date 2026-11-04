@@ -40,12 +40,10 @@
 	class:now
 	class:here={whatIf && order === board.hereAt}
 	class:past={whatIf && order < board.hereAt}
-	class:off={!!off}
 	class:fresh={year === board.freshYear}
 	class:core-slot={coreSlot}
 	class:problem={plan.slotHasProblem(year, trim)}
-	class:lit={(plan.highlight.length > 0 && codes.some((c) => plan.highlight.includes(c))) ||
-		plan.highlightSlots.includes(key)}
+	class:dim={!!board.spotSlots && !board.spotSlots.has(key)}
 	class:drop-target={dragging !== null && board.drag.target === key}
 	class:can-drop={dragging !== null && plan.canDrop(dragging, year, trim)}
 	class:no-fit={dragging !== null && !plan.canDrop(dragging, year, trim)}
@@ -120,35 +118,30 @@
 		background: var(--mix, var(--color-grid-cell));
 		border-radius: 8px;
 		cursor: zoom-in;
-		// every cell carries the same inset dashed rule; the states below only
-		// recolour or firm it up, so nothing shifts
-		outline: 1px dashed color-mix(in srgb, var(--color-board-text) 35%, transparent);
-		outline-offset: -4px;
+		// One quiet boundary; stronger outlines are reserved for state.
+		outline: 1px solid color-mix(in srgb, var(--color-board-text) 15%, transparent);
+		outline-offset: -1px;
 		transition:
 			background 0.25s ease,
 			box-shadow 0.25s ease,
 			opacity 0.25s ease,
 			outline-color 0.25s ease;
-		@include card-shine;
-		box-shadow: var(--shadow-inset); // the inset shine without the outer shadow
 
 		// states are in cascade order, later ones win when two apply: a drag
-		// beats a warning beats "now", and a pointed-at hint beats them all
+		// beats a warning beats "now"
 		&.drop-target {
 			outline: 2px solid var(--color-accent);
 			outline-offset: -3px;
 			box-shadow: inset 0 0 0 5px color-mix(in srgb, var(--color-accent) 10%, transparent);
 		}
 
-		// darkens whatever the cell already is by laying 10% black over it
+		// A small lift in contrast keeps empty drop targets discoverable.
 		&:hover {
-			box-shadow:
-				var(--shadow-inset),
-				inset 0 0 0 100vmax rgba(0, 0, 0, 0.1);
+			box-shadow: inset 0 0 0 100vmax color-mix(in srgb, var(--color-board-text) 4%, transparent);
 		}
 
-		// a straight rule where the others are dashed, in the student's own
-		// colour. an outline can't take a gradient, so the ring is drawn by
+		// The current term uses the student's own colour. An outline can't
+		// take a gradient, so the ring is drawn by
 		// ::after (a double major's two colours run round it); the outline
 		// stays, unseen, for a later state to recolour, and then the ring
 		// steps aside
@@ -171,7 +164,7 @@
 				transition: opacity 0.25s ease;
 			}
 
-			&:is(.drop-target, .problem, .can-drop, .lit)::after {
+			&:is(.drop-target, .problem, .can-drop)::after {
 				opacity: 0;
 			}
 		}
@@ -180,11 +173,12 @@
 		// core chips so the pairing is obvious
 		&.core-slot {
 			background: var(--mix, color-mix(in srgb, var(--color-course-core) 45%, var(--color-grid-cell)));
-			outline-color: var(--color-course-core-deep);
 		}
 
 		// the courses keep their colours; the warning rides on the rule
 		&.problem {
+			outline-style: dashed;
+			outline-offset: -3px;
 			outline-color: var(--color-hint-warn-deep);
 		}
 
@@ -202,14 +196,6 @@
 			filter: saturate(0.4);
 		}
 
-		&.off {
-			background-image: repeating-linear-gradient(
-				135deg,
-				transparent 0 8px,
-				color-mix(in srgb, var(--color-text-muted) 7%, transparent) 8px 9px
-			);
-		}
-
 		// what-if: the past steps back and "you are here" is ringed
 		&.past {
 			opacity: 0.55;
@@ -220,10 +206,9 @@
 			outline-offset: -3px;
 		}
 
-		// holds a pointed-at hint's courses
-		&.lit {
-			outline: 2px solid color-mix(in srgb, var(--color-accent) 60%, transparent);
-			outline-offset: -3px;
+		// a pointed-at hint is about other trimesters
+		&.dim {
+			opacity: 0.4;
 		}
 
 		&.fresh {

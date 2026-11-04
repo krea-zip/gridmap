@@ -1,4 +1,4 @@
-import { COURSES, byCode, facultySearchText } from '$lib/curriculum/data';
+import { CAPSTONES, COURSES, byCode, facultySearchText } from '$lib/curriculum/data';
 import type { Course, CourseType, TrimNum } from '$lib/types';
 
 const ranks: Record<CourseType, number> = { core: 0, required: 1, elective: 2, other: 3 };
@@ -35,7 +35,10 @@ export function selectCatalogue({
 }: CatalogueOptions): Course[] {
 	const checked = subject ? [subject] : filters.filter((id) => id === 'core' || selectedSubjects.includes(id));
 	const query = search.trim().toLowerCase();
-	const list = COURSES.filter((course) => {
+	// a capstone lists only where one of your programmes takes it, it's no
+	// catalogue course anyone else could pick up
+	const capstones = CAPSTONES.filter((course) => courseType(course.code) !== 'other');
+	const list = [...COURSES, ...capstones].filter((course) => {
 		if (trim && !course.offered.includes(trim)) return false;
 		if (!checked.includes('core') && course.subject === 'core') return false;
 		if (checked.length && !course.subjects.some((id) => checked.includes(id))) return false;

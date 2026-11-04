@@ -9,22 +9,29 @@
 	import { reducedMotion } from '$lib/ui/transitions';
 	import type { Hint } from '$lib/types';
 	import { byCode, hasCode } from '$lib/curriculum/data';
-	import ReferencePath from '$lib/components/board/ReferencePath.svelte';
 
 	const plan = usePlan();
 
-	let showPath = $state(false);
 	// one hint open at a time, opening another folds the last
 	let openKey = $state<string | null>(null);
+	let notesOpen = $state(false);
 	// the open hint's courses stay lit on the grid; pointing at another hint
 	// previews its courses, then the grid goes back to the open one's
-	// A heading only unfolds. A hint's own line, clicked, lights its courses
-	// on the grid and brings them into view; pointing at a line previews them.
+	// A heading unfolds and highlights all affected courses and trimesters.
 	let pinned = $state<string | null>(null); // the line whose courses stay lit
 	let pinnedLit: Pick<Hint, 'codes' | 'slots'> = { codes: [] };
-	function toggle(key: string) {
-		openKey = openKey === key ? null : key;
+	function toggle(group: Group) {
+		openKey = openKey === group.key ? null : group.key;
 		unpin();
+		if (openKey) {
+			pinned = group.key;
+			pinnedLit = {
+				codes: [...new Set(group.hints.flatMap((hint) => hint.codes))],
+				slots: [...new Set(group.hints.flatMap((hint) => hint.slots ?? []))]
+			};
+			light(pinnedLit);
+			focusHint(pinnedLit);
+		}
 	}
 	function unpin() {
 		pinned = null;
@@ -36,13 +43,24 @@
 		pinned = lineKey;
 		pinnedLit = hint;
 		light(hint);
-		const first = hint.codes.find(hasCode);
-		if (first) focusOnGrid(first);
+		focusHint(hint);
+	}
+	function focusHint(hint: Pick<Hint, 'codes' | 'slots'>) {
+		const first = hint.codes.find((code) => hasCode(code) && plan.placedCodes.has(byCode(code).code));
+		if (first) return focusOnGrid(first);
+		const slot = hint.slots?.[0];
+		if (!slot) return;
+		const [year, trim] = slot.split('-');
+		tick().then(() =>
+			document
+				.querySelector(`.overview .cell[data-year="${year}"][data-trim="${trim}"]`)
+				?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' })
+		);
 	}
 	// a hint lights its courses on the grid, or, when it's about trimesters
 	// rather than courses (too few credits), those trimesters
 	function light({ codes, slots = [] }: Pick<Hint, 'codes' | 'slots'>) {
-		plan.highlight = codes.filter(hasCode);
+		plan.highlight = codes.filter(hasCode).map((code) => byCode(code).code);
 		plan.highlightSlots = slots;
 	}
 	// the lit courses hold until a click anywhere else: the grid, the
@@ -178,6 +196,9 @@
 			const hit = groups.findIndex((g) => g.hints.some((h) => names(h, code)));
 			if (hit < 0) return;
 			openKey = groups[hit].key;
+			if (groups[hit].kind === 'info') notesOpen = true;
+			else if (groups[hit].kind === 'warn' || groups[hit].kind === 'caution')
+				showKind[groups[hit].kind as IssueKind] = true;
 			tick().then(() =>
 				document.getElementById(`hint-detail-${hit}`)?.parentElement?.scrollIntoView({
 					block: 'nearest',
@@ -192,13 +213,8 @@
 
 {#snippet hintGroup(group: Group, gi: number)}
 	{@const open = openKey === group.key}
-	<div class="chip" class:open role="group">
-		<button
-			class="hint-heading"
-			aria-expanded={open}
-			aria-controls={`hint-detail-${gi}`}
-			onclick={() => toggle(group.key)}
-		>
+	<div class="chip" class:open data-kind={group.kind} role="group">
+		<button class="hint-heading" aria-expanded={open} aria-controls={`hint-detail-${gi}`} onclick={() => toggle(group)}>
 			<span class="hint-main">
 				<span class="hint-title">
 					<i class="tone-dot" data-kind={group.kind} aria-hidden="true"></i>{group.title}
@@ -259,7 +275,7 @@
 							{:else}
 								<!-- a click here folds the group back up, rather than starting
 							     a text selection on a line that does nothing -->
-								<button class="chip-text" onclick={() => toggle(group.key)}>{hint.text}</button>
+								<button class="chip-text" onclick={() => toggle(group)}>{hint.text}</button>
 							{/if}
 							<!-- courses not on the plan yet: each one opens in the catalogue -->
 							{#if hint.toPlace?.length}
@@ -317,16 +333,6 @@
 		{/if}
 	</h3>
 
-	<!-- The reference plan opens from here: this panel is where a student comes
-	     when something is wrong with their plan, and "what does the department
-	     suggest instead" is the next question. It opens as a window, not a
-	     board mode, see ReferencePath. -->
-	<div class="ref">
-		<button class="ref-btn" onclick={() => (showPath = true)}>
-			<span>suggested path <span aria-hidden="true">→</span></span>
-		</button>
-	</div>
-
 	{#if issueGroups.length}
 		<div class="chips">
 			{#each issueGroups as group, gi (group.key)}
@@ -338,10 +344,29 @@
 	{/if}
 
 	{#if noteGroups.length}
-		<div class="chips notes">
-			{#each noteGroups as group, gi (group.key)}
-				{@render hintGroup(group, issueGroups.length + gi)}
-			{/each}
+		<div class="notes">
+			<button
+				class="notes-toggle"
+				aria-expanded={notesOpen}
+				aria-controls="hint-advisories"
+				onclick={() => {
+					notesOpen = !notesOpen;
+					if (!notesOpen && noteGroups.some((g) => g.key === openKey)) {
+						openKey = null;
+						unpin();
+					}
+				}}
+			>
+				<span>advisories <span class="note-count">{notes.length}</span></span>
+				<span aria-hidden="true">{notesOpen ? '−' : '+'}</span>
+			</button>
+			{#if notesOpen}
+				<div class="chips" id="hint-advisories" transition:slide={{ duration: reducedMotion() ? 0 : 210 }}>
+					{#each noteGroups as group, gi (group.key)}
+						{@render hintGroup(group, issueGroups.length + gi)}
+					{/each}
+				</div>
+			{/if}
 		</div>
 	{/if}
 
@@ -359,10 +384,6 @@
 		</div>
 	{/if}
 </div>
-
-{#if showPath}
-	<ReferencePath onclose={() => (showPath = false)} />
-{/if}
 
 <style lang="scss">
 	@use '$lib/styles/mixins' as *;
@@ -438,11 +459,15 @@
 		border: 0;
 		border-radius: 0;
 		cursor: pointer;
-		transition: background-color 0.15s ease;
+	}
 
-		&:hover {
-			background: color-mix(in srgb, var(--color-text) 7%, transparent);
-		}
+	.chip[data-kind='warn'] .hint-heading {
+		font-weight: 650;
+		box-shadow: inset 3px 0 color-mix(in srgb, var(--color-hint-warn-deep) 70%, transparent);
+	}
+
+	.chip.open > .hint-heading {
+		background: color-mix(in srgb, var(--color-accent) 7%, transparent);
 	}
 
 	.hint-main {
@@ -550,8 +575,12 @@
 			gap: 0.6rem;
 		}
 
+		// each hint in a group on its own dotted rule, so two sentences about
+		// different courses don't run together
 		> li + li {
-			padding-top: 0.4rem;
+			margin-top: 0.3rem;
+			padding-top: 0.8rem;
+			border-top: 1px dotted var(--color-border);
 		}
 
 		// the hint about the course open on the right
@@ -598,6 +627,12 @@
 		text-align: left;
 		color: var(--color-text);
 		user-select: none; // quick clicks were selecting the text instead
+		transition: background-color 0.15s ease;
+
+		// the whole row darkens, its unfolded lines with the heading
+		&:hover {
+			background: color-mix(in srgb, var(--color-text) 7%, transparent);
+		}
 
 		// the text fills the row beside the cross-off ×
 		// (a button can't nest inside a button)
@@ -688,49 +723,42 @@
 	// the notes under the issues: facts, not problems, quieter, so they
 	// never read as a second wall of warnings
 	// the notes under the issues, set off by a dotted rule that runs edge to edge
-	.chips.notes {
+	.notes {
 		padding-top: 0;
-		border-top: 1px dotted var(--color-border);
+		border-top: 1px solid var(--color-border-divider);
 
 		.chip {
 			color: var(--color-text-muted);
 		}
 	}
 
+	.notes-toggle {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+		padding: 1.2rem 1.6rem;
+		font: inherit;
+		font-size: 1.2rem;
+		color: var(--color-text-muted);
+		text-align: left;
+		background: none;
+		border: 0;
+		cursor: pointer;
+		&:hover {
+			color: var(--color-text);
+		}
+	}
+
+	.note-count {
+		margin-left: 0.4rem;
+		font-variant-numeric: tabular-nums;
+	}
+
 	.all-clear {
 		padding: 1.2rem 1.6rem 1.4rem;
 		font-size: var(--text-body);
 		color: var(--color-text-muted);
-	}
-
-	.ref {
-		margin: 1rem 1.6rem 0;
-	}
-
-	.ref-btn {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 0.6rem;
-		width: 100%;
-		padding: 0.7rem 1rem;
-		font: inherit;
-		font-size: var(--text-body);
-		white-space: normal;
-		text-align: left;
-		color: var(--color-text);
-		background-color: var(--color-bg-light);
-		border: 1px solid var(--color-border-card);
-		border-radius: 6px;
-		cursor: pointer;
-		@include glossy;
-
-		> span {
-			flex: 1 1 12rem;
-			min-width: 0;
-			overflow-wrap: anywhere;
-		}
 	}
 
 	// crossed-off rules live below the live hints, quiet and struck through,

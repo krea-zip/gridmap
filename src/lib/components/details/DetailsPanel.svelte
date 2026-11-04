@@ -1,11 +1,11 @@
 <script lang="ts">
-	import UpdateLog from './UpdateLog.svelte';
 	import { usePlan } from '$lib/planner/context';
 	import CourseFaculty from './CourseFaculty.svelte';
 	import {
 		baseCode,
 		byCode,
 		canAudit,
+		capstoneAbout,
 		facultyOf,
 		hasCode,
 		isAttemptId,
@@ -13,7 +13,8 @@
 		RECORDED_TERMS,
 		ranIn,
 		satisfiedBy,
-		termsOffered
+		termsOffered,
+		TRIM_NORMAL_MAX
 	} from '$lib/curriculum/data';
 	import { runText } from '$lib/planner/boardViews';
 	import { reducedMotion } from '$lib/ui/transitions';
@@ -26,6 +27,15 @@
 	import { GRADE_SCALE, OTHER_MARKS, type GradeMark } from '$lib/planner/grades';
 
 	const plan = usePlan();
+	let {
+		canPin = false,
+		pinned = false,
+		onTogglePin
+	}: {
+		canPin?: boolean;
+		pinned?: boolean;
+		onTogglePin?: () => void;
+	} = $props();
 
 	// only jump to codes that exist in the catalogue; others stay plain text
 	function jump(code: string) {
@@ -136,7 +146,8 @@
 	// ── a prerequisite against the plan: placed earlier (fine), placed too
 	//    late, or nowhere yet, an interchangeable course counts as placed ──
 	// Said in the grid's own trimester numbers (t8 is year 3, T2), short:
-	// "✓ t5 · done", "✓ t8", "t11 · too late", "not planned"; the full
+	// "✓ t5" when taken (the tick alone says done), "t8" or "t8 · now" when
+	// planned, "t11 · too late", "not planned"; the full
 	// sentence waits in the tooltip. A missing one also says where it would
 	// fit, as a button that puts it there.
 	type PrereqStatus = {
@@ -149,7 +160,7 @@
 	const spelled = (year: number, trim: TrimNum) =>
 		`${plan.trimSpelled(year, trim)}, ${academicYear(plan.batchStartYear, year)}`;
 	// the first trimester after now, and before this course when it's placed,
-	// that the prerequisite runs in and has room in under your target load
+	// that the prerequisite runs in and has room in under the recommended load
 	function fitsFor(pre: string): { year: number; trim: TrimNum } | null {
 		const code = byCode(pre).code;
 		const before = placedAt ? slotOrder(placedAt.year, placedAt.trim) : Infinity;
@@ -157,7 +168,7 @@
 			for (const trim of plan.trims) {
 				const o = slotOrder(year, trim);
 				if (o <= hereAt || o >= before || !plan.canDrop(code, year, trim)) continue;
-				if (!plan.coreOnly(year, trim) && plan.slotCredits(year, trim) + byCode(code).credits > plan.targetLoad)
+				if (!plan.coreOnly(year, trim) && plan.slotCredits(year, trim) + byCode(code).credits > TRIM_NORMAL_MAX)
 					continue;
 				return { year, trim };
 			}
@@ -188,16 +199,16 @@
 				text: `${n} · too late`,
 				title: `planned for ${spelled(at.year, at.trim)}${via}, not before this course: move it earlier`
 			};
-		if (o < hereAt)
-			return { kind: 'done', text: `✓ ${n} · done`, title: `taken in ${spelled(at.year, at.trim)}${via}` };
+		if (o < hereAt) return { kind: 'done', text: `✓ ${n}`, title: `taken in ${spelled(at.year, at.trim)}${via}` };
 		if (o === hereAt)
-			return { kind: 'ok', text: `✓ ${n} · now`, title: `being taken now, ${spelled(at.year, at.trim)}${via}` };
-		return { kind: 'ok', text: `✓ ${n}`, title: `planned for ${spelled(at.year, at.trim)}${via}` };
+			return { kind: 'ok', text: `${n} · now`, title: `being taken now, ${spelled(at.year, at.trim)}${via}` };
+		return { kind: 'ok', text: n, title: `planned for ${spelled(at.year, at.trim)}${via}` };
 	}
 
 	// shut on Esc, unless a dialog is open, which Esc closes first
 	function onkey(e: KeyboardEvent) {
-		if (e.key === 'Escape' && plan.selected && !document.querySelector('.backdrop')) plan.selected = null;
+		if (e.key === 'Escape' && !e.defaultPrevented && plan.selected && !document.querySelector('.backdrop'))
+			plan.selected = null;
 	}
 </script>
 
@@ -206,15 +217,26 @@
 <header class="col-header">
 	<h2>course</h2>
 	{#if plan.selected}
-		<button class="close" aria-label="close course details" title="close (Esc)" onclick={() => (plan.selected = null)}
-			>×</button
-		>
+		<div class="header-actions">
+			{#if canPin}
+				<button
+					class="pin"
+					aria-label={pinned ? 'unpin course details' : 'pin course details'}
+					aria-pressed={pinned}
+					title={pinned ? 'use a slide-out drawer' : 'keep details beside your plan'}
+					onclick={onTogglePin}>{pinned ? 'unpin' : 'pin'}</button
+				>
+			{/if}
+			<button class="close" aria-label="close course details" title="close (Esc)" onclick={() => (plan.selected = null)}
+				>×</button
+			>
+		</div>
 	{/if}
 </header>
 {#if plan.selected}
 	{@const c = plan.selected}
 	{@const ran = termsOffered(c.code)}
-	{@const desc = descriptionOf(c.code)}
+	{@const desc = descriptionOf(c.code) ?? capstoneAbout(c.code)}
 	<div class="details">
 		<div class="d-head">
 			{#if plan.showCodes}<span class="d-code">{c.code}</span>{/if}
@@ -544,8 +566,6 @@
 			</section>
 		{/if}
 	</div>
-{:else}
-	<UpdateLog />
 {/if}
 
 <style lang="scss">
@@ -560,6 +580,23 @@
 			font-size: 1.8rem;
 			font-weight: 600;
 			color: var(--color-text);
+		}
+	}
+
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+	}
+
+	.pin {
+		padding: 0.4rem 1rem;
+		font: inherit;
+		font-size: 1.2rem;
+		@include store-button;
+		&[aria-pressed='true'] {
+			color: var(--color-accent);
+			border-color: var(--color-accent);
 		}
 	}
 
@@ -1125,8 +1162,8 @@
 			color: var(--color-text-muted);
 		}
 
-		// darkened toward the text so the small green reads at full strength
-		&[data-status='ok'] .d-chip-status,
+		// taken: a tick in green, darkened toward the text so the small green
+		// reads at full strength; planned stays in the plain muted ink
 		&[data-status='done'] .d-chip-status {
 			font-weight: 600;
 			color: color-mix(in srgb, var(--color-hint-good-deep) 75%, var(--color-text));

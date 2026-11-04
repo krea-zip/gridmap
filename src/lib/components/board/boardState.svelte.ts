@@ -31,6 +31,22 @@ export class BoardState {
 			? prereqChain(plan, chainRoot)
 			: null;
 	});
+	// a pointed-at hint or colour-key row: what it names stays and the rest of
+	// the grid steps back. only once something it names is on the board, or
+	// pointing at a course that isn't would grey out everything for nothing.
+	// trimesters stand in when the hint is about them rather than courses
+	spotCodes = $derived.by(() => {
+		const { highlight, placedCodes } = this.plan;
+		if (highlight.some((c) => placedCodes.has(c))) return new Set(highlight);
+		// Hints and legend previews take priority. Otherwise the open course
+		// stays bright, including when it was opened from the catalogue.
+		if (highlight.length || this.plan.highlightSlots.length || this.plan.view === 'prereqs') return null;
+		const selected = this.plan.selectedId ?? this.plan.selected?.code;
+		return selected && this.plan.onBoard(selected) ? new Set([selected]) : null;
+	});
+	spotSlots = $derived.by(() =>
+		!this.spotCodes && this.plan.highlightSlots.length ? new Set(this.plan.highlightSlots) : null
+	);
 	verdict = $derived.by(() => (this.plan.view === 'whatif' && this.plan.whatIf ? whatIfVerdict(this.plan) : null));
 	// a break, a suspension or a retake can push graduation past the degree's
 	// own last year

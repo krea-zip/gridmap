@@ -8,7 +8,13 @@
 // ─────────────────────────────────────────────
 
 import type { Course, ProgrammeRole, Subject, TrimNum } from '$lib/types';
-import type { CurriculumSnapshot, ProgrammeRequirements, RequirementSet as SnapshotSet, Variant } from './snapshot';
+import type {
+	Capstone,
+	CurriculumSnapshot,
+	ProgrammeRequirements,
+	RequirementSet as SnapshotSet,
+	Variant
+} from './snapshot';
 import coursesData from '$lib/data/courses.json';
 import departmentData from '$lib/data/department.json';
 import manualOfferings from '$lib/data/manual-offerings.json';
@@ -136,6 +142,7 @@ const RULES = {
 	MIN_TOTAL_3YR: 120,
 	MIN_TOTAL_4YR: 160,
 	MAX_TOTAL_3YR: 128,
+	MAX_TOTAL_3YR_DOUBLE: 132, // a double major in three years may stretch to this
 	MAX_TOTAL_4YR: 176
 };
 export const TRIM_MIN = RULES.TRIM_MIN; // minimum credits per trimester (full-time status)
@@ -647,6 +654,8 @@ type StatedProgramme = {
 	electives?: string[] | 'subject';
 	/** year → trimester → codes, required courses only */
 	pathway?: Record<string, Record<string, string[]>>;
+	/** a capstone project the document states, which has no course code */
+	capstone?: Capstone;
 };
 type StatedSubject = { subject: string; source: string; notes?: string[]; programmes: Record<string, StatedProgramme> };
 type RequirementSet = {
@@ -1163,6 +1172,13 @@ const VARIANTS: [Variant, ProgrammeRole, boolean, boolean][] = [
 	['concentration_3yr', 'concentration', false, false]
 ];
 
+/** the capstone a programme's document states, as a field to spread, so
+ *  programmes without one don't carry an empty key */
+function capstoneOf(subject: string, variant: Variant, batch: number) {
+	const capstone = rulesFor(batch).stated[subject]?.programmes[variant]?.capstone;
+	return capstone ? { capstone: { credits: capstone.credits, required: capstone.required } } : {};
+}
+
 /** Every programme variant, resolved under the rules `batch` follows. */
 function programmesFor(batch: number): ProgrammeRequirements[] {
 	const out: ProgrammeRequirements[] = [];
@@ -1183,7 +1199,8 @@ function programmesFor(batch: number): ProgrammeRequirements[] {
 				picks: defaultPickSetFor(subject, role, fourYear, isDouble, batch),
 				electives: defaultElectiveSetFor(subject, role, fourYear, isDouble, batch),
 				choices: defaultChoiceGroupsFor(subject, role, fourYear, isDouble, batch),
-				pathway: recommendedFor(subject, role, fourYear, isDouble, batch)
+				pathway: recommendedFor(subject, role, fourYear, isDouble, batch),
+				...capstoneOf(subject, variant, batch)
 			});
 		}
 	}

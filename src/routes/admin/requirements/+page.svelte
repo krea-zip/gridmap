@@ -98,7 +98,7 @@
 	{#if !programme}
 		<section class="office-card">
 			<p>This department has no {VARIANTS.find((v) => v.id === variant)?.label} programme in these requirements.</p>
-			{#if office.canEdit}<button class="primary" onclick={create}>Create it</button>{/if}
+			<button class="primary" onclick={create}>Create it</button>
 		</section>
 	{:else}
 		{#each [...warnings, ...issues.map((i) => i.message)] as w (w)}<p class="office-note error">{w}</p>{/each}
@@ -108,13 +108,7 @@
 			<div class="office-form">
 				<label
 					>Total <span class="office-help">to complete the programme</span>
-					<input
-						type="number"
-						min="0"
-						step="0.5"
-						bind:value={programme.credits.total}
-						disabled={!office.canEdit}
-					/></label
+					<input type="number" min="0" step="0.5" bind:value={programme.credits.total} /></label
 				>
 				<label
 					>Required <span class="office-help">blank if the department doesn’t say</span>
@@ -123,7 +117,6 @@
 						min="0"
 						step="0.5"
 						value={programme.credits.required ?? ''}
-						disabled={!office.canEdit}
 						onchange={(e) => (programme.credits.required = optional(e.currentTarget.value))}
 					/></label
 				>
@@ -134,7 +127,6 @@
 						min="0"
 						step="0.5"
 						value={programme.credits.elective ?? ''}
-						disabled={!office.canEdit}
 						onchange={(e) => (programme.credits.elective = optional(e.currentTarget.value))}
 					/></label
 				>

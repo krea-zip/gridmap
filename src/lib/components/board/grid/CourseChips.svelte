@@ -44,14 +44,14 @@
 	{@const grade = plan.gradeOf(code)}
 	<div
 		class="chip"
-		class:faded={!!board.chain && !board.chain.nodes.has(code)}
+		class:faded={(!!board.chain && !board.chain.nodes.has(code)) || (!!board.spotCodes && !board.spotCodes.has(code))}
 		class:chain-root={board.chain?.root === code}
+		class:selected={(plan.selectedId ?? plan.selected?.code) === code}
 		class:is-audit={plan.isAudit(code)}
 		class:is-attempt={attempt}
 		class:retake={!attempt && plan.attemptsOf(code).length > 0}
 		class:titled={plan.showTitles}
 		class:dragging={plan.dragging === code}
-		class:lit={plan.highlight.includes(code)}
 		data-code={code}
 		data-type={type}
 		style:order={board.drag.order(key, codes, code, i)}
@@ -178,20 +178,14 @@
 			}
 		}
 
-		// a course a pointed-at hint is about
-		&.lit {
-			transform: translateY(-1px);
-			box-shadow:
-				0 0 0 2px color-mix(in srgb, var(--color-accent) 80%, transparent),
-				var(--shadow-card);
-		}
-
-		// prerequisites: the chain stands out, everything else steps back
+		// the prerequisite chain, or what a pointed-at hint or colour names,
+		// stands out by everything else stepping back
 		&.faded {
 			opacity: 0.3;
 		}
 
-		&.chain-root {
+		&.chain-root,
+		&.selected {
 			box-shadow:
 				0 0 0 2px var(--color-accent),
 				var(--shadow-card);

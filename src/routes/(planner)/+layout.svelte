@@ -1,12 +1,11 @@
 <script lang="ts">
 	// The planner's shell: one plan, shared through context, and one CSS grid
-	// of four named areas, sidebar | catalogue | board | details. The side
-	// columns are only as wide as they need to be and the board takes the rest,
-	// until a column edge is dragged. The page fills the board.
+	// of sidebar | catalogue | board, with an optional pinned course panel.
+	// The grid stays readable on wide screens; the side columns can be resized.
 	//
-	// Narrower windows keep the columns but slide the details (tablets), then
-	// the sidebar too (an iPad held upright), in over the board; phones show one
-	// panel at a time behind tabs.
+	// The course details slide in over the board when a course is picked. An
+	// iPad held upright slides the sidebar in too; phones show one panel at a
+	// time behind tabs.
 	import type { Snippet } from 'svelte';
 	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
@@ -47,6 +46,41 @@
 	let widths = $state<PanelWidths>({});
 	let resizing = $state<Panel | null>(null);
 	let detailsEl = $state<HTMLElement>();
+	let appEl = $state<HTMLDivElement>();
+	let detailsPinned = $state(false);
+	let roomForDetails = $state(false);
+	let canPinDetails = $derived(viewport.desktop && !viewport.railSlide && roomForDetails);
+	let detailsDocked = $derived(canPinDetails && detailsPinned && !!plan.selected);
+
+	function toggleDetailsPin() {
+		detailsPinned = !detailsPinned;
+		try {
+			localStorage.setItem('kcal-details-pinned', String(detailsPinned));
+		} catch {
+			// The preference still works for this visit.
+		}
+	}
+
+	onMount(() => {
+		try {
+			detailsPinned = localStorage.getItem('kcal-details-pinned') === 'true';
+		} catch {
+			// Storage is optional.
+		}
+		const rail = appEl!.querySelector<HTMLElement>('[data-panel="rail"]')!;
+		const catalogue = appEl!.querySelector<HTMLElement>('[data-panel="catalogue"]')!;
+		const measure = () => {
+			const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+			// Leave at least 90rem for the board beside the 36rem details.
+			// Measure the side panels too, so resizing them or enlarging text
+			// falls back to the drawer before the grid becomes cramped.
+			roomForDetails = appEl!.clientWidth - rail.offsetWidth - catalogue.offsetWidth >= 126 * rem;
+		};
+		const observer = new ResizeObserver(measure);
+		for (const el of [appEl!, rail, catalogue]) observer.observe(el);
+		measure();
+		return () => observer.disconnect();
+	});
 
 	// the "now" ring's colours, a subject on the plan in its colour there
 	let now = $derived(nowHues(plan.programmes, (s) => plan.hueFor(s) ?? subjectById(s).hue));
@@ -57,14 +91,14 @@
 	});
 
 	// a panel slid in over the others holds the focus until it's closed
-	let overlayDetails = $derived((!viewport.desktop || viewport.detailsSlide) && !!plan.selected);
+	let overlayDetails = $derived(!!plan.selected && !detailsDocked);
 	let overlayRail = $derived(viewport.railSlide && plan.railOpen);
 
 	// opening a course's details puts the sidebar away, and starts them at the top
 	$effect(() => {
 		if (!plan.selected) return;
 		plan.railOpen = false;
-		if (overlayDetails) detailsEl?.scrollTo({ top: 0 });
+		detailsEl?.scrollTo({ top: 0 });
 	});
 	// the sidebar only slides in where it's folded to its strip
 	$effect(() => {
@@ -92,38 +126,60 @@
 		plan.railOpen = false;
 	}
 
-	// what each column may be interacted with: everything on a laptop, the
-	// tab in view on a phone, and nothing beneath a slid-in panel
+	// on a laptop the slid-in course panel goes away at a click anywhere else,
+	// unless that click picked another course: then it just switches to it.
+	// a drag never clicks, so dragging a course leaves the panel be
+	let pressedOutside = false;
+	let pickedAtPress: typeof plan.selected = null;
+	function notePress(e: PointerEvent) {
+		pressedOutside = viewport.desktop && overlayDetails && !detailsEl?.contains(e.target as Node);
+		pickedAtPress = plan.selected;
+	}
+	function closeIfNothingPicked(e: MouseEvent) {
+		const courseClick = (e.target as Element | null)?.closest('.placed-open, button.card, .chip .open');
+		if (pressedOutside && plan.selected === pickedAtPress && !courseClick) plan.selected = null;
+		pressedOutside = false;
+	}
+	// and Esc slides it away, unless a menu or dialog took the key first
+	function onWindowKeys(e: KeyboardEvent) {
+		onKeys(e);
+		if (e.key === 'Escape' && !e.defaultPrevented && overlayDetails) plan.selected = null;
+	}
+
+	// what each column may be interacted with: everything on a laptop (the
+	// course panel doesn't cover the board, a click beside it swaps or closes
+	// it), only beside the slid-in sidebar, and on a phone the tab in view
 	const covered = (tab: typeof mobileView) =>
-		viewport.desktop ? overlayDetails || (tab !== 'rail' && overlayRail) : mobileView !== tab || overlayDetails;
+		viewport.desktop ? tab !== 'rail' && overlayRail : mobileView !== tab || overlayDetails;
 </script>
 
 <svelte:head>
 	<title>kcal</title>
 </svelte:head>
 
-<svelte:window onkeydown={onKeys} />
+<svelte:window onkeydown={onWindowKeys} onpointerdowncapture={notePress} onclick={closeIfNothingPicked} />
 
 {#if ready}
 	<SharedPlanPrompt encoded={incoming?.sharedPlan ?? null} />
 	<!-- a shared plan or a linked course opens straight over the planner instead -->
-	<Onboarding skip={!!(incoming?.course || incoming?.sharedPlan)} />
+	<Onboarding skip={!!(incoming?.course || incoming?.sharedPlan)} replay={incoming?.welcome} />
 {/if}
 
 <div
 	class="app"
+	bind:this={appEl}
 	data-ready={ready}
 	data-layout={viewport.desktop ? 'desktop' : 'phone'}
 	data-mobile-view={mobileView}
 	inert={!ready}
 	class:resizing
 	class:details-open={!!plan.selected}
+	class:details-docked={detailsDocked}
 	class:rail-open={plan.railOpen}
 	use:dragMotion
 	use:touchDrag
 	style:--rail-w={widths.rail && `${widths.rail}rem`}
 	style:--catalogue-w={widths.catalogue && `${widths.catalogue}rem`}
-	style:--details-w={widths.details && `${widths.details}rem`}
 	style:--now-a={now?.[0]}
 	style:--now-b={now?.[1]}
 >
@@ -139,8 +195,9 @@
 		</button>
 	</div>
 
-	<!-- a tap beside a slid-in panel puts it away -->
-	{#if viewport.desktop && (overlayDetails || overlayRail)}
+	<!-- a tap beside the slid-in sidebar puts it away (the course panel
+	     closes on its own, see closeIfNothingPicked) -->
+	{#if viewport.desktop && overlayRail}
 		<button class="scrim" tabindex="-1" aria-label="close" onclick={closeOverlays} transition:fade={{ duration: 160 }}
 		></button>
 	{/if}
@@ -150,7 +207,7 @@
 		class="rail"
 		data-panel="rail"
 		use:focusScope={overlayRail}
-		inert={viewport.desktop ? overlayDetails || (viewport.railSlide && !plan.railOpen) : covered('rail')}
+		inert={viewport.desktop ? viewport.railSlide && !plan.railOpen : covered('rail')}
 	>
 		<Sidebar />
 		<DegreeProgress />
@@ -166,7 +223,7 @@
 		{@render children()}
 	</main>
 
-	<!-- a fixed column, so picking a course never shoves a panel over the board -->
+	<!-- slides in over the board for a picked course, and away at a click outside -->
 	<aside
 		class="details"
 		data-panel="details"
@@ -174,9 +231,9 @@
 		aria-label="course details"
 		bind:this={detailsEl}
 		use:focusScope={overlayDetails}
-		inert={(!viewport.desktop || viewport.detailsSlide) && !plan.selected}
+		inert={!plan.selected}
 	>
-		<DetailsPanel />
+		<DetailsPanel canPin={canPinDetails} pinned={detailsDocked} onTogglePin={toggleDetailsPin} />
 	</aside>
 </div>
 
@@ -186,6 +243,10 @@
      unsaved draft, so say so where it can't be missed -->
 {#if PREVIEWING}
 	<p class="previewing" role="status">Office preview · this tab shows the unsaved draft, not what students see</p>
+{/if}
+
+{#if plan.rehearsing}
+	<p class="previewing" role="status">Welcome replay · nothing here is saved, reload to get your plan back</p>
 {/if}
 
 {#if plan.feedbackDraft !== null}
@@ -203,16 +264,12 @@
 	}
 
 	// The app is locked to the viewport and each column scrolls on its own, so
-	// nothing ever runs past the page. The sidebar and catalogue are as narrow
-	// as their widest fixed line (see .rail and Catalogue's .filters), measured
-	// in whatever font the device has; the details follow the window within
-	// readable limits; the board gets everything else. A dragged edge pins
-	// that column to a width.
+	// nothing ever runs past the page. Side panels follow the text size;
+	// a dragged edge overrides their default widths.
 	.app {
 		--rail-w: minmax(max-content, 28rem); // a touch wider than the catalogue
-		--catalogue-w: max-content;
-		--details-w: clamp(24rem, 15vw, 38rem);
-		--board-w: minmax(48rem, 1fr);
+		--catalogue-w: 32rem;
+		--board-w: minmax(0, 1fr);
 		--rail-strip-w: 5.2rem;
 		// the "now" trimester's ring, tag and number (see TrimesterCell),
 		// in the student's own colour. worked out here, where the hues are
@@ -221,8 +278,8 @@
 		--color-now-end: oklch(var(--now-l) var(--now-c) var(--now-b, var(--now-a, var(--accent-hue))));
 		position: relative;
 		display: grid;
-		grid-template-areas: 'rail catalogue board details';
-		grid-template-columns: var(--rail-w) var(--catalogue-w) var(--board-w) var(--details-w);
+		grid-template-areas: 'rail catalogue board';
+		grid-template-columns: var(--rail-w) var(--catalogue-w) var(--board-w);
 		height: 100dvh;
 		background: var(--color-bg);
 
@@ -268,8 +325,8 @@
 	// screen what's in them stops at --board-max and centres: past that,
 	// trimesters only get emptier, not easier to read
 	.board {
-		--board-max: 150rem;
-		--board-gutter: max(3.2rem, (100cqi - var(--board-max)) / 2);
+		--board-max: 116rem;
+		--board-gutter: max(2.4rem, (100cqi - var(--board-max)) / 2);
 		container: plan / inline-size;
 		grid-area: board;
 		display: flex;
@@ -279,7 +336,6 @@
 	}
 
 	.details {
-		grid-area: details;
 		display: flex;
 		flex-direction: column;
 		overflow-y: auto;
@@ -366,14 +422,9 @@
 		transition: transform 0.34s var(--ease-out);
 	}
 
-	// Tablets: the columns, less the details, which slide in from the right
-	// over the board when a course is picked, and back out after
+	// the details slide in from the right over the board when a course is
+	// picked, and back out after
 	@include details-overlay {
-		.app {
-			grid-template-areas: 'rail catalogue board';
-			grid-template-columns: var(--rail-w) var(--catalogue-w) var(--board-w);
-		}
-
 		.details {
 			@include slide-in(right);
 			width: min(36rem, 90vw);
@@ -384,6 +435,22 @@
 
 		.details-open .details {
 			@include slid-in;
+		}
+
+		.app.details-docked {
+			grid-template-areas: 'rail catalogue board details';
+			grid-template-columns: var(--rail-w) var(--catalogue-w) var(--board-w) 36rem;
+
+			.details {
+				grid-area: details;
+				position: relative;
+				inset: auto;
+				z-index: 3;
+				width: auto;
+				box-shadow: none;
+				transform: none;
+				transition: none;
+			}
 		}
 	}
 

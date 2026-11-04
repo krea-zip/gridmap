@@ -10,9 +10,10 @@
 	let {
 		title,
 		width = '46rem',
+		dismiss,
 		onclose,
 		children
-	}: { title: string; width?: string; onclose: () => void; children: Snippet } = $props();
+	}: { title: string; width?: string; dismiss?: string; onclose: () => void; children: Snippet } = $props();
 </script>
 
 <svelte:window onkeydown={(e) => e.key === 'Escape' && onclose()} />
@@ -38,7 +39,10 @@
 	>
 		<header>
 			<h2>{title}</h2>
-			<button class="x" aria-label="close" onclick={onclose}>×</button>
+			<!-- a word where × undersells it: "skip" on a card that can be walked past -->
+			<button class="x" class:word={!!dismiss} aria-label={dismiss ?? 'close'} onclick={onclose}
+				>{dismiss ?? '×'}</button
+			>
 		</header>
 		<div class="body">
 			{@render children()}
@@ -67,6 +71,7 @@
 		width: var(--w);
 		max-width: 100%;
 		max-height: 100%;
+		transition: width 0.24s var(--ease-out);
 		background: linear-gradient(to bottom, var(--color-bg-card-start) 0%, var(--color-bg-card-end) 100%);
 		border: 1px solid var(--color-border-card);
 		border-radius: 8px;
@@ -101,6 +106,12 @@
 		border: none;
 		border-radius: 4px;
 		cursor: pointer;
+
+		&.word {
+			width: auto;
+			padding: 0 0.8rem;
+			font-size: 1.3rem;
+		}
 
 		&:hover {
 			color: var(--color-text);

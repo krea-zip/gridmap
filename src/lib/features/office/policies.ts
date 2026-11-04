@@ -61,6 +61,12 @@ export const RULE_INFO: Record<RuleKey, RuleInfo> = {
 		unit: 'credits',
 		max: 400
 	},
+	MAX_TOTAL_3YR_DOUBLE: {
+		label: 'Tenure ceiling, 3-year double major',
+		help: 'A three-year double major may stretch the ceiling to this.',
+		unit: 'credits',
+		max: 400
+	},
 	MAX_TOTAL_4YR: {
 		label: 'Tenure ceiling, 4-year',
 		help: 'The most credits a four-year student may register in total.',
@@ -78,6 +84,14 @@ export const RULE_GROUPS: { title: string; note: string; keys: RuleKey[] }[] = [
 	{
 		title: 'Across the whole degree',
 		note: 'Limits counted over a student’s entire tenure.',
-		keys: ['HEAVY_TRIMS_ALLOWED', 'AUDIT_LIMIT', 'MIN_TOTAL_3YR', 'MIN_TOTAL_4YR', 'MAX_TOTAL_3YR', 'MAX_TOTAL_4YR']
+		keys: [
+			'HEAVY_TRIMS_ALLOWED',
+			'AUDIT_LIMIT',
+			'MIN_TOTAL_3YR',
+			'MIN_TOTAL_4YR',
+			'MAX_TOTAL_3YR',
+			'MAX_TOTAL_3YR_DOUBLE',
+			'MAX_TOTAL_4YR'
+		]
 	}
 ];

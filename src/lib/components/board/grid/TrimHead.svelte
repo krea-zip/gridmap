@@ -16,7 +16,7 @@
 	let name = $derived(byYear ? `t${trim}` : `t${degreeTrim(plan.here.year, trim)}`);
 </script>
 
-<div class="trim-head">
+<div class="trim-head" data-tour={trim === 1 ? 'trim-head' : undefined}>
 	<button
 		class="name"
 		title="{byYear

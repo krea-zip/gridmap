@@ -1,11 +1,8 @@
 <script lang="ts">
-	// the office's sidebar: the jobs grouped the way the office thinks about
-	// them. a contributor only ever sends requests, so sees just that page.
+	// the office's sidebar: the jobs grouped the way the office thinks about them
 	import { page } from '$app/state';
-	import { useOffice } from '$lib/features/office/workspace.svelte';
 
 	let { large = $bindable(false) }: { large?: boolean } = $props();
-	const office = useOffice();
 
 	const GROUPS = [
 		{
@@ -13,8 +10,7 @@
 			links: [
 				['', 'Overview'],
 				['import', 'Upload spreadsheet'],
-				['offerings', 'Terms & offerings'],
-				['approvals', 'Approvals & requests']
+				['offerings', 'Terms & offerings']
 			]
 		},
 		{
@@ -40,16 +36,12 @@
 			links: [
 				['changes', 'Review & publish'],
 				['history', 'Past releases'],
-				['settings', 'Office fields'],
-				['staff', 'Staff access']
+				['settings', 'Office fields']
 			]
 		}
 	];
 
 	const here = (path: string) => page.url.pathname.replace(/\/$/, '') === `/admin${path ? '/' + path : ''}`;
-	// a contributor only sends requests; only an administrator manages access
-	const visible = (path: string) =>
-		office.role === 'contributor' ? path === 'approvals' : path !== 'staff' || office.role === 'admin';
 </script>
 
 <aside class="office-nav">
@@ -57,7 +49,7 @@
 	<nav aria-label="Academic office navigation">
 		{#each GROUPS as group (group.title)}
 			<h2>{group.title}</h2>
-			{#each group.links.filter(([path]) => visible(path)) as [path, label] (path)}
+			{#each group.links as [path, label] (path)}
 				<a href="/admin{path ? '/' + path : ''}" aria-current={here(path) ? 'page' : undefined}>{label}</a>
 			{/each}
 		{/each}

@@ -1,8 +1,8 @@
 <script lang="ts">
-	// how a draft reaches students: saved, sent for approval, approved,
-	// published. this page shows where the draft stands, what blocks it, and
-	// what changed since the last publish; each step is a plain form, so it
-	// still works if the page's script hasn't loaded.
+	// how a draft reaches students: saved, then published. this page shows
+	// where the draft stands, what blocks it, and what changed since the last
+	// publish; publishing is a plain form, so it works before the page's
+	// script has loaded.
 	import { enhance } from '$app/forms';
 	import { useOffice } from '$lib/features/office/workspace.svelte';
 	import { changesBetween } from '$lib/features/office/model';
@@ -12,9 +12,7 @@
 	const office = useOffice();
 
 	const STEPS = [
-		['draft', 'Draft'],
-		['submitted', 'Awaiting approval'],
-		['approved', 'Approved'],
+		['draft', 'Saved draft'],
 		['published', 'Published']
 	] as const;
 	const at = $derived(STEPS.findIndex(([s]) => s === office.status));
@@ -22,7 +20,7 @@
 	const byArea = <T extends { area: string }>(rows: T[]) =>
 		Object.entries(Object.groupBy(rows, (r) => r.area)) as [string, T[]][];
 
-	// a review step is about the saved draft, so unsaved edits block it
+	// publishing takes the saved draft, so unsaved edits block it
 	const blocked = $derived(
 		office.dirty ? 'Save your changes first.' : office.errors.length ? 'Resolve the errors first.' : ''
 	);
@@ -39,8 +37,8 @@
 
 <h1>Review & publish</h1>
 <p class="office-lead">
-	Saved changes go to a reviewer for approval, then a publisher releases them to students. The live site keeps showing
-	the last release until then.
+	Check the saved draft, look at the student preview, then publish it. The live site keeps showing the last release
+	until then.
 </p>
 
 <ol class="office-steps" aria-label="Where the draft stands">
@@ -56,24 +54,12 @@
 <section class="office-card">
 	<h2>Next step</h2>
 	{#if blocked && office.status !== 'published'}<p class="office-note error">{blocked}</p>{/if}
-	<form method="POST" use:enhance={submitting} class="office-form">
+	<form method="POST" action="?/publish" use:enhance={submitting} class="office-form">
 		<input type="hidden" name="revision" value={office.revision} />
-		<label class="wide">Note for the history <textarea name="note" rows="2"></textarea></label>
 		<div class="office-actions wide">
-			<button class="primary" formaction="?/submit" disabled={pending || !!blocked || office.status !== 'draft'}
-				>Send for approval</button
+			<button class="primary" disabled={pending || !!blocked || office.revision === 0 || office.status === 'published'}
+				>Publish to students</button
 			>
-			{#if office.canReview}
-				<button formaction="?/approve" disabled={pending || !!blocked || office.status !== 'submitted'}>Approve</button>
-				<button formaction="?/return" disabled={pending || office.dirty || office.status === 'draft'}
-					>Send back to draft</button
-				>
-			{/if}
-			{#if office.canPublish}
-				<button class="primary" formaction="?/publish" disabled={pending || !!blocked || office.status !== 'approved'}
-					>Publish to students</button
-				>
-			{/if}
 			<button type="button" onclick={() => office.preview()}>Student preview</button>
 		</div>
 	</form>
@@ -81,12 +67,10 @@
 		<p class="office-help">
 			Current release <b>{office.release}</b> · {office.deployment || 'no website update requested yet'}
 		</p>
-		{#if office.canPublish}
-			<form method="POST" action="?/redeploy" use:enhance={submitting}>
-				<input type="hidden" name="revision" value={office.revision} />
-				<button disabled={pending}>Retry the website update</button>
-			</form>
-		{/if}
+		<form method="POST" action="?/redeploy" use:enhance={submitting}>
+			<input type="hidden" name="revision" value={office.revision} />
+			<button disabled={pending}>Retry the website update</button>
+		</form>
 	{/if}
 </section>
 

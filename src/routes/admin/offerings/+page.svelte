@@ -89,30 +89,28 @@
 					>{/each}
 			</select>
 		</label>
-		{#if office.canEdit}
-			<label>New term<input type="number" min="2018" max="2099" bind:value={newYear} /></label>
-			<label
-				>Trimester
-				<select bind:value={newTrim}>
-					<option value={1}>1 · Aug–Oct</option>
-					<option value={2}>2 · Nov–Jan</option>
-					<option value={3}>3 · Feb–Apr</option>
-				</select>
-			</label>
-			<button onclick={addTerm}>Add term</button>
-		{/if}
+		<label>New term<input type="number" min="2018" max="2099" bind:value={newYear} /></label>
+		<label
+			>Trimester
+			<select bind:value={newTrim}>
+				<option value={1}>1 · Aug–Oct</option>
+				<option value={2}>2 · Nov–Jan</option>
+				<option value={3}>3 · Feb–Apr</option>
+			</select>
+		</label>
+		<button onclick={addTerm}>Add term</button>
 	</div>
 
 	{#if term}
 		<section class="office-card">
 			<h2>{term.label}</h2>
 			<div class="office-form">
-				<label>Name<input bind:value={term.label} disabled={!office.canEdit} /></label>
-				<label>Starts<input type="date" bind:value={term.starts} disabled={!office.canEdit} /></label>
-				<label>Ends<input type="date" bind:value={term.ends} disabled={!office.canEdit} /></label>
+				<label>Name<input bind:value={term.label} /></label>
+				<label>Starts<input type="date" bind:value={term.starts} /></label>
+				<label>Ends<input type="date" bind:value={term.ends} /></label>
 				<label
 					>Status
-					<select bind:value={term.status} disabled={!office.canEdit}>
+					<select bind:value={term.status}>
 						<option value="planning">Planning</option>
 						<option value="open">Open for registration</option>
 						<option value="archived">Archived</option>
@@ -123,19 +121,16 @@
 
 		<div class="office-split">
 			<section>
-				{#if office.canEdit}
-					<div class="office-row">
-						<label>Course<input list="offering-courses" bind:value={newCode} placeholder="Code" /></label>
-						<label>Section<input bind:value={newSection} placeholder="optional" /></label>
-						<button class="primary" onclick={addOffering}>Add</button>
-					</div>
-					<datalist id="offering-courses">
-						{#each doc.curriculum.courses.filter((c) => !c.retired) as c (c.code)}<option value={c.code}
-								>{c.title}</option
-							>{/each}
-					</datalist>
-					{#if problem}<p class="office-note error" role="alert">{problem}</p>{/if}
-				{/if}
+				<div class="office-row">
+					<label>Course<input list="offering-courses" bind:value={newCode} placeholder="Code" /></label>
+					<label>Section<input bind:value={newSection} placeholder="optional" /></label>
+					<button class="primary" onclick={addOffering}>Add</button>
+				</div>
+				<datalist id="offering-courses">
+					{#each doc.curriculum.courses.filter((c) => !c.retired) as c (c.code)}<option value={c.code}>{c.title}</option
+						>{/each}
+				</datalist>
+				{#if problem}<p class="office-note error" role="alert">{problem}</p>{/if}
 				<label>Search {offerings.length} offerings<input type="search" bind:value={search} /></label>
 				<div class="office-list">
 					{#each offerings as o (o.id)}
@@ -153,7 +148,7 @@
 			{#if offering}
 				<section class="office-card">
 					<h2>{offering.code} {titleOf(offering.code)}</h2>
-					<fieldset class="office-form" disabled={!office.canEdit}>
+					<fieldset class="office-form">
 						<label>Section<input bind:value={offering.section} /></label>
 						<label
 							>Approval
@@ -242,11 +237,9 @@
 							</label>
 						{/each}
 					</fieldset>
-					{#if office.canEdit}
-						<div class="office-actions">
-							<button class="danger" onclick={() => remove(offering.id)}>Remove offering</button>
-						</div>
-					{/if}
+					<div class="office-actions">
+						<button class="danger" onclick={() => remove(offering.id)}>Remove offering</button>
+					</div>
 				</section>
 			{/if}
 		</div>

@@ -90,12 +90,7 @@
 
 <section class="office-card">
 	<h2>1 · Choose the file</h2>
-	<input
-		type="file"
-		accept=".csv,.xlsx"
-		disabled={busy || !office.canEdit}
-		onchange={(e) => choose(e.currentTarget.files?.[0])}
-	/>
+	<input type="file" accept=".csv,.xlsx" disabled={busy} onchange={(e) => choose(e.currentTarget.files?.[0])} />
 </section>
 
 {#if sheet && office.document}
