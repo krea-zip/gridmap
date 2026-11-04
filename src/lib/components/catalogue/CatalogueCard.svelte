@@ -36,6 +36,16 @@
 	let pending = $derived(course.pendingCredits && course.credits === 0);
 	// Every course gets room for its title; credit weight is an explicit label.
 	let showReq = $derived(type === 'required');
+	// nearly every course is 4 credits, so a placed card only speaks up when
+	// one isn't, which is what makes a 2-credit course stand out in the list
+	const USUAL_CREDITS = 4;
+	let creditNote = $derived(
+		pending
+			? 'TBC'
+			: course.credits === USUAL_CREDITS
+				? null
+				: `${course.credits} ${course.credits === 1 ? 'credit' : 'credits'}`
+	);
 
 	function dragstart(e: DragEvent) {
 		carry(e, course.code);
@@ -62,19 +72,14 @@
 		tabindex="-1"
 		class="card placed"
 		class:titles-only={!plan.showCodes}
+		class:noted={creditNote !== null}
 		title="{label} is already on your plan"
 	>
-		<button class="placed-open" onclick={openPlaced} aria-label="view {label}">
-			{#if plan.showCodes}<span class="code"
-					><span class="planned-mark" role="img" aria-label="on your plan">✓</span>{shownCode}</span
+		<button class="placed-open" onclick={openPlaced} aria-label="view {label}, on your plan">
+			{#if plan.showCodes}<span class="code">{shownCode}</span>{/if}
+			<span class="title">{course.title}</span>
+			{#if creditNote}<span class="credit-label" title={pending ? 'credits to confirm' : undefined}>{creditNote}</span
 				>{/if}
-			<span class="title"
-				>{#if !plan.showCodes}<span class="planned-mark" role="img" aria-label="on your plan">✓</span>
-				{/if}{course.title}</span
-			>
-			<span class="credit-label" title={pending ? 'credits to confirm' : `${course.credits} credits`}
-				>{pending ? 'TBC' : `${course.credits} cr`}</span
-			>
 		</button>
 		<button
 			class="unplace"
@@ -198,10 +203,10 @@
 
 		&.placed {
 			background: transparent;
-			border: 0;
-			border-bottom: 1px solid var(--color-border-divider);
-			border-radius: 0;
-			padding: 0.65rem 1.1rem;
+			// dashed, because dots go fuzzy at 1px
+			border: 1px dashed color-mix(in srgb, var(--color-text-muted) 55%, transparent);
+			border-radius: 6px;
+			padding: 1rem 1.2rem;
 			box-shadow: none;
 			color: var(--color-text-muted);
 			cursor: default;
@@ -212,12 +217,18 @@
 			}
 
 			.credit-label {
-				top: 0.65rem;
-				right: 3.2rem;
+				top: 1rem;
+				right: 3.6rem;
 			}
 
 			.code {
-				padding-right: 5rem;
+				padding-right: 0;
+			}
+
+			// only a card with a credit note gives up room for it
+			&.noted .code,
+			&.noted.titles-only .title {
+				padding-right: 6.5rem;
 			}
 		}
 	}
@@ -237,14 +248,6 @@
 
 	.titles-only > .title {
 		padding-right: 3.4rem;
-	}
-	.placed.titles-only .title {
-		padding-right: 5rem;
-	}
-
-	.planned-mark {
-		font-weight: 500;
-		color: var(--color-text-muted);
 	}
 
 	// the cross-listed departments, lighter weight so the code you're
@@ -277,7 +280,7 @@
 	// a long title stretch the card taller than its neighbours
 	.title {
 		font-size: var(--text-body);
-		line-height: 1.3;
+		line-height: 1.4;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
 		line-clamp: 2;
@@ -285,13 +288,13 @@
 		overflow: hidden;
 	}
 
-	// small "take back" button tucked into the placed card's top-right corner
+	// a small white key in the corner, so taking a course back looks clickable
 	.unplace {
 		position: absolute;
-		top: 0.3rem;
-		right: 0.3rem;
-		min-width: 1.8rem;
-		height: 1.8rem;
+		top: 0.6rem;
+		right: 0.6rem;
+		min-width: 2.2rem;
+		height: 2.2rem;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -299,8 +302,9 @@
 		font-size: 1.1rem;
 		line-height: 1;
 		color: var(--color-text-muted);
-		background: none;
-		border: none;
+		background: var(--color-bg-card-start);
+		border: 1px solid var(--color-border-divider);
+		border-radius: 4px;
 		cursor: pointer;
 		transition:
 			transform 0.15s ease,
@@ -310,6 +314,10 @@
 			color: var(--color-text);
 			transform: scale(1.06);
 		}
+
+		&:active {
+			transform: translateY(1px);
+		}
 	}
 	.placed-open {
 		display: flex;
@@ -317,7 +325,7 @@
 		align-items: flex-start;
 		text-align: left;
 		padding: 0;
-		padding-right: 1.4rem;
+		padding-right: 2rem;
 		font: inherit;
 		color: inherit;
 		border: 0;
@@ -340,6 +348,9 @@
 	@include touch {
 		.card.placed .credit-label {
 			right: 4.6rem;
+		}
+		.placed-open {
+			padding-right: 3rem;
 		}
 		.unplace {
 			min-width: 3.6rem;

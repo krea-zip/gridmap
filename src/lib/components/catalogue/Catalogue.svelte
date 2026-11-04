@@ -340,7 +340,7 @@
 	.cards {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		gap: 0.65rem;
+		gap: 0.95rem;
 	}
 
 	.reveal-note {

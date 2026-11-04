@@ -1731,10 +1731,7 @@ export class Plan {
 			this.filters = this.filters.filter((f) => f !== subjectId);
 			return;
 		}
-		// the foundation-core view is exclusive: checking kccs clears the
-		// subject filters, checking any subject clears kccs, you browse
-		// either the core or your programmes' departments, never a mix
-		this.filters = subjectId === 'core' ? ['core'] : [...this.filters.filter((f) => f !== 'core'), subjectId];
+		this.filters = [...this.filters, subjectId];
 	}
 
 	#setFlash(msg: string) {

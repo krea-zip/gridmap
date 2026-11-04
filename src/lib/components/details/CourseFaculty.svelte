@@ -308,7 +308,7 @@
 			font-size: 1.5rem;
 		}
 		.d-muted {
-			font-size: 1.3rem;
+			font-size: var(--text-body);
 		}
 	}
 </style>

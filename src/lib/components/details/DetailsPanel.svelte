@@ -724,7 +724,7 @@
 			min-width: 0;
 			padding: 0.5rem 0.6rem;
 			font: inherit;
-			font-size: 1.3rem;
+			font-size: var(--text-body);
 			color: var(--color-text);
 			background-color: var(--color-bg-light);
 			border: 1px solid var(--color-border-card);
@@ -737,7 +737,7 @@
 		flex: 1;
 		padding: 0.5rem 1.2rem;
 		font: inherit;
-		font-size: 1.3rem;
+		font-size: var(--text-body);
 		font-weight: 600;
 		color: var(--color-on-accent);
 		background-color: var(--color-accent);
@@ -755,7 +755,7 @@
 	.d-place-remove {
 		padding: 0.5rem 1rem;
 		font: inherit;
-		font-size: 1.3rem;
+		font-size: var(--text-body);
 		@include store-button;
 	}
 
@@ -1080,7 +1080,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
-		font-size: 1.3rem;
+		font-size: var(--text-body);
 		color: var(--color-text);
 		cursor: pointer;
 
@@ -1101,7 +1101,7 @@
 		margin: 0;
 		padding: 0;
 		border: none;
-		font-size: 1.3rem;
+		font-size: var(--text-body);
 
 		legend {
 			float: left;
@@ -1140,7 +1140,7 @@
 		flex-direction: column;
 		gap: 0.1rem;
 		padding: 0.5rem 1rem;
-		font-size: 1.3rem;
+		font-size: var(--text-body);
 		font-weight: 600;
 		color: var(--color-text);
 		background-color: var(--color-bg-light);
@@ -1213,7 +1213,7 @@
 	}
 
 	.d-desc {
-		font-size: 1.3rem;
+		font-size: var(--text-body);
 		line-height: 1.55;
 		padding: 1rem 1.2rem;
 		background: var(--color-bg-light);
