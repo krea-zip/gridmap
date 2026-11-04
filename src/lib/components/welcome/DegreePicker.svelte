@@ -38,7 +38,15 @@
 	{/if}
 </div>
 
-<p class="prompt">click your {ROLE_LABEL[answers.active]}</p>
+<p class="prompt">
+	{#if !answers.answered[answers.active]}
+		click your {ROLE_LABEL[answers.active]}
+	{:else if answers.addable.length}
+		add a programme above, change your pick below, or continue.
+	{:else}
+		change your pick below, or continue.
+	{/if}
+</p>
 
 <div class="pills" role="group" aria-label="choose your {ROLE_LABEL[answers.active]}">
 	{#each subjects as subject (subject.id)}

@@ -15,6 +15,7 @@ test('the slots kept decide the degree', () => {
 	const { plan, answers } = welcome();
 	answers.setBatch(2026);
 	answers.pick('mathematics');
+	answers.add('minor');
 	answers.pick('physics');
 	expect(plan.structure).toBe('major-minor');
 	answers.add('conc');
@@ -28,17 +29,26 @@ test('the slots kept decide the degree', () => {
 
 test('a second major stands alone, and is only offered with nothing beside the major', () => {
 	const { answers } = welcome();
-	expect(answers.addable).not.toContain('major2');
-	answers.remove('minor');
+	expect(answers.extras).toEqual([]);
+	expect(answers.roles).toEqual(['major1']);
 	expect(answers.addable).toEqual(['minor', 'conc', 'major2']);
+	answers.pick('mathematics');
 	answers.add('major2');
+	expect(answers.active).toBe('major2');
 	expect(answers.addable).toEqual([]);
+	answers.remove('major2');
+	answers.add('minor');
+	expect(answers.addable).not.toContain('major2');
 });
 
-test('picking moves on to the next open slot, and the major comes first', () => {
+test('picking stays on the chosen slot, and the major comes first', () => {
 	const { answers } = welcome();
 	expect(answers.canFocus('minor')).toBe(false);
 	answers.pick('mathematics');
+	expect(answers.active).toBe('major1');
+	answers.pick('biology');
+	expect(answers.active).toBe('major1');
+	answers.add('minor');
 	expect(answers.active).toBe('minor');
 	expect(answers.canFocus('minor')).toBe(true);
 });
@@ -48,6 +58,8 @@ test('it is ready once the batch and every kept slot are answered', () => {
 	answers.pick('mathematics');
 	expect(answers.ready).toBe(false);
 	answers.setBatch(2026);
+	expect(answers.ready).toBe(true);
+	answers.add('minor');
 	expect(answers.ready).toBe(false);
 	answers.pick('physics');
 	expect(answers.ready).toBe(true);
@@ -58,6 +70,7 @@ test('it is ready once the batch and every kept slot are answered', () => {
 test('a subject held by another slot can not be picked twice', () => {
 	const { answers } = welcome();
 	answers.pick('mathematics');
+	answers.add('minor');
 	expect(answers.heldBy('mathematics')).toBe('major1');
 	answers.pick('physics');
 	answers.focus('major1');
@@ -78,6 +91,7 @@ test('the electives left to choose skip what is placed and list a shared course 
 	const { plan, answers } = welcome();
 	answers.setBatch(2026);
 	answers.pick('mathematics');
+	answers.add('minor');
 	answers.pick('physics');
 	const codes = electiveChoices(plan).flatMap((g) => g.codes);
 	expect(codes.length).toBeGreaterThan(0);

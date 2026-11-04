@@ -1,450 +1,239 @@
 <script lang="ts">
-	// the welcome's one hands-on window: the year the student is in, as a single
-	// row of the grid, with the courses left to choose beneath it. a ghost cursor
-	// drags one over once to show the move, then it's their turn, and what they
-	// drop lands on their real plan. beside it, the two things worth a try: what
-	// a course shows, and the two ways of naming a trimester.
-	import { onMount } from 'svelte';
-	import { SvelteSet } from 'svelte/reactivity';
-	import { byCode } from '$lib/curriculum/data';
-	import { academicYear, degreeTrim, termMonths, trimName, type TrimNaming } from '$lib/planner/calendar';
+	import { untrack } from 'svelte';
 	import { usePlan } from '$lib/planner/context';
-	import { electiveChoices } from '$lib/planner/electives';
-	import type { TrimNum } from '$lib/types';
-	import { carried, carry } from '$lib/ui/courseDrag';
-	import { reducedMotion } from '$lib/ui/transitions';
+	import { usePractice } from './practice-context';
+	import { isCapstone, subjectById } from '$lib/curriculum/data';
+	import { trimName } from '$lib/planner/calendar';
+	import { carry } from '$lib/ui/courseDrag';
+	import Task from './Task.svelte';
+	import CourseChip from './CourseChip.svelte';
 	import LabelKeys from '../board/bar/LabelKeys.svelte';
-	import Rolling from '../Rolling.svelte';
-
+	import Keys from '../board/bar/Keys.svelte';
+	import CatalogueFilters from '../catalogue/CatalogueFilters.svelte';
+	import CatalogueRibbon from '../catalogue/CatalogueRibbon.svelte';
+	let { variant }: { variant: 'board' | 'labels' | 'terms' | 'catalogue' } = $props();
 	const plan = usePlan();
-	const NAMINGS: TrimNaming[] = ['year', 'degree'];
-	const CHIPS_IN_VIEW = 10; // the demo picks from these, the rest may be scrolled away
-
-	const choices = () => electiveChoices(plan).flatMap((group) => group.codes);
-	const fitsRow = (code: string, year: number) => plan.trims.some((trim) => plan.canDrop(code, year, trim));
-
-	// the year they're in, fixed on arrival so a drop can't swap the row. a first
-	// year's trimesters are reserved for the core, so they practise on year 2
-	const year =
-		plan.years.find((y) => y >= Math.max(plan.here.year, 2) && choices().some((code) => fitsRow(code, y))) ??
-		plan.here.year;
-
-	let stage = $state<HTMLElement>();
-	let codes = $derived(choices().filter((code) => fitsRow(code, year)));
-	let pointed = $state<string | null>(null);
-	let ghost = $state<{ code: string; x: number; y: number; landed: boolean } | null>(null);
-	let dropped = new SvelteSet<string>(); // what the student put down here
-
-	// the course whose trimesters are lit: in the demo, in hand, or pointed at
-	let focus = $derived(ghost?.code ?? plan.dragging ?? pointed);
-
-	const fitsOf = (code: string) =>
-		plan.trims.filter((trim) => plan.canDrop(code, year, trim)).map((trim) => ({ code, trim }));
-	/** the demo's course: the one that lights the most trimesters, since seeing
-	 *  them go green is the point */
-	const bestFit = () =>
-		codes
-			.slice(0, CHIPS_IN_VIEW)
-			.map(fitsOf)
-			.sort((a, b) => b.length - a.length)[0]?.[0];
-
-	/** where the ghost sits over an element, in the stage's own coordinates */
-	function spot(el: Element | null | undefined) {
-		const from = stage!.getBoundingClientRect();
-		const to = el!.getBoundingClientRect();
-		return { x: to.left - from.left + 8, y: to.top - from.top + 6 };
-	}
-
-	// each wait reports whether this run is still the current one, so a stopped
-	// or restarted demo ends itself and nothing fires once the window has gone
-	let run = 0;
-	function watch() {
-		const fit = bestFit();
-		if (!fit || !stage) return;
-		const chip = stage.querySelector(`[data-chip="${CSS.escape(fit.code)}"]`);
-		const cell = stage.querySelector(`[data-trim="${fit.trim}"]`);
-		const mine = ++run;
-		const wait = (ms: number) => new Promise<boolean>((done) => setTimeout(() => done(mine === run), ms));
-		void (async () => {
-			ghost = { code: fit.code, ...spot(chip), landed: false };
-			if (!(await wait(900))) return; // long enough to see what's lit
-			ghost = { code: fit.code, ...spot(cell), landed: false };
-			if (!(await wait(1000))) return;
-			ghost = { code: fit.code, ...spot(cell), landed: true };
-			if (!(await wait(1200))) return;
-			ghost = null;
-		})();
-	}
-
-	function takeOver() {
-		run++;
-		ghost = null;
-	}
-
-	function drop(e: DragEvent, trim: TrimNum) {
-		e.preventDefault();
-		const code = carried(e);
-		plan.dragging = null;
-		if (!code || !plan.canDrop(code, year, trim)) return;
-		plan.place(code, year, trim);
-		dropped.add(code);
-	}
-
-	function takeBack(code: string) {
-		plan.remove(code);
-		dropped.delete(code);
-	}
-
-	function dragstart(e: DragEvent, code: string) {
-		carry(e, code);
-		plan.dragging = code;
-	}
-
-	// the names flip on their own until the student picks the one they think in
-	let naming = $state<TrimNaming>('degree');
-	let flipping: ReturnType<typeof setInterval>;
-
-	function chooseNaming(choice: TrimNaming) {
-		clearInterval(flipping);
-		naming = choice;
-		plan.trimNaming = choice;
-	}
-
-	onMount(() => {
-		if (reducedMotion()) return;
-		flipping = setInterval(() => (naming = naming === 'year' ? 'degree' : 'year'), 2000);
-		const start = setTimeout(watch, 500); // once the window has slid in
-		return () => {
-			clearInterval(flipping);
-			clearTimeout(start);
-			run++;
-		};
+	const practice = usePractice();
+	const year = practice.year;
+	const code = practice.course;
+	const interaction = practice.interaction;
+	let step = $state(0);
+	let picked = $derived(interaction.picked);
+	let selected = $state<string | null>(null);
+	const canMove =
+		plan.years.flatMap((y) => plan.trims.map((t) => ({ y, t }))).filter((p) => plan.canDrop(code, p.y, p.t)).length > 1;
+	const moveSteps = canMove
+		? [
+				'tap the course to pick it up.',
+				'place it in a green trimester.',
+				'pick it up again and move it to another green trimester.',
+				'tap × to take it off your plan.'
+			]
+		: ['tap the course to pick it up.', 'place it in a green trimester.', 'tap × to take it off your plan.'];
+	untrack(() => {
+		if (variant === 'board') {
+			plan.remove(code);
+		}
+		if (variant === 'labels') {
+			plan.showCodes = true;
+			plan.showTitles = true;
+		}
+		if (variant === 'terms') {
+			plan.trimNaming = 'year';
+			plan.zoom = null;
+		}
+		if (variant === 'catalogue') {
+			plan.clearNarrowing();
+			plan.catalogueSubject = plan.programmes[0].subject;
+			plan.search = '';
+			plan.zoom = null;
+		}
 	});
+	function pick(c: string) {
+		interaction.picked = picked === c ? null : c;
+		if (picked && step === 0) step = 1;
+	}
+	$effect(() => {
+		interaction.revision;
+		if (variant === 'board') {
+			if (interaction.action === 'pick' && picked) step = Math.max(step, 1);
+			if (interaction.action === 'place') step = Math.max(step, 2);
+			if (interaction.action === 'move') step = Math.max(step, 3);
+			if (interaction.action === 'remove') step = moveSteps.length;
+		}
+		if (variant === 'terms' && interaction.action === 'heading' && step >= 1) step = plan.zoom ? 2 : 3;
+		if (variant === 'labels') {
+			if (step === 0 && !plan.showTitles) step = 1;
+			else if (step === 1 && plan.showTitles) step = 2;
+			else if (step === 2 && !plan.showCodes) step = 3;
+		}
+		if (variant === 'catalogue') {
+			if (step === 0 && plan.filters.includes(plan.programmes[0].subject)) step = 1;
+			else if (step === 1 && plan.search.trim()) step = 2;
+			else if (
+				step === 2 &&
+				(plan.catalogueTerms.length || plan.catalogueCredits.length || plan.quick.length || plan.kinds.length)
+			)
+				step = 3;
+			else if (step === 3 && !plan.narrowed) step = 4;
+		}
+	});
+	let results = $derived(plan.catalogue.filter((c) => !isCapstone(c.code)).slice(0, 3));
+	let target = $derived(
+		selected
+			? plan.years
+					.flatMap((year) => plan.trims.map((trim) => ({ year, trim })))
+					.find(({ year, trim }) => plan.canDrop(selected!, year, trim))
+			: undefined
+	);
 </script>
 
-{#snippet label(code: string)}
-	{#if plan.showCodes}<b>{plan.shownCode(code)}</b>{/if}
-	{#if plan.showTitles}<span>{byCode(code).title}</span>{/if}
-{/snippet}
-
-<p class="lead">
-	this is {year === plan.here.year ? "the year you're in" : 'your next year'}. drag a course around, the trimesters it
-	can go in turn green.
-</p>
-
-<div class="stage" role="presentation" bind:this={stage} onpointerdown={takeOver}>
-	<div class="row" style="--cols: {plan.trims.length}">
-		<div></div>
-		{#each plan.trims as t (t)}
-			<div class="head">
-				<b><Rolling value={naming === 'year' ? `t${t}` : `t${degreeTrim(year, t)}`} /></b>
-				<small>{termMonths(t)}</small>
-			</div>
-		{/each}
-
-		<div class="head year">
-			<b>y{year}</b>
-			<small>{academicYear(plan.batchStartYear, year)}</small>
+{#if variant === 'board'}
+	<Task steps={moveSteps} at={step} complete="a course moves; its credit total follows." />
+	<div class="scene">
+		<div class="sample narrow course-pool">
+			<p class="eyebrow">catalogue</p>
+			{#if !plan.placedCodes.has(code)}<CourseChip
+					{code}
+					selected={picked === code}
+					onclick={() => pick(code)}
+					ondragstart={(e) => {
+						carry(e, code);
+						interaction.picked = code;
+						step = Math.max(step, 1);
+					}}
+				/>{:else}<p class="feedback">✓ on your plan above</p>{/if}
 		</div>
-		{#each plan.trims as t (t)}
-			{@const fits = !!focus && plan.canDrop(focus, year, t)}
-			<div
-				class="cell"
-				role="listitem"
-				data-trim={t}
-				class:fits
-				class:no-fit={!!focus && !fits}
-				ondragover={(e) => fits && e.preventDefault()}
-				ondrop={(e) => drop(e, t)}
-			>
-				{#each plan.slotCourses(year, t) as code (code)}
-					<div
-						class="chip"
-						role="listitem"
-						draggable="true"
-						data-type={plan.courseType(code)}
-						style:--hue={plan.hueOf(code)}
-						ondragstart={(e) => dragstart(e, code)}
-						ondragend={() => (plan.dragging = null)}
-						onpointerenter={() => (pointed = code)}
-						onpointerleave={() => (pointed = null)}
-					>
-						{@render label(code)}
-						{#if dropped.has(code)}
-							<button aria-label="take {plan.shownCode(code)} back off" onclick={() => takeBack(code)}>×</button>
-						{/if}
-					</div>
-				{/each}
-				<span class="credits">{plan.slotCredits(year, t)} cr</span>
-			</div>
-		{/each}
+		<p class="feedback">green = it fits · tap or drag</p>
 	</div>
-
-	<div class="pool" role="list" aria-label="courses left to choose">
-		{#each codes as code (code)}
-			<div
-				class="chip"
-				role="listitem"
-				draggable="true"
-				data-chip={code}
-				data-type={plan.courseType(code)}
-				class:lifted={focus === code}
-				style:--hue={plan.hueOf(code)}
-				title="{plan.shownCode(code)} {byCode(code).title}"
-				ondragstart={(e) => dragstart(e, code)}
-				ondragend={() => (plan.dragging = null)}
-				onpointerenter={() => (pointed = code)}
-				onpointerleave={() => (pointed = null)}
-			>
-				{@render label(code)}
-			</div>
-		{:else}
-			<p class="empty">nothing left to choose this year.</p>
-		{/each}
+{:else if variant === 'labels'}
+	<Task
+		steps={['tap titles to hide the title.', 'tap titles again to show both.', 'tap codes to show just the title.']}
+		at={step}
+		complete="the same switches change course labels across the planner."
+	/>
+	<div class="scene narrow labels-scene">
+		<p class="eyebrow">course labels</p>
+		<div class="control-centre"><LabelKeys /></div>
 	</div>
-
-	{#if ghost}
-		<div
-			class="chip ghost"
-			class:landed={ghost.landed}
-			data-type={plan.courseType(ghost.code)}
-			style:--hue={plan.hueOf(ghost.code)}
-			style:transform="translate({ghost.x}px, {ghost.y}px)"
-			aria-hidden="true"
-		>
-			{@render label(ghost.code)}
-			<svg viewBox="0 0 16 16" width="18" height="18"
-				><path d="M2 1v12l3.2-3 2.2 5 2-.9-2.2-4.9H12Z" fill="#fff" stroke="#2b2230" stroke-width="1.1" /></svg
+{:else if variant === 'terms'}
+	<Task
+		steps={[
+			'switch to ' + trimName(year, 2, 'degree') + '.',
+			'tap a trimester heading to see its courses.',
+			'tap that heading again to show every term.'
+		]}
+		at={step}
+		complete="one term, two names. headings filter the catalogue."
+	/>
+	<div class="scene">
+		<div class="control-centre names">
+			<Keys label="trimester names"
+				>{#each ['year', 'degree'] as naming (naming)}<button
+						class:active={plan.trimNaming === naming}
+						aria-pressed={plan.trimNaming === naming}
+						onclick={() => {
+							plan.trimNaming = naming as 'year' | 'degree';
+							if (naming === 'degree') step = Math.max(step, 1);
+						}}>{trimName(year, 2, naming as 'year' | 'degree')}</button
+					>{/each}</Keys
 			>
 		</div>
-	{/if}
-</div>
-
-<button class="again" disabled={!!ghost} onclick={watch}>watch it again</button>
-
-<div class="extras">
-	<div>
-		<LabelKeys />
-		<p>pick what a course shows: its code, its title, or both</p>
-	</div>
-	<div>
-		<div class="names" role="group" aria-label="how to name trimesters">
-			{#each NAMINGS as choice (choice)}
-				<button class:active={naming === choice} aria-pressed={naming === choice} onclick={() => chooseNaming(choice)}>
-					{trimName(year, 2, choice)}
-				</button>
-			{/each}
+		<div class="sample narrow">
+			<div class="spread">
+				<span class="eyebrow">catalogue</span><b class="muted"
+					>{plan.catalogue.length} courses {plan.zoom ? `· offered t${plan.zoom.trim}` : ''}</b
+				>
+			</div>
+			<div class="mini-courses">
+				{#each results.slice(0, 2) as c (c.code)}<CourseChip code={c.code} />{/each}
+			</div>
 		</div>
-		<p>
-			one trimester, two names: {trimName(year, 2, 'year')} counts inside the year, {trimName(year, 2, 'degree')} through
-			your degree
-		</p>
 	</div>
-</div>
+{:else}
+	<Task
+		steps={[
+			'tap the ' + subjectById(plan.programmes[0].subject).short + ' subject pill.',
+			'try a course code or title in search.',
+			'open advanced filters and select a filter.',
+			'tap clear to reset the filters.',
+			'tap a result and add it to your plan.'
+		]}
+		at={step}
+		complete="filters narrow the list; your pick goes onto your plan."
+	/>
+	<div class="scene catalogue-scene">
+		<div class="sample catalogue-controls">
+			<input
+				class="search"
+				type="search"
+				aria-label="search practice catalogue"
+				placeholder="search course or professor"
+				bind:value={plan.search}
+			/><CatalogueFilters /><CatalogueRibbon />
+		</div>
+		<div class="catalogue-results">
+			<div class="mini-courses">
+				{#each results as c (c.code)}<CourseChip
+						code={c.code}
+						selected={selected === c.code}
+						onclick={() => {
+							selected = c.code;
+						}}
+					/>{:else}<p class="feedback">no examples · clear a filter to try again</p>{/each}
+			</div>
+			{#if selected}<div class="picked-result">
+					<span class="muted">{plan.shownCode(selected)}</span>{#if plan.placedCodes.has(selected)}<button
+							class="action"
+							onclick={() => {
+								plan.remove(selected!);
+								step = 5;
+							}}>take off plan</button
+						>{:else if target}<button
+							class="action"
+							onclick={() => {
+								plan.place(selected!, target!.year, target!.trim);
+								step = 5;
+							}}>+ add to {plan.trimName(target.year, target.trim)}</button
+						>{:else}<span class="muted">needs an earlier prerequisite</span>{/if}
+				</div>{/if}
+		</div>
+	</div>
+{/if}
 
-<style lang="scss">
-	@use '$lib/styles/mixins' as *;
-
-	.lead {
-		margin-bottom: 1.4rem;
-		font-size: 1.3rem;
-		line-height: 1.5;
-		color: var(--color-text-muted);
+<style>
+	.course-pool {
+		margin-inline: auto;
 	}
-
-	.stage {
-		position: relative;
-	}
-
-	.row {
-		display: grid;
-		grid-template-columns: 4.8rem repeat(var(--cols), minmax(0, 1fr));
-		gap: 0.5rem;
-	}
-
-	// the board's headings: the name over the dates it falls on
-	.head {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		color: var(--color-text-muted);
-
-		b {
-			font-size: 1.6rem;
-			font-weight: 400;
-			line-height: 1.2;
-			color: var(--color-text);
-		}
-
-		small {
-			font-size: 1rem;
-			white-space: nowrap;
-		}
-
-		&.year {
-			align-self: center;
-		}
-	}
-
-	.cell {
-		display: flex;
-		flex-wrap: wrap;
-		align-content: flex-start;
-		gap: 0.3rem;
-		min-height: 10rem;
-		padding: 0.5rem;
-		background: var(--color-grid-cell);
-		border-radius: 6px;
-		outline: 1px dotted transparent;
-		transition:
-			background-color 0.18s ease,
-			opacity 0.18s ease;
-
-		&.fits {
-			background: var(--color-drop-ok);
-			outline: 2px dotted var(--color-drop-ok-edge);
-		}
-
-		&.no-fit {
-			opacity: 0.45;
-		}
-	}
-
-	.credits {
-		width: 100%;
-		margin-top: auto;
-		font-size: 1.1rem;
-		font-weight: 700;
-		text-align: right;
-		color: var(--color-text-muted);
-	}
-
-	.pool {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-		max-height: 11rem;
-		margin-top: 1rem;
-		padding: 0.2rem 0 0.2rem 5.3rem; // in line with the trimesters, past the year
-		overflow-y: auto;
-	}
-
-	.chip {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		max-width: 100%;
-		padding: 0.2rem 0.7rem;
-		font-size: 1.15rem;
-		border-radius: 4px;
-		cursor: grab;
-		@include course-type-fill(false);
-		transition: transform 0.2s var(--spring);
-
-		&.lifted {
-			transform: translateY(-2px);
-		}
-
-		b {
-			font-weight: 650;
-		}
-
-		span {
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
-
-		button {
-			padding: 0;
-			font: inherit;
-			color: inherit;
-			background: none;
-			border: 0;
-			cursor: pointer;
-		}
-	}
-
-	.empty {
-		font-size: 1.3rem;
-		color: var(--color-text-muted);
-	}
-
-	// the demo's course in hand: glides from the pool to its trimester, then
-	// settles with a little overshoot
-	.ghost {
-		position: absolute;
-		top: 0;
-		left: 0;
-		z-index: 2;
-		pointer-events: none;
-		box-shadow: 0 6px 14px rgba(20, 30, 50, 0.22);
-		transition:
-			transform 0.95s var(--ease-out),
-			box-shadow 0.2s ease;
-
-		&.landed {
-			box-shadow: none;
-			animation: settle 0.42s var(--spring);
-		}
-
-		svg {
-			position: absolute;
-			right: -1.1rem;
-			bottom: -1.2rem;
-		}
-	}
-
-	@keyframes settle {
-		from {
-			scale: 1.08;
-		}
-	}
-
-	.again {
-		margin-top: 0.6rem;
-		padding: 0;
-		font: inherit;
-		font-size: 1.2rem;
-		color: var(--color-text-muted);
-		background: none;
-		border: 0;
-		text-decoration: underline;
-		text-underline-offset: 0.2em;
-		cursor: pointer;
-
-		&:disabled {
-			opacity: 0.5;
-			cursor: default;
-		}
-	}
-
-	// the two small tries, side by side on a dotted rule
-	.extras {
-		--key-pressed: inset 0 2px 3px rgba(20, 30, 50, 0.32), inset 0 1px 1px rgba(20, 30, 50, 0.2);
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 2rem;
-		margin-top: 1.2rem;
-		padding-top: 1.2rem;
-		border-top: 1px dotted var(--color-border-light);
-
-		> div {
-			display: flex;
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 0.7rem;
-		}
-
-		p {
-			font-size: 1.2rem;
-			line-height: 1.4;
-			color: var(--color-text-muted);
-		}
-	}
-
 	.names {
-		@include segmented;
+		margin-bottom: 1.3rem;
+	}
+	.catalogue-scene {
+		max-width: 55rem;
+		display: grid;
+		grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+		gap: 1.2rem;
+		align-items: start;
+	}
+	.catalogue-results {
+		padding-top: 1rem;
+	}
+	.picked-result {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.7rem;
+		margin-top: 1rem;
+		padding: 0.8rem;
+		border: 1px dashed var(--color-border-card);
+		border-radius: 6px;
+	}
+	@media (max-width: 600px) {
+		.catalogue-scene {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.catalogue-results {
+			padding-top: 0;
+		}
 	}
 </style>

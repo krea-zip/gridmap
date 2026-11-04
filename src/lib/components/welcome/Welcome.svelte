@@ -1,51 +1,46 @@
 <script lang="ts">
-	// a first visit's four short windows: when they started, what they study,
-	// the plan that suggests, and a go at the board in Demo. the grid behind
-	// starts empty and fills in as they answer, the foundation core with the
-	// batch, then each programme as it's picked, so it builds up instead of
-	// showing someone else's example and reshuffling. every answer is also in
-	// the sidebar; nothing here is final.
+	// Set up the real suggested plan, then teach one small interaction at a
+	// time on disposable practice copies of the student's selected degree.
 	import { onMount } from 'svelte';
-	import { fly } from 'svelte/transition';
-	import { cubicOut } from 'svelte/easing';
+	import { STUDENT_BATCHES } from '$lib/curriculum/data';
 	import { usePlan } from '$lib/planner/context';
-	import { viewport } from '$lib/planner/viewport.svelte';
-	import { reducedMotion } from '$lib/ui/transitions';
 	import Modal from '../Modal.svelte';
-	import PathGrid from '../board/PathGrid.svelte';
+	import SuggestedPlan from './SuggestedPlan.svelte';
 	import { DegreeAnswers } from './answers.svelte';
 	import DegreePicker from './DegreePicker.svelte';
-	import Demo from './Demo.svelte';
+	import Practice from './Practice.svelte';
+	import { LESSONS, type Lesson } from './lessons';
 
 	let { ondone }: { ondone: (finished: boolean) => void } = $props();
 	const plan = usePlan();
 	const answers = new DegreeAnswers(plan);
-	const BATCHES = [2022, 2023, 2024, 2025, 2026];
 	const LENGTHS = [
 		{ four: false, label: '3 years' },
 		{ four: true, label: '4 years' }
 	];
-	const WINDOWS = {
-		start: { title: 'set up your plan', next: 'next' },
-		degree: { title: 'what are you studying?', next: 'see my suggested plan' },
-		route: { title: 'your suggested plan', next: 'try it out' },
-		demo: { title: 'try it out', next: 'start planning' }
-	};
-	type Window = keyof typeof WINDOWS;
-
-	// a phone doesn't drag, so it stops at the suggested plan
-	let windows = $derived<Window[]>(
-		viewport.desktop ? ['start', 'degree', 'route', 'demo'] : ['start', 'degree', 'route']
-	);
+	const SETUP = [
+		{ id: 'start' as const, title: 'set up your plan', label: 'your batch', group: 'setup' },
+		{ id: 'degree' as const, title: 'what are you studying?', label: 'your degree', group: 'setup' },
+		{ id: 'route' as const, title: 'your suggested plan', label: 'suggested plan', group: 'setup' }
+	];
+	let windows = $derived([
+		...SETUP,
+		...LESSONS.filter((lesson) => lesson.id !== 'choices' || plan.choices.some((p) => p.role === 'major'))
+	]);
 	let at = $state(0);
-	let direction = $state(1);
 	let current = $derived(windows[at]);
 	let last = $derived(at === windows.length - 1);
-	let wide = $derived(current === 'route' || current === 'demo');
-	let waiting = $derived((current === 'start' && !answers.answered.batch) || (current === 'degree' && !answers.ready));
+	let waiting = $derived(
+		(current.id === 'start' && !answers.answered.batch) || (current.id === 'degree' && !answers.ready)
+	);
+	const GROUPS = ['plan', 'explore', 'check', 'course'];
+	function jump(id: string) {
+		const next = windows.findIndex((w) => w.id === id);
+		if (next < 0) return;
+		at = next;
+	}
 
 	function go(by: 1 | -1) {
-		direction = by;
 		at += by;
 	}
 
@@ -63,51 +58,71 @@
 	});
 </script>
 
-<Modal title="welcome to kcal" width={wide ? '68rem' : '56rem'} dismiss="skip" onclose={skip}>
-	{#key current}
-		<div in:fly={{ x: direction * 24, duration: reducedMotion() ? 0 : 240, easing: cubicOut }}>
-			<h3>{WINDOWS[current].title}</h3>
-
-			{#if current === 'start'}
-				<p class="lede">pick your batch and degree. you can change both later.</p>
-
-				<p class="ask">when did you start?</p>
-				<div class="keys" role="group" aria-label="batch">
-					{#each BATCHES as year (year)}
-						{@const on = answers.answered.batch && plan.batchStartYear === year}
-						<button class:on aria-pressed={on} onclick={() => answers.setBatch(year)}>{year}</button>
-					{/each}
-				</div>
-
-				<p class="ask">how long is your degree?</p>
-				<div class="keys" role="group" aria-label="degree length">
-					{#each LENGTHS as { four, label } (label)}
-						{@const on = plan.fourYear === four}
-						<button class:on aria-pressed={on} onclick={() => answers.setFourYear(four)}>{label}</button>
-					{/each}
-				</div>
-			{:else if current === 'degree'}
-				<DegreePicker {answers} />
-			{:else if current === 'route'}
-				<p class="lede">
-					the order your department suggests, already on your plan, so you can move, add or drop anything.{#if plan.recommendedElectiveCredits}{' '}the
-						dashed lines are the <b>{plan.recommendedElectiveCredits} elective credits</b> you choose for yourself.{/if}
-				</p>
-				<PathGrid plain />
-			{:else}
-				<Demo />
-			{/if}
+<Modal
+	title="welcome to kcal"
+	width={current.id === 'route' ? '84rem' : at >= 3 ? '64rem' : '56rem'}
+	dismiss="skip"
+	onclose={skip}
+>
+	{#if at >= 3}
+		<nav class="flow" aria-label="demo flow">
+			{#each GROUPS as group, i (group)}
+				{#if i}<span aria-hidden="true">→</span>{/if}
+				<button
+					class:active={current.group === group}
+					aria-current={current.group === group ? 'step' : undefined}
+					onclick={() => jump(windows.find((w) => w.group === group)!.id)}>{group}</button
+				>
+			{/each}
+		</nav>
+		<div class="component-position">
+			<span>miniature demo · {at - 2}/{windows.length - 3}</span><select
+				aria-label="demo component"
+				value={current.id}
+				onchange={(e) => jump(e.currentTarget.value)}
+				>{#each windows.slice(3) as w (w.id)}<option value={w.id}>{w.label}</option>{/each}</select
+			>
 		</div>
-	{/key}
-
+	{/if}
+	<h3>{current.title}</h3>
+	{#if current.id === 'start'}
+		<p class="lede">pick your batch and degree. you can change both later.</p>
+		<p class="ask">when did you start?</p>
+		<div class="keys" role="group" aria-label="batch">
+			{#each STUDENT_BATCHES as year (year)}
+				{@const on = answers.answered.batch && plan.batchStartYear === year}
+				<button class:on aria-pressed={on} onclick={() => answers.setBatch(year)}>{year}</button>
+			{/each}
+		</div>
+		<p class="ask">how long is your degree?</p>
+		<div class="keys" role="group" aria-label="degree length">
+			{#each LENGTHS as { four, label } (label)}
+				{@const on = plan.fourYear === four}
+				<button class:on aria-pressed={on} onclick={() => answers.setFourYear(four)}>{label}</button>
+			{/each}
+		</div>
+	{:else if current.id === 'degree'}
+		<DegreePicker {answers} />
+	{:else if current.id === 'route'}
+		<p class="lede">your department’s starting point. next, try its pieces one at a time.</p>
+		<SuggestedPlan />
+	{:else}
+		<Practice lesson={current.id as Lesson} />
+	{/if}
 	<div class="nav">
 		{#if at > 0}<button class="back" onclick={() => go(-1)}>back</button>{/if}
-		<span class="pips" role="img" aria-label="window {at + 1} of {windows.length}">
-			{#each windows as w, i (w)}<i class:on={i <= at}></i>{/each}
-		</span>
-		<button class="go" disabled={waiting} onclick={() => (last ? ondone(true) : go(1))}>
-			{last ? 'start planning' : WINDOWS[current].next}
-		</button>
+		<span class="step-count">{at + 1} / {windows.length}</span>
+		<button data-next class="go" disabled={waiting} onclick={() => (last ? ondone(true) : go(1))}
+			>{last
+				? 'start planning'
+				: current.id === 'degree'
+					? 'see my suggested plan'
+					: current.id === 'start'
+						? 'next'
+						: current.id === 'route'
+							? 'try the components →'
+							: `next · ${windows[at + 1].label}`}</button
+		>
 	</div>
 </Modal>
 
@@ -176,22 +191,64 @@
 		margin-top: 2rem;
 	}
 
-	// the same faded pips as a choice pool, filling as the windows go by
-	.pips {
-		display: flex;
-		gap: 0.4rem;
+	.step-count {
 		margin-left: auto;
-
-		i {
-			width: 0.75rem;
-			height: 0.75rem;
-			background-color: color-mix(in srgb, var(--color-text-muted) 30%, transparent);
-			border-radius: 50%;
-			transition: background-color 0.2s ease;
-
-			&.on {
-				background-color: var(--color-accent);
-			}
+		color: var(--color-text-muted);
+		font-size: 1.1rem;
+		white-space: nowrap;
+	}
+	.flow {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		margin-bottom: 1.4rem;
+		color: var(--color-border-card);
+	}
+	.flow button {
+		flex: 1;
+		padding: 0.4rem 0.7rem;
+		font: inherit;
+		font-size: 1.15rem;
+		color: var(--color-text-muted);
+		background: none;
+		border: 1px solid transparent;
+		border-radius: 99px;
+		cursor: pointer;
+	}
+	.flow button.active {
+		color: var(--color-accent);
+		border-color: var(--color-border-card);
+		background: var(--color-bg-light);
+		font-weight: 700;
+	}
+	.component-position {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.8rem;
+		margin-bottom: 0.8rem;
+		font-size: 1.05rem;
+		color: var(--color-text-muted);
+	}
+	.component-position select {
+		max-width: 48%;
+		padding: 0.3rem 0.5rem;
+		font: inherit;
+		color: var(--color-text);
+		background: var(--color-bg-light);
+		border: 1px solid var(--color-border-card);
+		border-radius: 4px;
+	}
+	@media (max-width: 600px) {
+		.flow {
+			gap: 0.2rem;
+		}
+		.flow button {
+			padding: 0.4rem;
+		}
+		.go {
+			padding: 0.7rem 1rem;
+			font-size: 1.2rem;
 		}
 	}
 

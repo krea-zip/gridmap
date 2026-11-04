@@ -6,7 +6,7 @@
 		size = '1.5rem',
 		snap = false
 	}: {
-		name: 'search' | 'gear' | 'code' | 'title' | 'grade' | 'link' | 'help';
+		name: 'search' | 'gear' | 'code' | 'title' | 'grade' | 'link' | 'help' | 'sliders' | 'pin';
 		size?: string;
 		snap?: boolean;
 	} = $props();
@@ -18,7 +18,10 @@
 		title: 'M2 3h12v3h-2V5H9v8h2v1H5v-1h2V5H4v1H2z',
 		grade: 'M2 2h12v12H2zM4 4v8h8V4zM5 8h2v3H5zM9 5h2v6H9z',
 		link: 'M3 3h7V1l4 4-4 4V7H3zM13 9H6V7l-4 4 4 4v-2h7z',
-		help: 'M4 2h7v2h2v4h-2v2H8v1H6V8h3V6h2V4H4v2H2V4h2zM6 13h2v2H6z'
+		help: 'M4 2h7v2h2v4h-2v2H8v1H6V8h3V6h2V4H4v2H2V4h2zM6 13h2v2H6z',
+		sliders:
+			'M2 3h7v1H2zM12 3h2v1h-2zM9 2h3v3H9zM2 8h2v1H2zM4 7h3v3H4zM7 8h7v1H7zM2 13h8v1H2zM10 12h3v3h-3zM13 13h1v1h-1z',
+		pin: 'M4 1h8v2H4zM6 3h4v5H6zM3 8h10v2H3zM7 10h2v5H7z'
 	};
 
 	// Pixel art only looks even when every art pixel covers the same whole

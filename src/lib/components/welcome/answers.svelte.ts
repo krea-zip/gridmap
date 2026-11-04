@@ -12,8 +12,8 @@ type Extra = Exclude<PickRole, 'major1'>;
 export class DegreeAnswers {
 	#plan: Plan;
 	answered = $state({ batch: false, major1: false, major2: false, minor: false, conc: false });
-	// the slots beside the major; most students take a minor, so it starts there
-	extras = $state<Extra[]>(['minor']);
+	// Start with one major; every additional programme is an explicit choice.
+	extras = $state<Extra[]>([]);
 	active = $state<PickRole>('major1');
 
 	structure: StructureKind = $derived.by(() => {
@@ -36,7 +36,7 @@ export class DegreeAnswers {
 	}
 
 	/** the major comes first, so nothing it could collide with is chosen before it */
-	canFocus = (role: PickRole) => role === 'major1' || this.answered.major1;
+	canFocus = (role: PickRole) => this.roles.includes(role) && (role === 'major1' || this.answered.major1);
 
 	focus(role: PickRole) {
 		if (this.canFocus(role)) this.active = role;
@@ -50,7 +50,6 @@ export class DegreeAnswers {
 	pick(subject: string) {
 		this.#plan.picks[this.active] = subject;
 		this.answered[this.active] = true;
-		this.active = this.roles.find((role) => !this.answered[role]) ?? this.active;
 		this.sync();
 	}
 
@@ -66,6 +65,7 @@ export class DegreeAnswers {
 	}
 
 	add(role: Extra) {
+		if (!this.answered.major1 || !this.addable.includes(role)) return;
 		this.extras.push(role);
 		this.active = role;
 		this.sync();
