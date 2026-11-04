@@ -20,9 +20,7 @@ body {
 	// the board, and 9px still reads fine there; 10px is right once there's
 	// room for it. phones keep 10px (below). The text-size setting multiplies
 	// this via --text-scale (default 1).
-	font-size: calc(
-		clamp(9px, max(9px + (100vw - 1366px) / 554, 0.52vw), 11px) * var(--text-scale, 1)
-	);
+	font-size: calc(clamp(9px, max(9px + (100vw - 1366px) / 554, 0.52vw), 11px) * var(--text-scale, 1));
 
 	// a phone shows one panel at a time, so there's no squeeze to make room for
 	@media (max-width: 767px) {

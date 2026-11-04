@@ -9,10 +9,10 @@ let client: Promise<SupabaseClient<Database>> | undefined;
 export function getSupabase(): Promise<SupabaseClient<Database>> {
 	const config = supabaseConfig();
 	if (!browser || !config) return Promise.reject(new Error('Sign-in is not available on this site yet.'));
-	return (client ??= import('@supabase/ssr').then(({ createBrowserClient }) =>
-		createBrowserClient<Database>(config.url, config.key)
-	).catch((error) => {
-		client = undefined;
-		throw error;
-	}));
+	return (client ??= import('@supabase/ssr')
+		.then(({ createBrowserClient }) => createBrowserClient<Database>(config.url, config.key))
+		.catch((error) => {
+			client = undefined;
+			throw error;
+		}));
 }
