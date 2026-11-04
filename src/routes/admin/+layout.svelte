@@ -1,14 +1,13 @@
 <script lang="ts">
-	// the academic office's frame: sidebar, toolbar and the page, or the
-	// sign-in. the draft arrives with the page (see +layout.server.ts); a
+	// the academic office's frame: the top bar and the page, or the sign-in. the draft arrives with the page (see +layout.server.ts); a
 	// fresh copy from the server, after a reload or a sign-in, replaces
 	// what's on screen.
 	import '../../app.scss';
 	import './admin.scss';
 	import type { LayoutProps } from './$types';
-	import { beforeNavigate } from '$app/navigation';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import { page } from '$app/state';
 	import { Workspace, provideOffice } from '$lib/features/office/workspace.svelte';
-	import OfficeNav from '$lib/components/admin/OfficeNav.svelte';
 	import OfficeToolbar from '$lib/components/admin/OfficeToolbar.svelte';
 	import OfficeSignIn from '$lib/components/admin/OfficeSignIn.svelte';
 	import OldEditsNotice from '$lib/components/admin/OldEditsNotice.svelte';
@@ -22,6 +21,15 @@
 
 	let large = $state(false);
 	let signedIn = $derived(!!data.name);
+	// the course list uses the whole width; everything else reads better narrower
+	let wide = $derived(page.url.pathname.startsWith('/admin/courses'));
+
+	// the page scrolls in its own box, where the router's reset can't reach: a
+	// new page starts at its top, a link to a setting scrolls itself
+	let scroller = $state<HTMLDivElement>();
+	afterNavigate(({ from, to }) => {
+		if (scroller && from?.url.pathname !== to?.url.pathname && !to?.url.hash) scroller.scrollTop = 0;
+	});
 
 	// unsaved edits live only on this screen, so leaving asks first
 	beforeNavigate(({ to, cancel, type }) => {
@@ -37,11 +45,19 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
-<div class="office-shell" class:large-text={large}>
-	{#if signedIn}<OfficeNav bind:large />{/if}
-	<div class="office-body">
-		{#if signedIn}<OfficeToolbar /><OldEditsNotice />{/if}
-		<main class="office-main">
+<svelte:window
+	onkeydown={(e) => {
+		if ((e.ctrlKey || e.metaKey) && e.key === 's' && signedIn) {
+			e.preventDefault();
+			if (office.dirty && !office.conflict) void office.save();
+		}
+	}}
+/>
+<a class="office-skip" href="#office-content">Skip to content</a>
+<div class="office-shell" class:large-text={large} class:signed-out={!signedIn}>
+	{#if signedIn}<OfficeToolbar bind:large /><OldEditsNotice />{/if}
+	<div class="office-body" bind:this={scroller}>
+		<main class="office-main" class:wide id="office-content" tabindex="-1">
 			{#if !signedIn}
 				<OfficeSignIn />
 			{:else}

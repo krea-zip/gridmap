@@ -1,64 +1,129 @@
 <script lang="ts">
+	// the office's front page: where things stand, the batch coming up and what
+	// needs attention. everything else is one key away along the top.
 	import { useOffice } from '$lib/features/office/workspace.svelte';
+	import { issueHref } from '$lib/features/office/navigation';
+	import { batchDifferences, batchSummary, nextBatch } from '$lib/features/office/batches';
+	import OfficeIcon from './OfficeIcon.svelte';
+
 	const office = useOffice();
-	const jobs = [
-		[
-			'/admin/import',
-			'Upload course list',
-			'Import the office’s CSV or Excel spreadsheet. Review every change before saving.'
-		],
-		['/admin/offerings', 'Prepare a trimester', 'Set up offerings, sections, teaching assignments and eligibility.'],
-		['/admin/courses', 'Manage courses', 'Find a course, update its information or add a new one.'],
-		[
-			'/admin/requirements',
-			'Manage degree requirements',
-			'Edit batch curricula, required courses, choices and suggested pathways.'
-		],
-		['/admin/changes', 'Review & publish', 'Check the saved draft, preview the student planner and publish it.']
-	];
+	const doc = $derived(office.document);
+	const term = $derived(doc?.terms.find((t) => t.id === office.term));
+	const next = nextBatch();
+	const summary = $derived(doc && batchSummary(doc, next));
+	const differences = $derived(doc ? batchDifferences(doc, next).filter((d) => d.kind !== 'requirements') : []);
+	const draftState = $derived(
+		office.dirty
+			? 'Unsaved changes on this screen'
+			: office.status === 'published'
+				? 'Same as the published release'
+				: 'Saved, not yet published'
+	);
+	const attention = $derived([...office.errors, ...office.issues.filter((i) => i.severity !== 'error')].slice(0, 5));
 </script>
 
-<h1>Academic office</h1>
-<p class="office-lead">Maintain the information students use to plan their degrees.</p>
+<h1>welcome back, {office.name.split(' ')[0]}</h1>
+
+<div class="office-card office-desk">
+	<div>
+		<small>Working on</small>
+		<b>{term?.label || 'No term selected'}</b>
+		<span><a href="/admin/offerings">Change term</a></span>
+	</div>
+	<div>
+		<small>Your draft</small>
+		<b>{draftState}</b>
+		<span>{office.message}</span>
+	</div>
+	<div>
+		<small>Students are seeing</small>
+		<b>{office.release ? `Release ${office.release}` : 'The built-in catalogue'}</b>
+		<span>{office.deployment || 'No website update requested yet'}</span>
+	</div>
+	<div>
+		<small>What’s next</small>
+		<b
+			>{office.errors.length
+				? `Fix ${office.errors.length} blocking ${office.errors.length === 1 ? 'problem' : 'problems'}`
+				: office.dirty
+					? 'Save your draft'
+					: office.status === 'published'
+						? 'Nothing waiting'
+						: 'Review and publish'}</b
+		>
+		<span><a href="/admin/changes">Open Review & publish</a></span>
+	</div>
+</div>
+
 <div class="office-stats">
-	<a href="/admin/courses"
-		><b>{office.document?.curriculum.courses.filter((c) => !c.retired).length}</b><span>Active courses</span></a
-	>
-	<a href="/admin/offerings"
-		><b>{office.document?.offerings.filter((o) => o.term === office.term).length}</b><span
-			>Offerings in selected term</span
-		></a
-	>
-	<a href="/admin/offerings"
-		><b
-			>{office.document?.offerings.filter((o) => o.approval === 'submitted' || o.approval === 'clarification')
-				.length}</b
-		><span>Awaiting review</span></a
-	>
-	<a href="/admin/changes"><b>{office.errors.length}</b><span>Errors to resolve</span></a>
+	<a href="/admin/courses">
+		<span><OfficeIcon name="book" size={18} /> Active courses</span>
+		<b>{doc?.curriculum.courses.filter((c) => !c.retired).length ?? 0}</b>
+		<small>Explore the catalogue <span aria-hidden="true">↗</span></small>
+	</a>
+	<a href="/admin/offerings">
+		<span><OfficeIcon name="calendar" size={18} /> Term offerings</span>
+		<b>{doc?.offerings.filter((o) => o.term === office.term).length ?? 0}</b>
+		<small>{term?.label || 'Select a term'} <span aria-hidden="true">↗</span></small>
+	</a>
+	<a href="/admin/changes">
+		<span><OfficeIcon name="history" size={18} /> Changes since opening</span>
+		<b>{office.changes.length}</b>
+		<small>See them all <span aria-hidden="true">↗</span></small>
+	</a>
+	<a href="/admin/changes" class:has-errors={office.errors.length > 0}>
+		<span><OfficeIcon name={office.errors.length ? 'warning' : 'check'} size={18} /> Publishing checks</span>
+		<b>{office.errors.length || 'All clear'}</b>
+		<small
+			>{office.errors.length ? 'Items to resolve before publishing' : 'No blocking errors'}
+			<span aria-hidden="true">↗</span></small
+		>
+	</a>
 </div>
-<h2>What would you like to do?</h2>
-<div class="office-job-grid">
-	{#each jobs as [href, title, body]}<a class="office-job" {href}
-			><b>{title}<span aria-hidden="true"> →</span></b><span>{body}</span></a
-		>{/each}
+
+<div class="office-home-bottom">
+	<section class="office-card">
+		<div class="office-eyebrow">The next intake</div>
+		<h2>{next} batch</h2>
+		{#if !differences.some((d) => d.kind === 'curriculum')}<p class="office-help">
+				Follows “{summary?.curriculum}”.
+			</p>{/if}
+		{#if differences.length}
+			<ul class="office-attention-list">
+				{#each differences.slice(0, 4) as d (d.title)}
+					<li><span class="office-issue-dot"></span><span><b>{d.title}</b><span>{d.detail}</span></span></li>
+				{/each}
+			</ul>
+		{:else}
+			<p>No changes from the {next - 1} batch yet.</p>
+		{/if}
+		<a class="button primary" href="/admin/batches/{next}"
+			>Open the {next} batch <OfficeIcon name="arrow" size={16} /></a
+		>
+	</section>
+	<section class="office-card">
+		<div class="office-section-heading">
+			<h2>needs attention</h2>
+			<span class="office-badge">{office.issues.length}</span>
+		</div>
+		{#if attention.length}
+			<ul class="office-attention-list">
+				{#each attention as issue, i (i)}
+					<li>
+						<span class="office-issue-dot" class:error={issue.severity === 'error'}></span>
+						<a href={issueHref(issue.area, issue.record)}
+							><b>{issue.record || issue.area}</b><span>{issue.message}</span></a
+						>
+						<OfficeIcon name="arrow" size={15} />
+					</li>
+				{/each}
+			</ul>
+			<a class="office-text-link" href="/admin/changes">See all checks →</a>
+		{:else}
+			<div class="office-all-clear">
+				<OfficeIcon name="check" size={28} /><b>Looking good.</b>
+				<p>The draft has no outstanding checks.</p>
+			</div>
+		{/if}
+	</section>
 </div>
-<section class="office-card">
-	<h2>How changes reach students</h2>
-	<ol class="office-steps">
-		<li><b>Edit</b><span>Update records or import a spreadsheet.</span></li>
-		<li><b>Save draft</b><span>Keep the work in the shared draft.</span></li>
-		<li><b>Publish</b><span>Check the student preview, then release it and update the website.</span></li>
-	</ol>
-</section>
-{#if office.issues.length}<section class="office-card">
-		<h2>Needs attention</h2>
-		<p>
-			{office.errors.length} errors and {office.issues.length - office.errors.length} warnings. Existing catalogue gaps can
-			be corrected gradually; errors must be resolved before publication.
-		</p>
-		<ul>
-			{#each office.issues.slice(0, 5) as issue}<li><b>{issue.record || issue.area}</b>, {issue.message}</li>{/each}
-		</ul>
-		<a href="/admin/changes">View all checks →</a>
-	</section>{/if}

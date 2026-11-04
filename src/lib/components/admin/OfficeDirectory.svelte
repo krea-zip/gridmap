@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { useOffice } from '$lib/features/office/workspace.svelte';
 	import { emptyFaculty } from '$lib/features/office/model';
 	let { kind }: { kind: 'faculty' | 'departments' } = $props();
@@ -8,6 +9,11 @@
 		name = $state(''),
 		error = $state(''),
 		prefix = $state('');
+	// search lands here with the record to open
+	$effect(() => {
+		const id = page.url.searchParams.get('id');
+		if (id) selected = id;
+	});
 	const lecturer = $derived(office.document?.curriculum.lecturers.find((f) => f.id === selected));
 	const subject = $derived(office.document?.curriculum.subjects.find((s) => s.id === selected));
 	function add() {
@@ -40,7 +46,7 @@
 	}
 </script>
 
-<h1>{kind === 'faculty' ? 'Faculty' : 'Departments'}</h1>
+<h1>{kind}</h1>
 <p class="office-lead">
 	{kind === 'faculty'
 		? 'Maintain contact details and the faculty directory. Assign teaching by course and section.'
@@ -102,7 +108,9 @@
 				<label>Department name<input bind:value={subject.label} /></label><label
 					>Short label<input maxlength="12" bind:value={subject.short} /></label
 				><label>Planner colour hue<input type="range" min="0" max="360" bind:value={subject.hue} /></label><label
-					class="office-check"><input type="checkbox" bind:checked={subject.majorable} />Available as a major</label
+					class="office-check"
+					><input type="checkbox" bind:checked={subject.majorable} />Usually available as a major
+					<span class="office-help">a single batch can differ: see <a href="/admin/batches">Batches</a></span></label
 				>
 			</div>
 			<h3 style="margin-top:2rem">Course-code prefixes</h3>

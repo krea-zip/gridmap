@@ -2,11 +2,17 @@
 	// a term and the sections it offers: who teaches, who may enrol, how big,
 	// and whether it's signed off. only approved offerings tell students a
 	// course runs (see publication() in the office model).
+	import { page } from '$app/state';
 	import { useOffice } from '$lib/features/office/workspace.svelte';
 	import { APPROVALS, ELIGIBILITY, newOffering, type Term } from '$lib/features/office/model';
 
 	const office = useOffice();
 	const doc = $derived(office.document);
+	// search lands here with the term to show
+	$effect(() => {
+		const id = page.url.searchParams.get('term');
+		if (id) office.term = id;
+	});
 	const term = $derived(doc?.terms.find((t) => t.id === office.term));
 	const YEARS = ['year 1', 'year 2', 'year 3', 'year 4'];
 
@@ -31,6 +37,8 @@
 	const titleOf = (code: string) =>
 		doc?.curriculum.courses.find((c) => c.code === code)?.title ?? 'not in the catalogue';
 	const facultyName = (id: string) => doc?.curriculum.lecturers.find((f) => f.id === id)?.name ?? id;
+
+	let addingTerm = $state(false);
 
 	function addTerm() {
 		if (!doc) return;
@@ -76,7 +84,7 @@
 	const whole = (v: string) => (v.trim() === '' ? null : Math.max(0, Math.round(Number(v))));
 </script>
 
-<h1>Terms & offerings</h1>
+<h1>terms & offerings</h1>
 <p class="office-lead">Set up a term’s sections: teaching, eligibility, capacity and sign-off.</p>
 
 {#if doc}
@@ -89,17 +97,22 @@
 					>{/each}
 			</select>
 		</label>
-		<label>New term<input type="number" min="2018" max="2099" bind:value={newYear} /></label>
-		<label
-			>Trimester
-			<select bind:value={newTrim}>
-				<option value={1}>1 · Aug–Oct</option>
-				<option value={2}>2 · Nov–Jan</option>
-				<option value={3}>3 · Feb–Apr</option>
-			</select>
-		</label>
-		<button onclick={addTerm}>Add term</button>
+		<button onclick={() => (addingTerm = !addingTerm)}>+ add term</button>
 	</div>
+	{#if addingTerm}
+		<div class="office-row">
+			<label>Year<input type="number" min="2018" max="2099" bind:value={newYear} /></label>
+			<label
+				>Trimester
+				<select bind:value={newTrim}>
+					<option value={1}>1 · Aug–Oct</option>
+					<option value={2}>2 · Nov–Jan</option>
+					<option value={3}>3 · Feb–Apr</option>
+				</select>
+			</label>
+			<button class="primary" onclick={addTerm}>Add term</button>
+		</div>
+	{/if}
 
 	{#if term}
 		<section class="office-card">

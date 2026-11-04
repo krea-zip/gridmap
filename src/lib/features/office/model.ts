@@ -1,4 +1,4 @@
-import type { CurriculumSnapshot, SnapshotCourse, Lecturer, Variant } from '../../curriculum/snapshot';
+import type { BatchProfile, CurriculumSnapshot, SnapshotCourse, Lecturer, Variant } from '../../curriculum/snapshot';
 
 export type Approval = 'draft' | 'clarification' | 'submitted' | 'approved' | 'cancelled';
 export const APPROVALS: { value: Approval; label: string }[] = [
@@ -86,13 +86,43 @@ export type AcademicPolicies = {
 	reference: string;
 	notes: string;
 };
+export const CHANGE_AREAS = [
+	{ value: 'programme', label: 'Programmes offered' },
+	{ value: 'requirements', label: 'Degree requirements' },
+	{ value: 'courses', label: 'Courses' },
+	{ value: 'credits', label: 'Credits' },
+	{ value: 'policy', label: 'Policy' },
+	{ value: 'other', label: 'Other' }
+] as const;
+export type ChangeArea = (typeof CHANGE_AREAS)[number]['value'];
+export const CHANGE_STATUSES = [
+	{ value: 'proposed', label: 'Proposed' },
+	{ value: 'approved', label: 'Approved' },
+	{ value: 'done', label: 'Done' }
+] as const;
+export type ChangeStatus = (typeof CHANGE_STATUSES)[number]['value'];
+/** one entry in a batch's record of what changed and why. office-only: it
+ *  explains the edits, the edits themselves are what reach students */
+export type BatchChange = {
+	id: string;
+	area: ChangeArea;
+	subject: string;
+	title: string;
+	detail: string;
+	reference: string;
+	status: ChangeStatus;
+	by: string;
+	on: string;
+};
+export type OfficeBatchProfile = BatchProfile & { changes: BatchChange[]; note: string };
 export type OfficeDocument = {
 	format: 1;
 	// Omit first: intersecting two `courses` types would keep the narrower one
-	curriculum: Omit<CurriculumSnapshot, 'courses'> & {
+	curriculum: Omit<CurriculumSnapshot, 'courses' | 'batchProfiles'> & {
 		courses: OfficeCourse[];
 		creditSharing?: 'one' | 'all';
 		policies?: AcademicPolicies;
+		batchProfiles?: OfficeBatchProfile[];
 	};
 	descriptions: Record<string, string>;
 	terms: Term[];
@@ -190,6 +220,22 @@ export function newCourse(code: string, title: string, subject: string): OfficeC
 		faculty: ''
 	};
 }
+/** give a course another home department. a department it's already listed
+ *  under just takes over; otherwise the old listing moves across with it */
+export function moveCourse(course: OfficeCourse, subject: string) {
+	const from = course.subject;
+	if (from === subject) return;
+	course.subject = subject;
+	if (course.subjects.includes(subject)) return;
+	delete course.codesBySubject[from];
+	course.codesBySubject[subject] = course.code;
+	course.subjects = [subject, ...course.subjects.filter((s) => s !== from)];
+}
+export function toggleOffered(course: OfficeCourse, trim: 1 | 2 | 3) {
+	course.offered = course.offered.includes(trim)
+		? course.offered.filter((t) => t !== trim)
+		: [...course.offered, trim].sort();
+}
 export function newOffering(code: string, term: string, section = ''): Offering {
 	return {
 		id: crypto.randomUUID(),
@@ -242,16 +288,24 @@ export const emptyFaculty = (id: string, name: string): Lecturer => ({
 	image_url: '',
 	url: ''
 });
+/** what students get of the batch records: the offers. the notes and change log
+ *  stay in the office, and a batch that offers nothing new isn't sent at all */
+const publishedOffers = (doc: OfficeDocument): BatchProfile[] =>
+	(doc.curriculum.batchProfiles ?? [])
+		.filter((p) => Object.keys(p.offers).length)
+		.map(({ batch, offers }) => ({ batch, offers: structuredClone(offers) }));
+
 export function publication(doc: OfficeDocument): CurriculumSnapshot & { descriptions: Record<string, string> } {
-	const snapshot = structuredClone(doc.curriculum);
+	const { batchProfiles: _office, ...curriculum } = structuredClone(doc.curriculum);
+	const snapshot = { ...curriculum, batchProfiles: publishedOffers(doc) };
 	snapshot.updatedOn = new Date().toISOString().slice(0, 10);
 	// Only approved offerings inform student availability; preserve historical records.
 	for (const c of snapshot.courses) {
 		const approved = doc.offerings.filter((o) => o.code === c.code && o.approval === 'approved');
 		c.terms = [...new Set([...c.terms, ...approved.map((o) => o.term)])].sort().reverse();
-		c.offered = [
-			...new Set(c.terms.map((t) => Number(t.match(/_T([123])$/)?.[1])).filter((t) => t >= 1 && t <= 3))
-		] as (1 | 2 | 3)[];
+		// the office's usual trimesters stand; an approved offering only adds to them
+		const running = approved.map((o) => Number(o.term.match(/_T([123])$/)?.[1])).filter((t) => t >= 1 && t <= 3);
+		c.offered = [...new Set([...c.offered, ...running])].sort() as (1 | 2 | 3)[];
 	}
 	return { ...snapshot, descriptions: structuredClone(doc.descriptions) };
 }
@@ -288,6 +342,15 @@ export function changesBetween(
 	compare('Offerings', before.offerings, after.offerings, 'id');
 	compare('Terms', before.terms, after.terms, 'id');
 	compare('Requirements', before.curriculum.requirementSets, after.curriculum.requirementSets, 'id');
+	const [offered, offers] = [publishedOffers(before), publishedOffers(after)];
+	if (JSON.stringify(offered) !== JSON.stringify(offers))
+		changes.push({
+			area: 'Academic rules',
+			record: 'batchProfiles',
+			field: 'programmes offered',
+			before: show(offered),
+			after: show(offers)
+		});
 	for (const field of ['rules', 'equivalences', 'batchRules', 'policies', 'creditSharing'] as const)
 		if (JSON.stringify(before.curriculum[field]) !== JSON.stringify(after.curriculum[field]))
 			changes.push({

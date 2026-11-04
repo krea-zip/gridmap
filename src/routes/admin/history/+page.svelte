@@ -19,7 +19,7 @@
 		});
 </script>
 
-<h1>Past releases</h1>
+<h1>past releases</h1>
 <p class="office-lead">What students were shown, newest first. Open one as a draft to go back to it.</p>
 
 {#if office.dirty}

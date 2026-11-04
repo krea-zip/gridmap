@@ -6,13 +6,11 @@
 		to = $state('');
 </script>
 
-<h1>Cross-listing &amp; substitutions</h1>
-<p class="office-lead">
-	Distinguish different codes for the same course from separate courses that can satisfy the same requirement.
-</p>
+<h2 id="equivalences">course equivalences</h2>
+<p class="office-lead">Different codes for one course, and separate courses that can satisfy the same requirement.</p>
 {#if office.document}
-	<section class="office-card">
-		<h2>Cross-listed courses</h2>
+	<section class="office-card" id="cross-listed">
+		<h2>cross-listed courses</h2>
 		<p>Manage department codes within each course record.</p>
 		<div class="office-table-scroll">
 			<table>
@@ -26,8 +24,8 @@
 			</table>
 		</div>
 	</section>
-	<section class="office-card">
-		<h2>Interchangeable courses</h2>
+	<section class="office-card" id="interchangeable">
+		<h2>interchangeable courses</h2>
 		<p>
 			Any course in a group can satisfy a prerequisite or required-course reference to another member of that group.
 		</p>
@@ -44,8 +42,8 @@
 			>Add interchangeable group</button
 		>
 	</section>
-	<section class="office-card">
-		<h2>One-way substitutions</h2>
+	<section class="office-card" id="one-way">
+		<h2>one-way substitutions</h2>
 		<p>The accepted course satisfies the original course’s requirement. The reverse is not automatically allowed.</p>
 		<div class="office-table-scroll">
 			<table>
@@ -82,8 +80,8 @@
 			>
 		</div>
 	</section>
-	<section class="office-card">
-		<h2>Credit counting</h2>
+	<section class="office-card" id="credit-counting">
+		<h2>credit counting</h2>
 		<label
 			>Default for courses shared by programmes<select bind:value={office.document.curriculum.creditSharing}
 				><option value="one">Count toward one programme</option><option value="all"

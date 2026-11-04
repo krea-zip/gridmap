@@ -46,6 +46,12 @@ export class Workspace {
 		this.#replace = false;
 		// drafts saved before policies existed get the regulation defaults
 		payload.document.curriculum.policies ??= structuredClone(DEFAULT_POLICIES);
+		// and a release carries the offers without the office's own record
+		payload.document.curriculum.batchProfiles = (payload.document.curriculum.batchProfiles ?? []).map((p) => ({
+			...p,
+			changes: p.changes ?? [],
+			note: p.note ?? ''
+		}));
 		this.document = payload.document;
 		this.saved = structuredClone(payload.document);
 		this.baseline = structuredClone(payload.document);

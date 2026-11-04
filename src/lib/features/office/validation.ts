@@ -1,4 +1,5 @@
 import { admissionFor, VARIANTS, type OfficeDocument, type OfficeIssue } from './model.ts';
+import { batchProblems } from './batches.ts';
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const codePattern = /^[A-Z]{2,5}\d{3}[A-Z]?$/;
 const list = (v: unknown): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string');
@@ -155,6 +156,7 @@ export function validateOffice(raw: unknown): OfficeIssue[] {
 						add('Requirements', id, 'Pathways use years 1–5 and trimesters 1–3.');
 			}
 		}
+		for (const problem of batchProblems(d)) add('Batches', problem.batch, problem.message, problem.severity);
 		for (const group of c.equivalences.substitutes)
 			for (const code of group) if (!canonical.has(code)) add('Substitutions', code, 'Select an existing course.');
 		for (const pair of c.equivalences.covers)

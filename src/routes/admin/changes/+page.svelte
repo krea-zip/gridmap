@@ -35,7 +35,7 @@
 	const short = (v: string) => (v.length > 140 ? v.slice(0, 140) + '…' : v);
 </script>
 
-<h1>Review & publish</h1>
+<h1>review & publish</h1>
 <p class="office-lead">
 	Check the saved draft, look at the student preview, then publish it. The live site keeps showing the last release
 	until then.
@@ -52,7 +52,7 @@
 {#if form?.message}<p class="office-note" role="status">{form.message}</p>{/if}
 
 <section class="office-card">
-	<h2>Next step</h2>
+	<h2>next step</h2>
 	{#if blocked && office.status !== 'published'}<p class="office-note error">{blocked}</p>{/if}
 	<form method="POST" action="?/publish" use:enhance={submitting} class="office-form">
 		<input type="hidden" name="revision" value={office.revision} />
@@ -75,7 +75,7 @@
 </section>
 
 <section class="office-card">
-	<h2>Checks</h2>
+	<h2>checks</h2>
 	{#if !office.issues.length}
 		<p>Nothing to fix.</p>
 	{:else}
@@ -97,7 +97,7 @@
 </section>
 
 <section class="office-card">
-	<h2>Changed since the last publish</h2>
+	<h2>changed since the last publish</h2>
 	{#await data.published}
 		<p class="office-help" role="status">Comparing with what students see now…</p>
 	{:then published}

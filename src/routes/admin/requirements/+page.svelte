@@ -1,10 +1,16 @@
 <script lang="ts">
 	// what each programme needs to graduate, for one set of requirements (the
 	// default, or a run of batches): its credits and its required and elective
-	// courses. a rule for one batch only belongs under batch requirements.
+	// courses, its choice pools, suggested path and capstone. a rule for one
+	// batch only belongs under that batch.
+	import { untrack } from 'svelte';
+	import { page } from '$app/state';
 	import { useOffice } from '$lib/features/office/workspace.svelte';
 	import { VARIANTS } from '$lib/features/office/model';
 	import CoursePicker from '$lib/components/admin/CoursePicker.svelte';
+	import OfficeScope from '$lib/components/admin/OfficeScope.svelte';
+	import ProgrammeChoices from '$lib/components/admin/ProgrammeChoices.svelte';
+	import ProgrammePathway from '$lib/components/admin/ProgrammePathway.svelte';
 	import type { Variant } from '$lib/curriculum/snapshot';
 
 	const office = useOffice();
@@ -18,6 +24,17 @@
 	// open on the newest named set, the one most edits are about
 	$effect.pre(() => {
 		if (!setId && sets.length) setId = (sets.findLast((s) => s.batches) ?? sets[0]).id;
+	});
+
+	// search and the batch pages link straight to one programme
+	$effect.pre(() => {
+		const q = page.url.searchParams;
+		const [set, department, track] = [q.get('set'), q.get('subject'), q.get('variant')];
+		untrack(() => {
+			if (set) setId = set;
+			if (department) subject = department;
+			if (VARIANTS.some((v) => v.id === track)) variant = track as Variant;
+		});
 	});
 
 	const set = $derived(sets.find((s) => s.id === setId));
@@ -43,23 +60,52 @@
 		return out;
 	});
 
+	// a new programme rarely starts from nothing: a major is often the minor
+	// grown, or last batch's version with a few courses changed
+	const relatives = $derived(
+		sets.flatMap((s) =>
+			s.programmes
+				.filter((p) => p.subject === subject)
+				.map((p) => ({ key: `${s.id}|${p.variant}`, label: `${trackOf(p.variant)} · ${s.name}`, programme: p }))
+		)
+	);
+	let template = $state('');
+	const trackOf = (id: string) => VARIANTS.find((v) => v.id === id)?.label ?? id;
+
 	function create() {
-		set?.programmes.push({
-			subject,
-			variant,
-			credits: { total: 0, required: null, elective: null },
-			required: [],
-			picks: [],
-			electives: [],
-			choices: [],
-			pathway: []
-		});
+		const source = relatives.find((r) => r.key === template)?.programme;
+		set?.programmes.push(
+			source
+				? { ...JSON.parse(JSON.stringify(source)), subject, variant }
+				: {
+						subject,
+						variant,
+						credits: { total: 0, required: null, elective: null },
+						required: [],
+						picks: [],
+						electives: [],
+						choices: [],
+						pathway: []
+					}
+		);
+		template = '';
 	}
+
+	// the rule in a sentence, a second way to catch a mistake in the fields
+	const summary = $derived.by(() => {
+		if (!programme) return '';
+		const parts = [`${programme.required.length} required ${programme.required.length === 1 ? 'course' : 'courses'}`];
+		if (programme.choices.length)
+			parts.push(`${programme.choices.length} choice ${programme.choices.length === 1 ? 'pool' : 'pools'}`);
+		if (programme.capstone) parts.push(`${programme.capstone.required ? 'a required' : 'an optional'} capstone`);
+		const list = `${parts.slice(0, -1).join(', ')}${parts.length > 1 ? ' and ' : ''}${parts.at(-1)}`;
+		return `Students complete ${list}, then enough electives to reach ${programme.credits.total} credits.`;
+	});
 
 	const optional = (v: string) => (v.trim() === '' ? null : Math.max(0, Math.round(Number(v) * 2) / 2));
 </script>
 
-<h1>Degree requirements</h1>
+<h1>degree requirements</h1>
 <p class="office-lead">
 	What each programme needs to graduate. Pick the programme, then change its credits and courses.
 </p>
@@ -88,24 +134,37 @@
 			</select>
 		</label>
 	</div>
-	<p class="office-help">
-		{set.batches
-			? `These apply to the ${set.batches.join(', ')} batches.`
-			: 'These apply to any batch no other set names.'}
-		For one batch only, use <a href="/admin/batches">batch requirements</a>.
-	</p>
+	<OfficeScope
+		editing={[doc.curriculum.subjects.find((s) => s.id === subject)?.label ?? subject, trackOf(variant)]}
+		applies={set.batches
+			? `Applies to the ${set.batches.join(', ')} ${set.batches.length === 1 ? 'batch' : 'batches'}.`
+			: 'Applies to every batch no other curriculum names.'}
+	/>
+	<p class="office-help">For one entering batch only, open it under <a href="/admin/batches">Batches</a>.</p>
 
 	{#if !programme}
 		<section class="office-card">
-			<p>This department has no {VARIANTS.find((v) => v.id === variant)?.label} programme in these requirements.</p>
-			<button class="primary" onclick={create}>Create it</button>
+			<p>This department has no {trackOf(variant)} programme in these requirements.</p>
+			<div class="office-row">
+				{#if relatives.length}
+					<label
+						>Start from
+						<select bind:value={template}>
+							<option value="">An empty programme</option>
+							{#each relatives as r (r.key)}<option value={r.key}>{r.label}</option>{/each}
+						</select>
+					</label>
+				{/if}
+				<button class="primary" onclick={create}>Create it</button>
+			</div>
 		</section>
 	{:else}
 		{#each [...warnings, ...issues.map((i) => i.message)] as w (w)}<p class="office-note error">{w}</p>{/each}
+		<p class="office-note">{summary}</p>
 
-		<section class="office-card">
-			<h2>Credits</h2>
-			<div class="office-form">
+		<section class="office-card" id="credits">
+			<h2>credits</h2>
+			<div class="office-form thirds">
 				<label
 					>Total <span class="office-help">to complete the programme</span>
 					<input type="number" min="0" step="0.5" bind:value={programme.credits.total} /></label
@@ -133,16 +192,16 @@
 			</div>
 		</section>
 
-		<section class="office-card">
-			<h2>Required courses</h2>
+		<section class="office-card" id="required">
+			<h2>required courses</h2>
 			<p class="office-help">
 				Every student in the programme takes these · {programme.required.length} courses, {credits(programme.required)} credits
 			</p>
 			<CoursePicker {courses} bind:values={programme.required} label="Required courses" id="required-courses" />
 		</section>
 
-		<section class="office-card">
-			<h2>Electives</h2>
+		<section class="office-card" id="electives">
+			<h2>electives</h2>
 			<p class="office-help">
 				Count toward the programme; students choose · {programme.electives.length} courses, {credits(
 					programme.electives
@@ -151,20 +210,36 @@
 			<CoursePicker {courses} bind:values={programme.electives} label="Elective courses" id="elective-courses" />
 		</section>
 
-		{#if programme.choices.length || programme.pathway.length}
-			<section class="office-card">
-				<h2>Choice pools and suggested path</h2>
-				<p class="office-help">Shown for reference; they come from the department’s published curriculum.</p>
-				{#each programme.choices as g (g.rule)}
-					<p><b>{g.rule}</b> · pick {g.pick}: {g.courses.map((c) => c.code ?? c.title).join(', ')}</p>
-				{/each}
-				{#if programme.pathway.length}
-					<p>
-						<b>Suggested path:</b>
-						{programme.pathway.map((p) => `${p.code} (y${p.year} t${p.trim})`).join(', ')}
-					</p>
-				{/if}
-			</section>
-		{/if}
+		<section class="office-card" id="choices">
+			<h2>choice pools</h2>
+			<p class="office-help">“Pick N of these.” They count toward the required credits.</p>
+			<ProgrammeChoices {programme} {courses} />
+		</section>
+
+		<section class="office-card" id="pathway">
+			<h2>suggested path</h2>
+			<p class="office-help">A recommendation, not a rule: it's the starting plan students see.</p>
+			<ProgrammePathway {programme} {courses} />
+		</section>
+
+		<section class="office-card" id="capstone">
+			<h2>capstone project</h2>
+			<label class="office-check"
+				><input
+					type="checkbox"
+					checked={!!programme.capstone}
+					onchange={(e) => (programme.capstone = e.currentTarget.checked ? { credits: 8, required: true } : undefined)}
+				/> This programme has a capstone</label
+			>
+			{#if programme.capstone}
+				<div class="office-form">
+					<label>Credits<input type="number" min="0" bind:value={programme.capstone.credits} /></label>
+					<label class="office-check"
+						><input type="checkbox" bind:checked={programme.capstone.required} /> Required
+						<span class="office-help">if not, it stands in for electives</span></label
+					>
+				</div>
+			{/if}
+		</section>
 	{/if}
 {/if}

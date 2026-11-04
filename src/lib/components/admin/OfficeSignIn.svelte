@@ -24,21 +24,30 @@
 			}
 			password = '';
 			await invalidate('office:workspace');
+		} catch {
+			problem = 'Could not connect. Check your connection and try again.';
 		} finally {
 			busy = false;
 		}
 	}
 </script>
 
-<section class="office-card">
-	<h1>Academic office</h1>
-	<p>Enter the office password. Your name goes into the history next to the changes you make.</p>
-	<form class="office-form" onsubmit={signIn}>
-		<label>Your name<input bind:value={name} required maxlength="60" autocomplete="name" /></label>
-		<label>Password<input type="password" bind:value={password} required autocomplete="current-password" /></label>
-		<div class="office-actions wide">
-			<button class="primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
-		</div>
-	</form>
-	{#if problem}<p class="office-note error" role="alert">{problem}</p>{/if}
+<section class="office-login">
+	<a class="office-login-brand" href="/">kcal<span>academic office</span></a>
+	<div class="office-eyebrow">A little order. A clearer path.</div>
+	<h1>welcome to the office.</h1>
+	<p class="office-lead">One place to look after your courses, academic rules and the student experience.</p>
+	<div class="office-card">
+		<h2>sign in to your workspace</h2>
+		<p class="office-help">Use the office password. Your name identifies your changes in the release history.</p>
+		<form class="office-form" onsubmit={signIn}>
+			<label>Your name<input bind:value={name} required maxlength="60" autocomplete="name" /></label>
+			<label>Password<input type="password" bind:value={password} required autocomplete="current-password" /></label>
+			<div class="office-actions wide">
+				<button class="primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+			</div>
+		</form>
+		{#if problem}<p class="office-note error" role="alert">{problem}</p>{/if}
+	</div>
+	<a class="office-login-back" href="/">← Back to the student planner</a>
 </section>

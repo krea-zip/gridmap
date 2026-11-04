@@ -5,6 +5,8 @@
 	// they reach students on the next publish.
 	import { useOffice } from '$lib/features/office/workspace.svelte';
 	import { RULE_GROUPS, RULE_INFO } from '$lib/features/office/policies';
+	import OfficeScope from '$lib/components/admin/OfficeScope.svelte';
+	import OfficeEquivalences from '$lib/components/admin/OfficeEquivalences.svelte';
 
 	const office = useOffice();
 	const curriculum = $derived(office.document?.curriculum);
@@ -17,10 +19,10 @@
 	const parts = (s: string) => s.split(/[,\s]+/).filter(Boolean);
 </script>
 
-<h1>University policies</h1>
+<h1>rules</h1>
 <p class="office-lead">
-	The numbers from the drop-form guidelines and the academic regulations. Every hint students see, the credit panel and
-	the planner’s colours follow them from the next publish.
+	The numbers from the drop-form guidelines and the academic regulations, then how courses stand in for one another.
+	Every hint students see follows them from the next publish.
 </p>
 
 {#if issues.length}
@@ -32,6 +34,7 @@
 {/if}
 
 {#if rules && policies}
+	<OfficeScope editing={['University policies']} applies="Applies to every batch, from the next publish." />
 	{#each RULE_GROUPS as group (group.title)}
 		<section class="office-card">
 			<h2>{group.title}</h2>
@@ -39,7 +42,7 @@
 			<div class="office-form">
 				{#each group.keys as key (key)}
 					{@const info = RULE_INFO[key]}
-					<label>
+					<label id="rule-{key}">
 						{info.label}
 						<span class="office-help">{info.help}</span>
 						<input type="number" min="0" max={info.max} bind:value={rules[key]} />
@@ -52,7 +55,7 @@
 	<!-- one trimester drawn a credit per cell, so the four load lines can be
 	     checked at a glance -->
 	<section class="office-card">
-		<h2>One trimester at these numbers</h2>
+		<h2>one trimester at these numbers</h2>
 		<div class="scale" aria-hidden="true">
 			{#each { length: 24 } as _, i (i)}
 				<span
@@ -69,12 +72,12 @@
 	</section>
 
 	<section class="office-card">
-		<h2>Grades and standing</h2>
+		<h2>grades and standing</h2>
 		<div class="office-form">
-			<label
+			<label id="policy-graduation"
 				>CGPA to graduate<input type="number" step="0.1" min="0" max="10" bind:value={policies.graduationCgpa} /></label
 			>
-			<label
+			<label id="policy-aid"
 				>CGPA to keep financial aid<input
 					type="number"
 					step="0.1"
@@ -83,10 +86,10 @@
 					bind:value={policies.aidCgpa}
 				/></label
 			>
-			<label
+			<label id="policy-exit"
 				>CGPA for an exit award<input type="number" step="0.1" min="0" max="10" bind:value={policies.exitCgpa} /></label
 			>
-			<label
+			<label id="policy-foundation"
 				>Foundation courses per trimester (year 1)<input
 					type="number"
 					min="0"
@@ -94,14 +97,14 @@
 					bind:value={policies.foundationMax}
 				/></label
 			>
-			<label
+			<label id="policy-audit"
 				>Course sizes that can be audited <span class="office-help">credits, comma-separated</span>
 				<input
 					value={list(policies.auditCredits)}
 					onchange={(e) => (policies.auditCredits = parts(e.currentTarget.value).map(Number).filter(Number.isFinite))}
 				/></label
 			>
-			<label
+			<label id="policy-audit-excluded"
 				>Never auditable <span class="office-help">course numbers, e.g. 391, 490</span>
 				<input
 					value={list(policies.auditExcluded)}
@@ -111,8 +114,8 @@
 		</div>
 	</section>
 
-	<section class="office-card">
-		<h2>Grade points</h2>
+	<section class="office-card" id="grade-points">
+		<h2>grade points</h2>
 		<div class="office-form grades">
 			{#each Object.keys(policies.gradePoints) as grade (grade)}
 				<label
@@ -130,8 +133,8 @@
 		<p class="office-help">A U always carries zero points.</p>
 	</section>
 
-	<section class="office-card">
-		<h2>Where these come from</h2>
+	<section class="office-card" id="policy-source">
+		<h2>where these come from</h2>
 		<div class="office-form">
 			<label>Effective from<input type="date" bind:value={policies.effectiveFrom} /></label>
 			<label
@@ -143,6 +146,8 @@
 		</div>
 	</section>
 {/if}
+
+<OfficeEquivalences />
 
 <style>
 	.scale {

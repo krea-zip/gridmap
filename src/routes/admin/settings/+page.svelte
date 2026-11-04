@@ -32,7 +32,7 @@
 	}
 </script>
 
-<h1>Office fields</h1>
+<h1>office fields</h1>
 <p class="office-lead">
 	Extra columns the office tracks on each offering, such as a room or a budget code. They stay in the office and are
 	never shown to students.

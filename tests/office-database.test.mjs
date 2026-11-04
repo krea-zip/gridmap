@@ -31,7 +31,8 @@ before(async () => {
 	for (const migration of [
 		'202611010001_curriculum.sql',
 		'202611020001_academic_office.sql',
-		'202611030002_office_password.sql'
+		'202611030002_office_password.sql',
+		'202611040002_batch_profiles.sql'
 	])
 		await db.exec(await readFile(new URL(`../supabase/migrations/${migration}`, import.meta.url), 'utf8'));
 	await db.exec('grant select on all tables in schema public to service_role');
@@ -60,6 +61,27 @@ test('students and visitors cannot call the office functions', async () => {
 		await refused(role, 'select public.office_publish(1, $1)', ['x']);
 		await refused(role, "select public.office_deployment('r', 'requested', 'x')");
 	}
+});
+
+test("a batch's offers reach the release, and its private record does not", async () => {
+	const profile = {
+		batch: 2027,
+		offers: { philosophy: { major: true } },
+		note: 'private note',
+		changes: [{ id: '1', title: 'Philosophy major approved', detail: 'senate minutes' }]
+	};
+	const curriculum = {
+		...compiled,
+		batchProfiles: [profile, { batch: 2028, offers: {}, note: 'nothing yet', changes: [] }]
+	};
+	await as('service_role', async () => {
+		await db.query('select public.office_save($1, 0, $2, $3)', [{ ...document, curriculum }, 'batches', 'Priya']);
+		await db.query('select public.office_publish(1, $1)', ['Priya']);
+		const {
+			rows: [{ snapshot }]
+		} = await db.query('select snapshot from public.curriculum_releases where is_current');
+		assert.deepEqual(snapshot.batchProfiles, [{ batch: 2027, offers: { philosophy: { major: true } } }]);
+	});
 });
 
 test('the server saves and publishes, and the history names who did it', async () => {

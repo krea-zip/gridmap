@@ -4,7 +4,9 @@
 
 - **Supabase** holds the curriculum (courses, programmes, rules, lecturers, descriptions), its published releases, and the academic office's shared draft and history.
 - **The website** ships a copy of the current release: before each build, `npm run curriculum:pull` writes it to `src/lib/data/curriculum.json` and `course-descriptions.json`. Without Supabase settings the build uses the committed copy.
-- **Each student's browser** keeps their plan (`kcal-plan` in local storage). A shared plan travels inside its link.
+- **Each student's browser** keeps their working draft (`kcal-plan` in local storage). Krea Google accounts save private named plans to Supabase. New share links point to separate, revocable snapshots.
+
+For Google OAuth, callback URLs, the student-sharing migration and Vercel settings, follow [student sign-in setup](student-sign-in.md).
 
 ## Connect a project
 
@@ -22,6 +24,8 @@ The office is the one place the curriculum is edited. It signs in with one share
 Once signed in, the server talks to Supabase with `SUPABASE_SECRET_KEY`. The office functions (`office_save`, `office_publish`, `office_deployment`) accept only that key; students and visitors can't call them (`tests/office-database.test.mjs`).
 
 The whole curriculum is one draft document (`src/lib/features/office/model.ts`). Staff edit it in the browser and save it whole (`POST /api/admin/workspace`, with the revision they started from, so nobody overwrites anyone). On `/admin/changes` they publish it: `office_publish` builds the public release in the database, so office notes never leave it, then the deploy hook rebuilds the site, which pulls the new release. "Student preview" opens the planner with `?admin-preview=1` and the unsaved draft, in that tab only.
+
+Each entering batch has a record under `/admin/batches`: which programmes it can take, which curriculum it follows, its course rules and a log of what changed and why. A programme choice carries forward to later batches until one changes it (`subjectOffered` in `snapshot.ts`), so opening a major is done once. Only the offers are published; the log and notes stay in the draft. `office_publish` builds the release from an allowlist, so anything new that students need has to be added there too (migration `202611040002_batch_profiles.sql`).
 
 `office_staff` and `office_submissions`, from the earlier per-person sign-in, are no longer used and are left in place so nothing in them is lost.
 

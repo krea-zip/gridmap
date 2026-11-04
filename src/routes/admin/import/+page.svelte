@@ -79,7 +79,7 @@
 	}
 </script>
 
-<h1>Upload spreadsheet</h1>
+<h1>upload spreadsheet</h1>
 <p class="office-lead">
 	Import a term’s course list (CSV or Excel). You’ll see every row before anything changes, and nothing is shared until
 	you save the draft.
