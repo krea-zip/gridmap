@@ -1,8 +1,0 @@
-{
-	"name": "FYUP documents, with 2026 website updates",
-	"batches": [
-		2026
-	],
-	"extends": "fyup-2024",
-	"about": "The fyup-2024 documents, amended where the university website has since changed a subject's rules. Only the amended subjects have a file here."
-}
