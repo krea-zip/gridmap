@@ -7,10 +7,10 @@ import { error, fail, isHttpError, type RequestEvent } from '@sveltejs/kit';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { env } from '$env/dynamic/private';
 import { env as publicEnv } from '$env/dynamic/public';
-import { makeOfficeDocument, type OfficeDocument, type WorkspacePayload } from '$lib/features/office/model';
-import { documentShape, validateOffice } from '$lib/features/office/validation';
+import { makeOfficeDocument, type OfficeDocument, type WorkspacePayload } from '$lib/office/model';
+import { documentShape, validateOffice } from '$lib/office/validation';
 import type { CurriculumSnapshot } from '$lib/curriculum/snapshot';
-import { signedInName } from '$lib/server/officeAuth';
+import { signedInName } from './officeAuth';
 import snapshot from '$lib/data/curriculum.json';
 import descriptions from '$lib/data/course-descriptions.json';
 

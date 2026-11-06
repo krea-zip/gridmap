@@ -1,5 +1,5 @@
 <script lang="ts">
-	import OfficeDirectory from '$lib/components/admin/OfficeDirectory.svelte';
+	import OfficeDirectory from '$lib/office/components/OfficeDirectory.svelte';
 </script>
 
 <OfficeDirectory kind="faculty" />

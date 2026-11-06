@@ -11,8 +11,8 @@
 	// its row is picked to sit near its prerequisites. Because both are known
 	// numbers, edge endpoints are exact and the SVG needs no DOM reading.
 	// ─────────────────────────────────────────────
-	import { useOffice } from '$lib/features/office/workspace.svelte';
-	import { programmeFor } from '$lib/features/office/requirements';
+	import { useOffice } from '$lib/office/workspace.svelte';
+	import { programmeFor } from '$lib/office/requirements';
 	import { variantOf } from '$lib/curriculum/snapshot';
 	import type { ProgrammeRole } from '$lib/types';
 

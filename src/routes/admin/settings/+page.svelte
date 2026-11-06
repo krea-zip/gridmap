@@ -3,8 +3,8 @@
 	// budget code), beyond what kcal knows about. they're office records:
 	// never published to students. a required one blocks publishing until
 	// every offering has it.
-	import { useOffice } from '$lib/features/office/workspace.svelte';
-	import type { CustomField } from '$lib/features/office/model';
+	import { useOffice } from '$lib/office/workspace.svelte';
+	import type { CustomField } from '$lib/office/model';
 
 	const office = useOffice();
 	const fields = $derived(office.document?.fields ?? []);

@@ -7,10 +7,10 @@
 	import type { LayoutProps } from './$types';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
-	import { Workspace, provideOffice } from '$lib/features/office/workspace.svelte';
-	import OfficeToolbar from '$lib/components/admin/OfficeToolbar.svelte';
-	import OfficeSignIn from '$lib/components/admin/OfficeSignIn.svelte';
-	import OldEditsNotice from '$lib/components/admin/OldEditsNotice.svelte';
+	import { Workspace, provideOffice } from '$lib/office/workspace.svelte';
+	import OfficeToolbar from '$lib/office/components/OfficeToolbar.svelte';
+	import OfficeSignIn from '$lib/office/components/OfficeSignIn.svelte';
+	import OldEditsNotice from '$lib/office/components/OldEditsNotice.svelte';
 	import { softChanges } from '$lib/ui/transitions';
 
 	let { data, children }: LayoutProps = $props();

@@ -2,10 +2,10 @@
 	// every batch at a glance, then every change anyone has recorded, across all
 	// of them. this is the answer to "what's different for which batch?"
 	import { goto } from '$app/navigation';
-	import { useOffice } from '$lib/features/office/workspace.svelte';
-	import { CHANGE_AREAS, CHANGE_STATUSES } from '$lib/features/office/model';
-	import { allChanges, batchSummary, nextBatch, planBatch } from '$lib/features/office/batches';
-	import { batchYears } from '$lib/features/office/requirements';
+	import { useOffice } from '$lib/office/workspace.svelte';
+	import { CHANGE_AREAS, CHANGE_STATUSES } from '$lib/office/model';
+	import { allChanges, batchSummary, nextBatch, planBatch } from '$lib/office/batches';
+	import { batchYears } from '$lib/office/requirements';
 
 	const office = useOffice();
 	const doc = $derived(office.document);

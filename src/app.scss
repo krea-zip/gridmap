@@ -55,7 +55,7 @@ button:disabled {
 
 // Any touch screen: a 16px input avoids automatic zoom in iOS, taps don't
 // wait to see if they're a double-tap, and a long press on a course lifts it
-// ($lib/ui/touchDrag) rather than selecting its text or opening a callout.
+// ($lib/planner/drag/touchDrag) rather than selecting its text or opening a callout.
 @include touch {
 	:root {
 		-webkit-tap-highlight-color: rgba(137, 74, 109, 0.12);

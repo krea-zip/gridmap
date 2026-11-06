@@ -4,12 +4,12 @@
 // ─────────────────────────────────────────────
 
 import { browser } from '$app/environment';
-import { restoreBoard, saveBoard } from '$lib/features/plans/autosave';
+import { restoreBoard, saveBoard } from '$lib/plans/autosave';
 // the board's motion is a plan concern: only the plan knows when a change is
 // one course moving (worth watching fly) and when it is a whole-board redraw
 import { quietRedraw } from '$lib/ui/transitions';
-import { selectCatalogue, type CatalogueSort, type CourseKind, type QuickFilter } from '$lib/planner/catalogue';
-import { guessNow, slotAt, slotOrder, trimName, trimSpelled, type Here, type TrimNaming } from '$lib/planner/calendar';
+import { selectCatalogue, type CatalogueSort, type CourseKind, type QuickFilter } from '$lib/planner/catalogue/select';
+import { guessNow, slotAt, slotOrder, trimName, trimSpelled, type Here, type TrimNaming } from './calendar';
 import {
 	CORE_COURSES,
 	CORE_CREDITS,
@@ -48,11 +48,18 @@ import {
 	STUDENT_BATCHES,
 	offeredTo
 } from '$lib/curriculum/data';
-import { GRADE_POINTS, isGradeLetter, isGradeMark, recovery, weightedGpa, type GradeMark } from '$lib/planner/grades';
-import { planHints } from '$lib/planner/rules';
-import { distinctHues } from '$lib/planner/hues';
-import { keepPicksDistinct, pickOptions, type Picks, type PickRole } from '$lib/planner/picks';
-import { recommendedElectives, recommendedPath } from '$lib/planner/recommended';
+import {
+	GRADE_POINTS,
+	isGradeLetter,
+	isGradeMark,
+	recovery,
+	weightedGpa,
+	type GradeMark
+} from '$lib/planner/grades/grades';
+import { planHints } from './rules';
+import { distinctHues } from './hues';
+import { keepPicksDistinct, pickOptions, type Picks, type PickRole } from './picks';
+import { recommendedElectives, recommendedPath } from './recommended';
 import {
 	slotKey,
 	parseSlot,

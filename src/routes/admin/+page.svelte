@@ -1,5 +1,5 @@
 <script lang="ts">
-	import OfficeHome from '$lib/components/admin/OfficeHome.svelte';
+	import OfficeHome from '$lib/office/components/OfficeHome.svelte';
 </script>
 
 <OfficeHome />

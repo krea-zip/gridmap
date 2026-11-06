@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { studentAccount } from '$lib/server/studentAuth';
-import { supabaseConfigured } from '$lib/infrastructure/supabase/config';
+import { supabaseConfigured } from '$lib/supabase/config';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async (event) => {

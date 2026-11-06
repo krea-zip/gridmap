@@ -1,5 +1,5 @@
 <script lang="ts">
-	import OfficeCourses from '$lib/components/admin/OfficeCourses.svelte';
+	import OfficeCourses from '$lib/office/components/OfficeCourses.svelte';
 </script>
 
 <OfficeCourses />

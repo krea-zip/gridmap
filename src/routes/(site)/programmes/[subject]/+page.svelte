@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CourseList from '$lib/components/site/CourseList.svelte';
+	import CourseList from '$lib/site/CourseList.svelte';
 	import { REPS_YEAR } from '$lib/curriculum/reps';
 
 	let { data } = $props();

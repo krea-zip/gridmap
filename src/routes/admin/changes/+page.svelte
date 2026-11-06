@@ -4,8 +4,8 @@
 	// publish; publishing is a plain form, so it works before the page's
 	// script has loaded.
 	import { enhance } from '$app/forms';
-	import { useOffice } from '$lib/features/office/workspace.svelte';
-	import { changesBetween } from '$lib/features/office/model';
+	import { useOffice } from '$lib/office/workspace.svelte';
+	import { changesBetween } from '$lib/office/model';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();

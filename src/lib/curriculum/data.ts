@@ -7,7 +7,7 @@
 // ─────────────────────────────────────────────
 
 import snapshotData from '$lib/data/curriculum.json';
-import { previewSnapshot } from '$lib/curriculum/preview';
+import { previewSnapshot } from './preview';
 import {
 	subjectOffered,
 	variantOf,
@@ -19,10 +19,10 @@ import {
 	type RequirementSet,
 	type SnapshotCourse,
 	type Variant
-} from '$lib/curriculum/snapshot';
+} from './snapshot';
 import type { Course, ProgrammeRole, Subject, TrimNum } from '$lib/types';
 
-export type { ChoiceCourse, ChoiceGroup } from '$lib/curriculum/snapshot';
+export type { ChoiceCourse, ChoiceGroup } from './snapshot';
 
 const snapshot: CurriculumSnapshot = previewSnapshot() ?? (snapshotData as unknown as CurriculumSnapshot);
 export const PREVIEWING = snapshot !== (snapshotData as unknown);

@@ -3,8 +3,8 @@
 	// around it belong to the planner layout.
 	import { usePlan } from '$lib/planner/context';
 	import { viewport } from '$lib/planner/viewport.svelte';
-	import OverviewGrid from '$lib/components/board/OverviewGrid.svelte';
-	import TrimesterZoom from '$lib/components/board/TrimesterZoom.svelte';
+	import OverviewGrid from '$lib/planner/board/OverviewGrid.svelte';
+	import TrimesterZoom from '$lib/planner/board/TrimesterZoom.svelte';
 	import { fade } from 'svelte/transition';
 	import { reducedMotion } from '$lib/ui/transitions';
 

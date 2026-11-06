@@ -2,7 +2,7 @@
 // can be opened as an unsaved draft, which is how a bad release is undone.
 import { error } from '@sveltejs/kit';
 import { attempt, databaseError, officeAccess } from '$lib/server/office';
-import type { OfficeDocument, OfficeRevision } from '$lib/features/office/model';
+import type { OfficeDocument, OfficeRevision } from '$lib/office/model';
 
 export const load = async (event) => {
 	const { db } = officeAccess(event);

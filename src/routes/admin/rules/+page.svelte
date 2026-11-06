@@ -3,10 +3,10 @@
 	// to, and the academic standing rules (cgpa floors, audits, grade points).
 	// they change year to year, so the office edits them in the draft and
 	// they reach students on the next publish.
-	import { useOffice } from '$lib/features/office/workspace.svelte';
-	import { RULE_GROUPS, RULE_INFO } from '$lib/features/office/policies';
-	import OfficeScope from '$lib/components/admin/OfficeScope.svelte';
-	import OfficeEquivalences from '$lib/components/admin/OfficeEquivalences.svelte';
+	import { useOffice } from '$lib/office/workspace.svelte';
+	import { RULE_GROUPS, RULE_INFO } from '$lib/office/policies';
+	import OfficeScope from '$lib/office/components/OfficeScope.svelte';
+	import OfficeEquivalences from '$lib/office/components/OfficeEquivalences.svelte';
 
 	const office = useOffice();
 	const curriculum = $derived(office.document?.curriculum);

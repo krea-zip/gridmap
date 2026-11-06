@@ -1,0 +1,146 @@
+<script lang="ts">
+	// the shell every dialog in the app shares: backdrop, titled card, close
+	// button, esc-to-close, click-outside-to-close
+	import { portal } from './portal';
+	import { focusScope } from './focusScope';
+	import { fade, scale } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
+	import type { Snippet } from 'svelte';
+
+	let {
+		title,
+		width = '46rem',
+		dismiss,
+		onclose,
+		children
+	}: { title: string; width?: string; dismiss?: string; onclose: () => void; children: Snippet } = $props();
+</script>
+
+<svelte:window onkeydown={(e) => e.key === 'Escape' && onclose()} />
+
+<!-- only a click on the backdrop ITSELF closes, one that bubbled up out of
+     the card is a click on the card -->
+<div
+	class="backdrop"
+	use:portal
+	role="presentation"
+	onclick={(e) => e.target === e.currentTarget && onclose()}
+	transition:fade={{ duration: 150 }}
+>
+	<div
+		class="box"
+		use:focusScope
+		tabindex={dismiss ? -1 : undefined}
+		data-initial-focus={dismiss ? '' : undefined}
+		role="dialog"
+		aria-modal="true"
+		aria-label={title}
+		style="--w: {width}"
+		in:scale={{ start: 0.96, duration: 260, easing: quintOut }}
+		out:scale={{ start: 0.98, duration: 140 }}
+	>
+		<header>
+			<h2>{title}</h2>
+			<!-- a word where × undersells it: "skip" on a card that can be walked past -->
+			<button class="x" class:word={!!dismiss} aria-label={dismiss ?? 'close'} onclick={onclose}
+				>{dismiss ?? '×'}</button
+			>
+		</header>
+		<div class="body">
+			{@render children()}
+		</div>
+	</div>
+</div>
+
+<style lang="scss">
+	@use '$lib/styles/mixins' as *;
+
+	.backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 60;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 2.4rem;
+		background: var(--color-backdrop);
+		backdrop-filter: blur(2px);
+	}
+
+	.box {
+		display: flex;
+		flex-direction: column;
+		width: var(--w);
+		max-width: 100%;
+		max-height: 100%;
+		transition: width 0.24s var(--ease-out);
+		background: linear-gradient(to bottom, var(--color-bg-card-start) 0%, var(--color-bg-card-end) 100%);
+		border: 1px solid var(--color-border-card);
+		border-radius: 8px;
+		@include card-shine;
+	}
+
+	header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.6rem;
+		padding: 1.4rem 1.8rem;
+		border-bottom: 1px solid var(--color-border-divider);
+
+		h2 {
+			font-size: 1.8rem;
+			font-weight: 600;
+			color: var(--color-text);
+		}
+	}
+
+	.x {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.6rem;
+		height: 2.6rem;
+		font-size: 2rem;
+		line-height: 1;
+		color: var(--color-text-muted);
+		background: none;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+
+		&.word {
+			width: auto;
+			padding: 0 0.8rem;
+			font-size: 1.3rem;
+		}
+
+		&:hover {
+			color: var(--color-text);
+			background: var(--color-hover-medium);
+		}
+	}
+
+	// a long dialog scrolls inside itself, the page behind never moves
+	.body {
+		min-height: 0;
+		overflow-y: auto;
+		padding: 1.8rem;
+	}
+	@include mobile {
+		.backdrop {
+			padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+				max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+		}
+		.box {
+			max-height: calc(100dvh - 2rem);
+		}
+		.x {
+			width: 4.4rem;
+			height: 4.4rem;
+		}
+		header {
+			padding: 0.8rem 1.6rem;
+		}
+	}
+</style>

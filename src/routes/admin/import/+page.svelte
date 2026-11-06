@@ -3,7 +3,7 @@
 	// browser (it never needs to reach the server whole), every row is shown
 	// before anything changes, and the result is an unsaved draft like any
 	// other edit, so a bad import is one "reload" away from undone.
-	import { useOffice } from '$lib/features/office/workspace.svelte';
+	import { useOffice } from '$lib/office/workspace.svelte';
 	import {
 		IMPORT_FIELDS,
 		applyImport,
@@ -12,7 +12,7 @@
 		readWorkbook,
 		type ImportPreview,
 		type Mapping
-	} from '$lib/features/office/spreadsheet';
+	} from '$lib/office/spreadsheet';
 
 	const office = useOffice();
 

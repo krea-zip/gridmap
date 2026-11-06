@@ -3,8 +3,8 @@
 	// and whether it's signed off. only approved offerings tell students a
 	// course runs (see publication() in the office model).
 	import { page } from '$app/state';
-	import { useOffice } from '$lib/features/office/workspace.svelte';
-	import { APPROVALS, ELIGIBILITY, newOffering, type Term } from '$lib/features/office/model';
+	import { useOffice } from '$lib/office/workspace.svelte';
+	import { APPROVALS, ELIGIBILITY, newOffering, type Term } from '$lib/office/model';
 
 	const office = useOffice();
 	const doc = $derived(office.document);

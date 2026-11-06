@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { error, type RequestEvent } from '@sveltejs/kit';
-import { supabaseConfig } from '$lib/infrastructure/supabase/config';
-import type { Database } from '$lib/infrastructure/supabase/database.types';
+import { supabaseConfig } from '$lib/supabase/config';
+import type { Database } from '$lib/supabase/database.types';
 
 export function studentClient(event: RequestEvent) {
 	const config = supabaseConfig();

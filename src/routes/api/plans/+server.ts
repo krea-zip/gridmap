@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import { requireStudent, requestDocument } from '$lib/server/studentAuth';
-import { planDocument, planName } from '$lib/features/plans/document';
+import { planDocument, planName } from '$lib/plans/document';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async (event) => {

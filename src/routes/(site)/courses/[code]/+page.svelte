@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import CourseList from '$lib/components/site/CourseList.svelte';
+	import CourseList from '$lib/site/CourseList.svelte';
 
 	let { data } = $props();
 

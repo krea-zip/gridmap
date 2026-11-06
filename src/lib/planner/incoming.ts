@@ -2,7 +2,7 @@
 // course page's "plan this course"), a shared plan (#plan=…), or a replay of
 // the welcome (?welcome). Each is read once and taken off the URL so a reload
 // doesn't bring it back.
-import { sharedPlanIn } from '$lib/features/plans/share';
+import { sharedPlanIn } from '$lib/plans/share';
 
 export type Incoming = {
 	course: string | null;

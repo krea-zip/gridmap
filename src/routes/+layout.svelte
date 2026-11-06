@@ -2,8 +2,8 @@
 	import '../app.scss';
 	import type { Snippet } from 'svelte';
 	import { onMount } from 'svelte';
-	import { account } from '$lib/features/plans/account.svelte';
-	import { getSupabase } from '$lib/infrastructure/supabase/browser';
+	import { account } from '$lib/plans/account.svelte';
+	import { getSupabase } from '$lib/supabase/browser';
 
 	let { children }: { children: Snippet } = $props();
 	onMount(() => {

@@ -7,7 +7,7 @@
 // ─────────────────────────────────────────────
 
 import { browser } from '$app/environment';
-import { previewSnapshot } from '$lib/curriculum/preview';
+import { previewSnapshot } from './preview';
 
 let descriptions = $state<Record<string, string> | null>(null);
 let started = false;

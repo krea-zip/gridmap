@@ -3,7 +3,7 @@
 // catalogue and the zoom view animate as a single surface.
 // ─────────────────────────────────────────────
 
-import { COMPACT_LAYOUT_QUERY } from '$lib/ui/layout';
+import { COMPACT_LAYOUT_QUERY } from './layout';
 import { crossfade, fade, scale, type TransitionConfig } from 'svelte/transition';
 import { cubicOut } from 'svelte/easing';
 import { tick } from 'svelte';

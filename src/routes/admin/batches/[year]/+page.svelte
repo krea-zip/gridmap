@@ -2,16 +2,16 @@
 	// one batch, everything that can differ about it. each section has its own
 	// address, so search and the checks can land on exactly the right one.
 	import { page } from '$app/state';
-	import { useOffice } from '$lib/features/office/workspace.svelte';
-	import { batchDifferences, batchStage } from '$lib/features/office/batches';
-	import { setFor } from '$lib/features/office/requirements';
-	import Keys from '$lib/components/board/bar/Keys.svelte';
-	import OfficeScope from '$lib/components/admin/OfficeScope.svelte';
-	import BatchOverview from '$lib/components/admin/batches/BatchOverview.svelte';
-	import BatchProgrammes from '$lib/components/admin/batches/BatchProgrammes.svelte';
-	import BatchCurriculum from '$lib/components/admin/batches/BatchCurriculum.svelte';
-	import BatchCourses from '$lib/components/admin/batches/BatchCourses.svelte';
-	import BatchLog from '$lib/components/admin/batches/BatchLog.svelte';
+	import { useOffice } from '$lib/office/workspace.svelte';
+	import { batchDifferences, batchStage } from '$lib/office/batches';
+	import { setFor } from '$lib/office/requirements';
+	import Keys from '$lib/planner/board/bar/Keys.svelte';
+	import OfficeScope from '$lib/office/components/OfficeScope.svelte';
+	import BatchOverview from '$lib/office/components/batches/BatchOverview.svelte';
+	import BatchProgrammes from '$lib/office/components/batches/BatchProgrammes.svelte';
+	import BatchCurriculum from '$lib/office/components/batches/BatchCurriculum.svelte';
+	import BatchCourses from '$lib/office/components/batches/BatchCourses.svelte';
+	import BatchLog from '$lib/office/components/batches/BatchLog.svelte';
 
 	let { data } = $props();
 	const office = useOffice();

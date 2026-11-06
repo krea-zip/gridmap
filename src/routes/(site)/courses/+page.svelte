@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CourseList from '$lib/components/site/CourseList.svelte';
+	import CourseList from '$lib/site/CourseList.svelte';
 
 	let { data } = $props();
 	const total = $derived(new Set(data.subjects.flatMap((s) => s.courses.map((c) => c.code))).size);

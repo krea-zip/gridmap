@@ -3,8 +3,8 @@
 // audits, the credit ceiling, grades), turned into the hints the sidebar
 // lists. a plain function of the plan so the rules can be read and tested
 // on their own; the plan store derives `allHints` from it.
-import type { Plan } from '$lib/planner/plan.svelte';
-import { offeredIn } from '$lib/planner/calendar';
+import type { Plan } from './plan.svelte';
+import { offeredIn } from './calendar';
 import {
 	AUDIT_LIMIT,
 	byCode,
@@ -22,7 +22,7 @@ import {
 	TRIM_STANDARD_MAX,
 	Y1_CORE_MAX
 } from '$lib/curriculum/data';
-import { GRAD_MIN_CGPA, recovery } from '$lib/planner/grades';
+import { GRAD_MIN_CGPA, recovery } from '$lib/planner/grades/grades';
 import { slotKey, TRIMS, type Hint, type TrimNum } from '$lib/types';
 
 /** every rule the plan is held to, as hints: worst first is the panel's job,

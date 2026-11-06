@@ -5,12 +5,12 @@
 	// batch only belongs under that batch.
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
-	import { useOffice } from '$lib/features/office/workspace.svelte';
-	import { VARIANTS } from '$lib/features/office/model';
-	import CoursePicker from '$lib/components/admin/CoursePicker.svelte';
-	import OfficeScope from '$lib/components/admin/OfficeScope.svelte';
-	import ProgrammeChoices from '$lib/components/admin/ProgrammeChoices.svelte';
-	import ProgrammePathway from '$lib/components/admin/ProgrammePathway.svelte';
+	import { useOffice } from '$lib/office/workspace.svelte';
+	import { VARIANTS } from '$lib/office/model';
+	import CoursePicker from '$lib/office/components/CoursePicker.svelte';
+	import OfficeScope from '$lib/office/components/OfficeScope.svelte';
+	import ProgrammeChoices from '$lib/office/components/ProgrammeChoices.svelte';
+	import ProgrammePathway from '$lib/office/components/ProgrammePathway.svelte';
 	import type { Variant } from '$lib/curriculum/snapshot';
 
 	const office = useOffice();

@@ -2,8 +2,8 @@
 	// past releases. opening one puts it in the editor unsaved, so nothing
 	// changes until someone saves and publishes it again
 	import { enhance } from '$app/forms';
-	import { useOffice } from '$lib/features/office/workspace.svelte';
-	import type { OfficeDocument } from '$lib/features/office/model';
+	import { useOffice } from '$lib/office/workspace.svelte';
+	import type { OfficeDocument } from '$lib/office/model';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

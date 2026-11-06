@@ -1,7 +1,7 @@
 // the department's suggested path for the chosen programmes: what the
 // grid is seeded with on a first visit and what the dashed ghosts show
 // afterwards. plain functions of the plan, derived by the store.
-import type { Plan } from '$lib/planner/plan.svelte';
+import type { Plan } from './plan.svelte';
 import type { Programme } from '$lib/types';
 import {
 	byCode,
