@@ -13,7 +13,7 @@
 	/>
 </svelte:head>
 
-<h1>Courses</h1>
+<h1>courses</h1>
 <p class="lede">{total} undergraduate courses, listed under every subject that offers them.</p>
 
 <nav class="jump" aria-label="subjects">
@@ -30,6 +30,7 @@
 {/each}
 
 <style lang="scss">
+	@use '$lib/styles/mixins' as *;
 	h1 {
 		font-size: 3.2rem;
 		letter-spacing: -0.02em;
@@ -50,14 +51,11 @@
 		a {
 			padding: 0.4rem 1rem;
 			font-size: 1.3rem;
-			color: var(--color-text);
+			@include subject-pill;
 			text-decoration: none;
-			border-radius: 999px;
-			background: oklch(0.93 0.03 var(--hue, 300));
-			border: 1px solid oklch(0.82 0.05 var(--hue, 300));
 
 			&:hover {
-				background: oklch(0.89 0.05 var(--hue, 300));
+				background: subject-tone(required);
 			}
 		}
 	}

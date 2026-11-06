@@ -18,15 +18,15 @@
 <section>
 	<h3>details</h3>
 	<div class="office-form">
-		<label class="wide">Title<input bind:value={course.title} /></label>
+		<label class="wide">title<input bind:value={course.title} /></label>
 		<label
-			>Department
+			>department
 			<select value={course.subject} onchange={(e) => moveCourse(course, e.currentTarget.value)}>
 				{#each subjects as s (s.id)}<option value={s.id}>{s.label}</option>{/each}
 			</select>
 		</label>
 		<label
-			>Credits
+			>credits
 			<input
 				type="number"
 				min="0"
@@ -88,7 +88,7 @@
 			</select>
 		</label>
 		<label class="wide"
-			>Note for students
+			>note for students
 			<textarea rows="2" bind:value={course.notes} placeholder="Optional clarification shown with this course"
 			></textarea>
 		</label>

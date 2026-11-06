@@ -32,7 +32,7 @@
 
 <div class="office-page-heading">
 	<div>
-		<p class="office-eyebrow"><a href="/admin/batches">All batches</a> · {batchStage(batch)}</p>
+		<p class="office-eyebrow"><a href="/admin/batches">all batches</a> · {batchStage(batch)}</p>
 		<h1>{batch} entering batch</h1>
 	</div>
 	<div class="office-actions">

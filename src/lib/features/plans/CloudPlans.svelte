@@ -182,7 +182,7 @@
 		</ul>
 		{#if !loading && !plans.length}<p>No saved plans yet.</p>{/if}
 	{:else}
-		<p>Your draft is saved on this browser. Log in above to keep named plans across devices.</p>
+		<p>Your draft is saved in this browser. Account saving is currently unavailable.</p>
 	{/if}
 </section>
 <section>
@@ -205,7 +205,7 @@
 					>
 				</li>{/each}
 		</ul>
-	{:else}<p>Log in with your Krea account to create and manage share links.</p>{/if}
+	{:else}<p>Share links are currently unavailable.</p>{/if}
 	{#if confirmation}<button class="cancel" onclick={() => (confirmation = '')}>Cancel</button>{/if}
 	{#if error}<p class="error" role="alert">{error}</p>{/if}
 	{#if status}<p role="status">{status}</p>{/if}
@@ -217,9 +217,17 @@
 		padding-top: 1.6rem;
 		border-top: 1px solid var(--color-border-card);
 	}
+	section:first-child {
+		margin-top: 0;
+		padding-top: 0;
+		border-top: 0;
+	}
 	h3 {
-		font-size: 1.4rem;
-		font-weight: 650;
+		font-size: 1.2rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
 	}
 	.heading {
 		display: flex;

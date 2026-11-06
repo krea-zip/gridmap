@@ -60,26 +60,43 @@
 		const asBox = (r: DOMRect): Box => ({ x: r.left, y: r.top, w: r.width, h: r.height });
 		const rects = notes.map((note) => targetOf(note)!.getBoundingClientRect());
 		const placed: Box[] = closing ? [asBox(closing.getBoundingClientRect())] : [];
+		const yearHeads = [...document.querySelectorAll('.overview .year-head')].map((el) =>
+			asBox(el.getBoundingClientRect())
+		);
 
 		spots = notes.map((note, i) => {
 			const rect = rects[i];
 			const tip = tipOf(rect, note.side);
 			const { offsetWidth: w, offsetHeight: h } = noteEls[i];
 			const corner = cornerOf(tip, note.side, w, h, reach);
-			const box = {
+			let box = {
 				x: Math.max(EDGE, Math.min(corner.x, window.innerWidth - w - EDGE)),
 				y: Math.max(EDGE, Math.min(corner.y, window.innerHeight - h - EDGE)),
 				w,
 				h
 			};
-			// clear of the other notes and the controls they point at: along if the
-			// note still sits over its arrow, otherwise down
-			const clear = [...placed, ...rects.filter((_, j) => j !== i).map(asBox)];
-			for (let hit = clear.find((b) => touching(box, b)); hit; hit = clear.find((b) => touching(box, b))) {
-				const along = hit.x + hit.w + GAP;
-				if (along < tip.x) box.x = along;
-				else box.y = hit.y + hit.h + GAP;
-			}
+			// Search nearby positions inside the viewport, avoiding other labels,
+			// their targets, and the year headings. Hide a note if there is no room.
+			const clear = [...placed, ...rects.map(asBox), ...yearHeads];
+			const xs = [box.x, EDGE, window.innerWidth - w - EDGE, ...clear.flatMap((b) => [b.x - w - GAP, b.x + b.w + GAP])];
+			const ys = [
+				box.y,
+				EDGE,
+				window.innerHeight - h - EDGE,
+				...clear.flatMap((b) => [b.y - h - GAP, b.y + b.h + GAP])
+			];
+			const candidates = xs
+				.flatMap((x) => ys.map((y) => ({ x, y, w, h })))
+				.filter(
+					(b) =>
+						b.x >= EDGE &&
+						b.y >= EDGE &&
+						b.x + w <= window.innerWidth - EDGE &&
+						b.y + h <= window.innerHeight - EDGE &&
+						!clear.some((c) => touching(b, c))
+				)
+				.sort((a, b) => Math.hypot(a.x - corner.x, a.y - corner.y) - Math.hypot(b.x - corner.x, b.y - corner.y));
+			box = candidates[0] ?? { x: -9999, y: -9999, w, h };
 			placed.push(box);
 			const angle = Math.atan2(tip.y - (box.y + h / 2), tip.x - (box.x + w / 2));
 			return { rect, tip, box, turn: angle - DRAWN };
@@ -110,19 +127,21 @@
 <div class="veil" role="presentation" onclick={close}></div>
 
 {#each spots as spot, i (i)}
-	<div
-		class="ring"
-		style:left="{spot.rect.left - PAD}px"
-		style:top="{spot.rect.top - PAD}px"
-		style:width="{spot.rect.width + PAD * 2}px"
-		style:height="{spot.rect.height + PAD * 2}px"
-	></div>
-	<div
-		class="arrow"
-		style:transform="translate({spot.tip.x}px, {spot.tip.y}px) translate(-30%, -91%) rotate({spot.turn}rad)"
-	>
-		<ArrowMark size="4.2rem" />
-	</div>
+	{#if spot.box.x >= 0}
+		<div
+			class="ring"
+			style:left="{spot.rect.left - PAD}px"
+			style:top="{spot.rect.top - PAD}px"
+			style:width="{spot.rect.width + PAD * 2}px"
+			style:height="{spot.rect.height + PAD * 2}px"
+		></div>
+		<div
+			class="arrow"
+			style:transform="translate({spot.tip.x}px, {spot.tip.y}px) translate(-30%, -91%) rotate({spot.turn}rad)"
+		>
+			<ArrowMark size="4.2rem" />
+		</div>
+	{/if}
 {/each}
 
 {#each notes as note, i (note.target)}

@@ -6,6 +6,7 @@
 import { COMPACT_LAYOUT_QUERY } from '$lib/ui/layout';
 import { crossfade, fade, scale, type TransitionConfig } from 'svelte/transition';
 import { cubicOut } from 'svelte/easing';
+import { tick } from 'svelte';
 
 // A send/receive pair keyed by course code. When a course leaves one surface
 // (`out:sendCourse`) and arrives on another (`in:receiveCourse`) in the same
@@ -30,6 +31,98 @@ let quietUntil = 0;
 const now = () => (typeof performance === 'undefined' ? Date.now() : performance.now());
 export const reducedMotion = () =>
 	typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** Soften a desktop-wide settings change without replaying every individual card animation. */
+export function softUpdate(update: () => void) {
+	if (
+		typeof document === 'undefined' ||
+		!document.startViewTransition ||
+		reducedMotion() ||
+		matchMedia(COMPACT_LAYOUT_QUERY).matches
+	) {
+		update();
+		return;
+	}
+	document.startViewTransition(async () => {
+		update();
+		await tick();
+	});
+}
+
+// Animate changed readouts and newly introduced sections without disturbing
+// inputs, focus, dragging, or the course cards' own transitions.
+export function softChanges(node: HTMLElement) {
+	const targets = [
+		'p',
+		'h1',
+		'h2',
+		'h3',
+		'h4',
+		'dt',
+		'dd',
+		'output',
+		'[role="status"]',
+		'.d-head',
+		'.d-meta',
+		'.d-desc',
+		'.d-place-where',
+		'.p-num',
+		'.total b',
+		'.rule-text',
+		'.result-count',
+		'.reveal-note',
+		'.empty-results',
+		'.view-strip',
+		'.example-note',
+		'.office-alert',
+		'.office-save-state'
+	].join(', ');
+	const entryTargets = `${targets}, .office-card, .office-empty`;
+	const pending = new Set<HTMLElement>();
+	let frame = 0;
+	const collect = (element: Element) => {
+		const target = element.closest<HTMLElement>(targets);
+		if (target && node.contains(target)) pending.add(target);
+	};
+	const observer = new MutationObserver((records) => {
+		if (reducedMotion() || matchMedia(COMPACT_LAYOUT_QUERY).matches) return;
+		for (const record of records) {
+			if (record.type === 'characterData') {
+				if (record.target.parentElement) collect(record.target.parentElement);
+				continue;
+			}
+			if (record.target instanceof Element) collect(record.target);
+			for (const added of record.addedNodes) {
+				if (!(added instanceof HTMLElement)) continue;
+				collect(added);
+				if (added.matches(entryTargets)) pending.add(added);
+				added.querySelectorAll<HTMLElement>(entryTargets).forEach((el) => pending.add(el));
+			}
+		}
+		if (!pending.size || frame) return;
+		frame = requestAnimationFrame(() => {
+			frame = 0;
+			if (reducedMotion()) {
+				pending.clear();
+				return;
+			}
+			const elements = [...pending];
+			for (const element of elements) {
+				if (elements.some((parent) => parent !== element && parent.contains(element))) continue;
+				if (element.isConnected && element.getClientRects().length)
+					element.animate([{ opacity: 0.72 }, { opacity: 1 }], { duration: 140, easing: 'ease-out' });
+			}
+			pending.clear();
+		});
+	});
+	observer.observe(node, { childList: true, characterData: true, subtree: true });
+	return {
+		destroy: () => {
+			observer.disconnect();
+			cancelAnimationFrame(frame);
+		}
+	};
+}
 // A hidden phone tab has no useful crossfade position. Fade locally instead.
 const quiet = () =>
 	now() < quietUntil ||

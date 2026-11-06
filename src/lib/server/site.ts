@@ -47,8 +47,14 @@ export const subjectFromSlug = (slug: string): Subject | undefined =>
 /** "2024–2026", the batches today's rules are for */
 export const currentBatches = () => {
 	const b = CURRENT_REQUIREMENTS.batches;
-	return b.length ? `${Math.min(...b)}–${Math.max(...b)}` : '';
+	if (!b.length) return '';
+	const first = Math.min(...b);
+	const last = Math.max(...b);
+	return first === last ? String(first) : `${first}–${last}`;
 };
+
+export const batchLabel = () =>
+	`${currentBatches()} ${new Set(CURRENT_REQUIREMENTS.batches).size === 1 ? 'batch' : 'batches'}`;
 
 // ── programmes ──
 
@@ -119,7 +125,7 @@ export function programmePage(subject: Subject) {
 	return {
 		subject: { label: subject.label, hue: subject.hue ?? null },
 		reps: repsFor(subject.id),
-		batches: currentBatches(),
+		batches: batchLabel(),
 		programmes: variantsOf(subject).flatMap((v) => programmeView(subject, v) ?? [])
 	};
 }
@@ -188,7 +194,7 @@ export function coursePage(code: string) {
 		lecturers: facultyOf(c.code).map(lecturerLink),
 		terms: termsOffered(c.code),
 		programmes: programmesNaming(c),
-		batches: currentBatches()
+		batches: batchLabel()
 	};
 }
 

@@ -84,9 +84,11 @@
 													{#if course.code}
 														{@const code = course.code}
 														<button onclick={() => plan.revealCourse(code)}>
-															{#if showCode}<b>{plan.shownCode(code)}</b>{/if}{showCode && showTitle
-																? ' '
-																: ''}{#if showTitle}{course.title}{/if}
+															{#if showCode}<b
+																	class="course-code"
+																	data-type={plan.courseType(code)}
+																	style:--hue={plan.hueOf(code)}>{plan.shownCode(code)}</b
+																>{/if}{showCode && showTitle ? ' ' : ''}{#if showTitle}{course.title}{/if}
 														</button>
 														{#if at}<span class="at">{at}</span>{/if}
 													{:else}<span class="name">{course.title} <em>· not offered yet</em></span>{/if}
@@ -279,6 +281,12 @@
 			text-decoration: underline;
 			text-underline-offset: 0.2em;
 		}
+	}
+
+	.course-code {
+		@include course-tag;
+		display: inline-block;
+		vertical-align: baseline;
 	}
 
 	// phones: the touch floor would make every row 44px; a list of codes

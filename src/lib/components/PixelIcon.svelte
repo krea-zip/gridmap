@@ -6,7 +6,7 @@
 		size = '1.5rem',
 		snap = false
 	}: {
-		name: 'search' | 'gear' | 'code' | 'title' | 'grade' | 'link' | 'help' | 'sliders' | 'pin';
+		name: 'search' | 'gear' | 'code' | 'title' | 'grade' | 'link' | 'help' | 'sliders' | 'pin' | 'construction';
 		size?: string;
 		snap?: boolean;
 	} = $props();
@@ -21,7 +21,8 @@
 		help: 'M4 2h7v2h2v4h-2v2H8v1H6V8h3V6h2V4H4v2H2V4h2zM6 13h2v2H6z',
 		sliders:
 			'M2 3h7v1H2zM12 3h2v1h-2zM9 2h3v3H9zM2 8h2v1H2zM4 7h3v3H4zM7 8h7v1H7zM2 13h8v1H2zM10 12h3v3h-3zM13 13h1v1h-1z',
-		pin: 'M4 1h8v2H4zM6 3h4v5H6zM3 8h10v2H3zM7 10h2v5H7z'
+		pin: 'M6 0h4v1H6zM5 1h6v2H5zM6 3h4v1H6zM7 4h2v1H7zM6 5h4v1H6zM4 6h8v1H4zM3 7h10v2H3zM4 9h8v1H4zM6 10h4v1H6zM7 11h2v4H7zM7 15h1v1H7z',
+		construction: 'M2 4h12v2H2zM1 6h14v5H1zM3 7v2h2V7zM7 7v2h2V7zM11 7v2h2V7zM3 11h2v4H3zM11 11h2v4h-2z'
 	};
 
 	// Pixel art only looks even when every art pixel covers the same whole

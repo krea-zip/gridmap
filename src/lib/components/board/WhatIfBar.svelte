@@ -31,7 +31,7 @@
 	// (a double major with a minor)
 	function structureOf(roles: Set<Role>): StructureKind | null {
 		if (roles.has('major2')) return roles.has('minor') || roles.has('conc') ? null : 'double-major';
-		if (roles.has('minor') && roles.has('conc')) return 'major-minor-conc';
+		if (roles.has('minor') && roles.has('conc')) return tried.fourYear ? 'major-minor-conc' : null;
 		if (roles.has('minor')) return 'major-minor';
 		if (roles.has('conc')) return 'major-conc';
 		return 'single-major';
@@ -166,7 +166,12 @@
 			{/each}
 			<label class="wi-inline"
 				>track
-				<select bind:value={tried.fourYear}>
+				<select
+					bind:value={tried.fourYear}
+					onchange={() => {
+						if (!tried.fourYear && tried.structure === 'major-minor-conc') tried.structure = 'major-minor';
+					}}
+				>
 					<option value={true}>4-year</option>
 					<option value={false}>3-year</option>
 				</select>
@@ -175,7 +180,7 @@
 				batch
 				<select bind:value={tried.batch}>
 					{#each STUDENT_BATCHES as b (b)}
-						<option value={b}>{b}-{String(b + (tried.fourYear ? 4 : 3)).slice(-2)}</option>
+						<option value={b}>{b}–{String(b + (tried.fourYear ? 4 : 3)).slice(-2)}</option>
 					{/each}
 				</select>
 			</label>

@@ -27,3 +27,6 @@ vite.config.ts.timestamp-*
 
 # supabase cli state for the linked project (project ref, pooler url)
 supabase/.temp/
+
+# university documents the requirements were read from, not ours to publish
+/sources/

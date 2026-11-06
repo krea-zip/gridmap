@@ -30,6 +30,8 @@
 	<div
 		class="box"
 		use:focusScope
+		tabindex={dismiss ? -1 : undefined}
+		data-initial-focus={dismiss ? '' : undefined}
 		role="dialog"
 		aria-modal="true"
 		aria-label={title}

@@ -154,9 +154,14 @@ test('desktop retains resizers, catalogue and drag placement', async ({ page }) 
 	await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true');
 	await expect(page.getByRole('navigation', { name: 'main navigation' })).not.toBeVisible();
 	const splitter = page.getByRole('separator', { name: 'resize the catalogue' });
+	const catalogueWidth = await page
+		.locator('[data-panel="catalogue"]')
+		.evaluate(
+			(el) => el.getBoundingClientRect().width / parseFloat(getComputedStyle(document.documentElement).fontSize)
+		);
 	await splitter.focus();
 	await page.keyboard.press('ArrowRight');
-	await expect(splitter).toHaveAttribute('aria-valuenow', '31.6');
+	await expect(splitter).toHaveAttribute('aria-valuenow', (Math.round((catalogueWidth + 1.6) * 10) / 10).toString());
 	await page.getByRole('searchbox').fill('MATH201');
 	await page
 		.locator('[data-course="MATH201"] button.card')

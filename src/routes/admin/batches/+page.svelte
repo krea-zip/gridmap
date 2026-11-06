@@ -77,7 +77,7 @@
 	</div>
 	{#if recorded}
 		<div class="office-row">
-			<label>Search<input type="search" bind:value={search} placeholder="A word, a person, a reference" /></label>
+			<label>search<input type="search" bind:value={search} placeholder="A word, a person, a reference" /></label>
 			<label
 				>Area
 				<select bind:value={area}>

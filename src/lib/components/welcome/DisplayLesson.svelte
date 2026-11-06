@@ -1,97 +1,96 @@
 <script lang="ts">
-	import { tick } from 'svelte';
 	import { usePlan } from '$lib/planner/context';
-	import { COURSES, subjectById } from '$lib/curriculum/data';
 	import ColourKey from '../board/bar/ColourKey.svelte';
-	import Task from './Task.svelte';
 	const plan = usePlan();
-	const groups = plan.programmes
-		.map((p, i) => ({
-			...p,
-			required: COURSES.find((c) => plan.programmeOf(c.code) === i && plan.courseType(c.code) === 'required')?.code,
-			elective: COURSES.find((c) => plan.programmeOf(c.code) === i && plan.courseType(c.code) === 'elective')?.code
-		}))
-		.filter((p) => p.subject !== 'open');
-	for (const group of groups)
-		for (const c of [group.required, group.elective])
-			if (c && !plan.placedCodes.has(c)) {
-				const slots = plan.years
-					.flatMap((year) => plan.trims.map((trim) => ({ year, trim })))
-					.filter((p) => plan.canDrop(c, p.year, p.trim));
-				const slot = slots.find((p) => !plan.slotCourses(p.year, p.trim).length) ?? slots[0];
-				if (slot) plan.place(c, slot.year, slot.trim);
-			}
-	plan.showCodes = true;
-	plan.showTitles = true;
-	let step = $state(0);
-	let subject = $state<string | null>(null);
-	async function click(e: MouseEvent) {
-		const button = (e.target as Element).closest('button');
-		if (!button) return;
-		const text = button.textContent?.trim() ?? '';
-		await tick();
-		if (text.startsWith('display')) step = Math.max(step, 1);
-		else if (text.includes('required (filled)')) step = Math.max(step, 2);
-		else if (text.includes('elective (outlined)')) step = Math.max(step, 3);
-		else {
-			const hit = groups.find((p) => text.includes(subjectById(p.subject).label));
-			if (hit) {
-				if (subject === hit.subject && button.getAttribute('aria-pressed') === 'false') step = 5;
-				else {
-					subject = hit.subject;
-					step = Math.max(step, 4);
-				}
-			}
-		}
-	}
+	let samples = $derived([
+		{ type: 'core', code: 'KCCS190' },
+		...plan.placed.filter((p) => p.code !== 'KCCS190').map((p) => ({ type: plan.courseType(p.code), code: p.code }))
+	]);
 </script>
 
-<Task
-	steps={[
-		'open display.',
-		'tap “required (filled)”.',
-		'tap “elective (outlined)”.',
-		'tap a subject colour.',
-		'tap that subject again to deselect it.'
-	]}
-	at={step}
-	complete="filled = required · outlined = elective · each subject has its own colour"
-/>
-<div class="scene colour-scene">
-	<div class="legend-sample" role="presentation" onclick={click}><ColourKey /></div>
+<div class="display-demo">
+	<ColourKey />
+	<div class="blocks" role="img" aria-label="course colours: dot for required, coloured left edge for elective">
+		{#each samples as sample (sample.code)}
+			<span
+				class="block"
+				class:lit={plan.highlight.includes(sample.code)}
+				data-type={sample.type}
+				style:--hue={plan.hueOf(sample.code)}
+			>
+				{#if sample.type === 'required'}<i class="dot"></i>{/if}
+			</span>
+		{/each}
+	</div>
+	<div class="key"><span><i class="dot"></i> required</span><span><i class="edge"></i> elective</span></div>
 </div>
 
-<style>
-	.colour-scene {
-		display: block;
+<style lang="scss">
+	@use '$lib/styles/mixins' as *;
+	.display-demo {
+		max-width: 32rem;
+		margin-inline: auto;
 	}
-	.legend-sample :global(.pop) {
+	.blocks {
+		display: flex;
+		gap: 0.8rem;
+		flex-wrap: wrap;
+		justify-content: center;
+		margin-top: 1.6rem;
+	}
+	.block {
+		@include course-type-fill(false);
+		display: flex;
+		align-items: center;
+		width: 5rem;
+		height: 2.8rem;
+		padding: 0.7rem;
+		border-radius: 6px;
+	}
+	.block.lit {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 3px;
+	}
+	.dot {
+		@include required-dot;
+	}
+	.edge {
+		display: inline-block;
+		height: 1.1rem;
+		border-left: 4px solid var(--color-accent);
+		border-radius: 2px;
+	}
+	.key {
+		display: flex;
+		justify-content: center;
+		gap: 1.8rem;
+		margin-top: 1rem;
+		font-size: 1.15rem;
+		color: var(--color-text-muted);
+	}
+	.key > span {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.display-demo :global(.colour-key) {
+		position: relative;
+	}
+	.display-demo :global(.pop) {
 		position: relative;
 		top: auto;
 		left: auto;
 		right: auto;
 		width: 100%;
 		max-width: 100%;
-		max-height: 26rem;
-		margin-top: 0.6rem;
+		max-height: none;
 		box-shadow: none;
+		margin-top: 0.8rem;
+		border-radius: 10px;
 	}
-	.legend-sample :global(.colour-key) {
-		position: relative;
-	}
-	.legend-sample :global(.labels) {
-		display: none;
-	}
-	.legend-sample :global(.section-label) {
-		padding: 0.4rem 0.5rem;
-		font-size: 1rem;
-	}
-	.legend-sample :global(li > button) {
-		padding: 0.4rem 0.5rem;
-		min-height: 2.3rem;
-		font-size: 1.05rem;
-	}
-	.legend-sample :global(.foot) {
-		display: none;
+	@media (max-width: 600px) {
+		.display-demo :global(.pop) {
+			max-height: 30rem;
+		}
 	}
 </style>

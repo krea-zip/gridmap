@@ -36,7 +36,7 @@
 {#if fellBack(doc, batch)}
 	<p class="office-note error">
 		Nobody has chosen a curriculum for this batch, so it falls back to the default instead of following the {batch - 1}
-		batch. <a href="?section=requirements">Choose one</a>.
+		batch. <a href="?section=requirements">choose one</a>.
 	</p>
 {/if}
 
@@ -69,7 +69,7 @@
 			<span class="office-badge">{requirements.length}</span>
 		</div>
 		<p class="office-help">This batch follows a different curriculum, so these programmes change.</p>
-		<label>Find a programme<input type="search" bind:value={search} placeholder="e.g. mathematics" /></label>
+		<label>find a programme<input type="search" bind:value={search} placeholder="e.g. mathematics" /></label>
 		<div class="office-table-scroll">
 			<table>
 				<thead><tr><th>Programme</th><th>What changes</th></tr></thead>
@@ -101,13 +101,13 @@
 	</p>
 	<div class="office-row">
 		<label
-			>Bring over from
+			>bring over from
 			<select bind:value={from}>
-				<option value={null}>Choose a batch</option>
+				<option value={null}>choose a batch</option>
 				{#each others as y (y)}<option value={y}>{y}</option>{/each}
 			</select>
 		</label>
-		<button disabled={from === null} onclick={copy}>Bring over</button>
+		<button disabled={from === null} onclick={copy}>bring over</button>
 	</div>
 	{#if copied}<p class="office-note" role="status">{copied}</p>{/if}
 </details>

@@ -112,8 +112,8 @@
 		{#if office.conflict}
 			<p>Your unsaved work is still here. Download a backup before reloading the shared draft.</p>
 			<div class="office-actions">
-				<button onclick={downloadDraft}>Download my draft</button>
-				<button onclick={() => (confirmReload = true)}>Reload shared draft</button>
+				<button onclick={downloadDraft}>download my draft</button>
+				<button onclick={() => (confirmReload = true)}>reload shared draft</button>
 			</div>
 		{/if}
 	</div>
@@ -126,8 +126,8 @@
 			onclick={() => {
 				confirmReload = false;
 				void office.reload();
-			}}>Reload draft</button
+			}}>reload draft</button
 		>
-		<button onclick={() => (confirmReload = false)}>Keep editing</button>
+		<button onclick={() => (confirmReload = false)}>keep editing</button>
 	</div>
 {/if}

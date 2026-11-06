@@ -98,3 +98,39 @@ test('the electives left to choose skip what is placed and list a shared course 
 	expect(new Set(codes).size).toBe(codes.length);
 	expect(codes.some((code) => plan.placedCodes.has(code))).toBe(false);
 });
+
+test('three-year setup allows a minor or concentration, but not both', () => {
+	const { plan, answers } = welcome();
+	answers.setFourYear(false);
+	answers.pick('computer science');
+	answers.add('minor');
+	expect(answers.addable).toEqual([]);
+	answers.add('conc');
+	expect(plan.structure).toBe('major-minor');
+	answers.remove('minor');
+	answers.add('conc');
+	expect(answers.addable).toEqual([]);
+	expect(plan.structure).toBe('major-conc');
+});
+
+test('turning off four years drops the concentration slot from setup', () => {
+	const { plan, answers } = welcome();
+	answers.pick('computer science');
+	answers.add('minor');
+	answers.add('conc');
+	answers.setFourYear(false);
+	expect(plan.structure).toBe('major-minor');
+	expect(answers.roles).toEqual(['major1', 'minor']);
+	expect(answers.active).not.toBe('conc');
+});
+
+test('sidebar degree change keeps placed courses when dropping the concentration', () => {
+	const plan = new Plan();
+	plan.structure = 'major-minor-conc';
+	plan.touched = true;
+	plan.placements = { '2-1': ['COMP204'] };
+	plan.fourYear = false;
+	plan.programmeChanged();
+	expect(plan.structure).toBe('major-minor');
+	expect(plan.placements['2-1']).toEqual(['COMP204']);
+});

@@ -43,8 +43,9 @@
 					<div class="d-prof-heading">
 						<strong>{p.name}</strong>
 						{#if p.position}<span class="d-muted"
-								>{p.position}{#if joinedYear(p.date_of_joining)}
-									· at Krea since {joinedYear(p.date_of_joining)}{/if}</span
+								>{p.position}{#if joinedYear(p.date_of_joining)}{' · at Krea since '}{joinedYear(
+										p.date_of_joining
+									)}{/if}</span
 							>{/if}
 					</div>
 					<!-- office hours, how to reach them and what they've taught lately

@@ -49,7 +49,7 @@
 			</select>
 		</label>
 		<label
-			>Department
+			>department
 			<select bind:value={entry.subject}>
 				<option value="">Not specific to one</option>
 				{#each subjects as s (s.id)}<option value={s.id}>{s.label}</option>{/each}
@@ -61,7 +61,7 @@
 				{#each CHANGE_STATUSES as s (s.value)}<option value={s.value}>{s.label}</option>{/each}
 			</select>
 		</label>
-		<label>Reference<input bind:value={entry.reference} placeholder="Senate minutes, circular, email" /></label>
+		<label>reference<input bind:value={entry.reference} placeholder="Senate minutes, circular, email" /></label>
 		<label class="wide">Why, and any detail<textarea rows="3" bind:value={entry.detail}></textarea></label>
 	</div>
 {/snippet}
@@ -70,7 +70,7 @@
 	<h2>record a change</h2>
 	<p class="office-help">Office only. This explains a change; make the change itself in the other sections.</p>
 	{@render fields(draft)}
-	<button class="primary" disabled={!draft.title.trim()} onclick={add}>Add to the log</button>
+	<button class="primary" disabled={!draft.title.trim()} onclick={add}>add to the log</button>
 </section>
 
 <section class="office-card">
@@ -89,7 +89,7 @@
 				</span>
 			</summary>
 			{@render fields(change)}
-			<button class="danger" onclick={() => removeChange(doc, batch, change.id)}>Remove from the log</button>
+			<button class="danger" onclick={() => removeChange(doc, batch, change.id)}>remove from the log</button>
 		</details>
 	{:else}
 		<p class="office-help">Nothing recorded for this batch yet.</p>

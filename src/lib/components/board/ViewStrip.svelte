@@ -7,6 +7,8 @@
 	import { RECORDED_TERMS } from '$lib/curriculum/data';
 	import { runRecord, type Chain, type Verdict } from '$lib/planner/boardViews';
 	import WhatIfBar from './WhatIfBar.svelte';
+	import { fade } from 'svelte/transition';
+	import { reducedMotion } from '$lib/ui/transitions';
 
 	let { chain, verdict }: { chain: Chain | null; verdict: Verdict | null } = $props();
 	const plan = usePlan();
@@ -24,7 +26,7 @@
 </script>
 
 {#if plan.view === 'runs'}
-	<section class="view-strip" aria-label="will it run? view">
+	<section class="view-strip" aria-label="will it run? view" transition:fade={{ duration: reducedMotion() ? 0 : 120 }}>
 		<p class="vs-lead">
 			<b>will it run?</b> each course is marked by how often it actually ran in its trimester, from the timetables on
 			record: T1 {years(RECORDED_TERMS[1])} · T2 {years(RECORDED_TERMS[2])} · T3 {years(RECORDED_TERMS[3])}. Hover a
@@ -46,7 +48,7 @@
 		{/if}
 	</section>
 {:else if plan.view === 'prereqs'}
-	<section class="view-strip" aria-label="prerequisites view">
+	<section class="view-strip" aria-label="prerequisites view" transition:fade={{ duration: reducedMotion() ? 0 : 120 }}>
 		<p class="vs-lead">
 			<b>prerequisites</b> click a course on the grid: arrows run from what you take first to what needs it, all the way back
 			and all the way on. Click anywhere else to clear.
@@ -73,7 +75,7 @@
 		{/if}
 	</section>
 {:else if plan.view === 'whatif' && plan.whatIf}
-	<section class="view-strip" aria-label="what-if view">
+	<section class="view-strip" aria-label="what-if view" transition:fade={{ duration: reducedMotion() ? 0 : 120 }}>
 		<WhatIfBar {verdict} />
 	</section>
 {/if}

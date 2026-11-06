@@ -180,10 +180,7 @@
 		padding: 0.3rem 1rem;
 		font: inherit;
 		font-size: 1.25rem;
-		color: oklch(var(--tone-text-l) var(--tone-text-c) var(--hue, 300));
-		background: subject-tone(elective);
-		border: 1px solid transparent;
-		border-radius: 999px;
+		@include subject-pill;
 		cursor: pointer;
 		transition:
 			background-color 0.15s ease,

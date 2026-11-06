@@ -265,6 +265,8 @@ export class Plan {
 		}
 
 		$effect(() => {
+			// Practice plans keep local undo history while skipping autosave.
+			this.#recordHistory();
 			if (this.rehearsing) return;
 			const json = JSON.stringify(this.snapshot());
 			try {
@@ -273,7 +275,6 @@ export class Plan {
 				this.storageError =
 					'Browser storage is unavailable, so this plan is lost when the tab closes. Copy a share link to keep it.';
 			}
-			this.#recordHistory();
 		});
 	}
 
@@ -1446,6 +1447,7 @@ export class Plan {
 	 *  longer count, so the student decides what changes. */
 	programmeChanged() {
 		quietRedraw();
+		if (!this.fourYear && this.structure === 'major-minor-conc') this.structure = 'major-minor';
 		this.ensureDistinctPicks();
 		// switching to 4 years brings year 4 back; switching to 3 takes off the
 		// years past the third that hold nothing, one with courses stays, so
@@ -1518,7 +1520,7 @@ export class Plan {
 	recommendedElectiveCredits = $derived(
 		Math.max(
 			0,
-			this.degreeTotal -
+			this.creditTarget -
 				Object.values(this.recommended)
 					.flat()
 					.reduce((sum, code) => sum + byCode(code).credits, 0)
@@ -1818,11 +1820,17 @@ export class Plan {
 		return this.slotCourses(year, trim).some((code) => this.warnCodes.has(code));
 	}
 
+	/** Match a required course using the same directed equivalences as missing-course hints. */
+	#satisfiesStructure(course: Course, codes: Set<string>): boolean {
+		return [...codes].some(
+			(code) => course.codes.includes(code) || satisfiedBy(code).some((sub) => course.codes.includes(sub))
+		);
+	}
+
 	// ── which programme each placed course counts toward ──
-	/** Each placed course is claimed by ONE programme (unless /admin shares its
-	 *  credits), so a cross-listed course taken for one programme doesn't also
-	 *  fill another's tally. The stats count with it, and a chip wears the
-	 *  colour of the programme it counts for. */
+	/** Ordinary cross-listed courses follow the configured sharing policy.
+	 * Explicit required-course equivalences satisfy both programme tallies;
+	 * totalPlacedCredits still counts the actual course only once. */
 	claims: Map<string, number[]> = $derived.by(() => {
 		const counts = (c: Course, i: number): boolean => {
 			if (isTranscriptOnly(c.code)) return false;
@@ -1831,7 +1839,10 @@ export class Plan {
 			const s = this.programmeSets[i];
 			// is the course named in this programme's scraped required / choice /
 			// elective lists for the exact variant?
-			const inLists = c.codes.some((x) => s.requiredAll.has(x) || s.pick.has(x) || s.elective.has(x));
+			const inLists =
+				this.#satisfiesStructure(c, s.requiredAll) ||
+				this.#satisfiesStructure(c, s.pick) ||
+				c.codes.some((x) => s.elective.has(x));
 			// a minor counts ONLY the courses its scraped structure names, not
 			// every course in the department, so cross-listed or extra
 			// department courses don't inflate its credits
@@ -1853,7 +1864,7 @@ export class Plan {
 		);
 		const requires = (c: Course, i: number) => {
 			const sets = this.programmeSets[i];
-			return c.codes.some((x) => sets.requiredAll.has(x) || sets.pick.has(x));
+			return this.#satisfiesStructure(c, sets.requiredAll) || this.#satisfiesStructure(c, sets.pick);
 		};
 		const claim = (c: Course, i: number) => {
 			claimedBy.set(c.code, [...(claimedBy.get(c.code) ?? []), i]);
@@ -1874,7 +1885,13 @@ export class Plan {
 		for (const c of ordered) {
 			const takers = this.programmes.map((_, i) => i).filter((i) => counts(c, i));
 			const declared = takers.filter((i) => this.programmes[i].subject !== 'open');
-			if ((c.share ?? CREDIT_SHARE_DEFAULT) === 'all' && declared.length) {
+			const equivalentRequirement = declared.some((i) => {
+				const sets = this.programmeSets[i];
+				return [...sets.requiredAll, ...sets.pick].some(
+					(code) => !c.codes.includes(code) && satisfiedBy(code).some((sub) => c.codes.includes(sub))
+				);
+			});
+			if (((c.share ?? CREDIT_SHARE_DEFAULT) === 'all' || equivalentRequirement) && declared.length) {
 				for (const i of declared) claim(c, i);
 				continue;
 			}
@@ -1928,7 +1945,7 @@ export class Plan {
 				creditsOfCodes(requiredSetFor(prog.subject, prog.role, this.fourYear, this.isDouble, this.batchStartYear));
 			const requiredDone = Math.min(
 				requiredNeeded,
-				mine.filter((c) => c.codes.some((x) => structure.has(x))).reduce((s, c) => s + c.credits, 0)
+				mine.filter((c) => this.#satisfiesStructure(c, structure)).reduce((s, c) => s + c.credits, 0)
 			);
 			return {
 				role: prog.role,

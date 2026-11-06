@@ -36,15 +36,13 @@
 	let pending = $derived(course.pendingCredits && course.credits === 0);
 	// Every course gets room for its title; credit weight is an explicit label.
 	let showReq = $derived(type === 'required');
-	// nearly every course is 4 credits, so a placed card only speaks up when
-	// one isn't, which is what makes a 2-credit course stand out in the list
-	const USUAL_CREDITS = 4;
+	// Only short courses need a credit label; unknown credit values stay TBC.
 	let creditNote = $derived(
 		pending
 			? 'TBC'
-			: course.credits === USUAL_CREDITS
-				? null
-				: `${course.credits} ${course.credits === 1 ? 'credit' : 'credits'}`
+			: course.credits >= 1 && course.credits <= 3
+				? `${course.credits} ${course.credits === 1 ? 'credit' : 'credits'}`
+				: null
 	);
 
 	function dragstart(e: DragEvent) {
@@ -97,6 +95,7 @@
 		data-course-card
 		class="card"
 		class:titles-only={!plan.showCodes}
+		class:noted={creditNote !== null}
 		class:dragging={plan.dragging === course.code}
 		data-type={type}
 		style:--hue={plan.hueOf(course.code)}
@@ -140,7 +139,9 @@
 				⇄ {xlistShown.join(' · ')}{xlistExtra > 0 ? ` +${xlistExtra}` : ''}
 			</span>
 		{/if}
-		{#if !mobile}<span class="credit-label" title={pending ? 'credits to confirm' : `${course.credits} credits`}
+		{#if !mobile && creditNote}<span
+				class="credit-label"
+				title={pending ? 'credits to confirm' : `${course.credits} credits`}
 				>{pending ? 'TBC' : `${course.credits} cr`}</span
 			>{/if}
 		{#if mobile}<span class="mobile-meta"
@@ -242,11 +243,11 @@
 		max-width: 100%;
 		font-size: var(--text-body);
 		font-weight: 700;
-		padding-right: 3.4rem;
 		width: 100%;
 	}
 
-	.titles-only > .title {
+	.card.noted:not(.placed) .code,
+	.card.noted.titles-only:not(.placed) > .title {
 		padding-right: 3.4rem;
 	}
 

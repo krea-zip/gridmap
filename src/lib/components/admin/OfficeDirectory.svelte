@@ -54,16 +54,16 @@
 </p>
 <div class="office-row">
 	<label
-		>New {kind === 'faculty' ? 'faculty member' : 'department'}<input
+		>new {kind === 'faculty' ? 'faculty member' : 'department'}<input
 			bind:value={name}
 			placeholder="Full name"
 		/></label
-	><button class="primary" onclick={add}>Add {kind === 'faculty' ? 'faculty' : 'department'}</button>
+	><button class="primary" onclick={add}>add {kind === 'faculty' ? 'faculty' : 'department'}</button>
 </div>
 {#if error}<p role="alert" class="office-note error">{error}</p>{/if}
 <div class="office-split">
 	<section>
-		<label>Search<input type="search" bind:value={search} /></label>
+		<label>search<input type="search" bind:value={search} /></label>
 		<div class="office-list">
 			{#if kind === 'faculty'}{#each office.document?.curriculum.lecturers.filter((f) => `${f.name} ${f.email}`
 						.toLowerCase()
@@ -81,21 +81,21 @@
 	{#if kind === 'faculty' && lecturer && office.document}<section class="office-card" style="margin-top:0">
 			<h2>{lecturer.name}</h2>
 			<div class="office-form">
-				<label>Full name<input bind:value={lecturer.name} /></label><label
+				<label>full name<input bind:value={lecturer.name} /></label><label
 					>Email<input type="email" bind:value={lecturer.email} /></label
-				><label class="wide">Position / designation<input bind:value={lecturer.position} /></label><label class="wide"
+				><label class="wide">position / designation<input bind:value={lecturer.position} /></label><label class="wide"
 					>Office hours<textarea bind:value={lecturer.office_hours}></textarea></label
-				><label>Profile link<input type="url" bind:value={lecturer.url} placeholder="https://…" /></label><label
+				><label>profile link<input type="url" bind:value={lecturer.url} placeholder="https://…" /></label><label
 					>Photo link<input type="url" bind:value={lecturer.image_url} placeholder="https://…" /></label
-				><label>Date joined<input bind:value={lecturer.date_of_joining} placeholder="YYYY-MM-DD" /></label>
+				><label>date joined<input bind:value={lecturer.date_of_joining} placeholder="YYYY-MM-DD" /></label>
 			</div>
-			<h3 style="margin-top:2rem">Courses in the directory</h3>
+			<h3 style="margin-top:2rem">courses in the directory</h3>
 			<ul>
 				{#each office.document.curriculum.courses.filter((c) => c.lecturers.includes(lecturer.id)) as c}<li>
 						<a href="/admin/courses?course={c.code}">{c.code} · {c.title}</a>
 					</li>{/each}
 			</ul>
-			<h3>Term assignments</h3>
+			<h3>term assignments</h3>
 			<ul>
 				{#each office.document.offerings.filter((o) => o.faculty.includes(lecturer.id)) as o}<li>
 						{o.term} · {o.code} · {o.section || 'All sections'}
@@ -105,15 +105,15 @@
 	{:else if kind === 'departments' && subject && office.document}<section class="office-card" style="margin-top:0">
 			<h2>{subject.label}</h2>
 			<div class="office-form">
-				<label>Department name<input bind:value={subject.label} /></label><label
+				<label>department name<input bind:value={subject.label} /></label><label
 					>Short label<input maxlength="12" bind:value={subject.short} /></label
-				><label>Planner colour hue<input type="range" min="0" max="360" bind:value={subject.hue} /></label><label
+				><label>planner colour hue<input type="range" min="0" max="360" bind:value={subject.hue} /></label><label
 					class="office-check"
 					><input type="checkbox" bind:checked={subject.majorable} />Usually available as a major
-					<span class="office-help">a single batch can differ: see <a href="/admin/batches">Batches</a></span></label
+					<span class="office-help">a single batch can differ: see <a href="/admin/batches">batches</a></span></label
 				>
 			</div>
-			<h3 style="margin-top:2rem">Course-code prefixes</h3>
+			<h3 style="margin-top:2rem">course-code prefixes</h3>
 			<p class="office-help">These identify the department when a new spreadsheet is imported.</p>
 			<div class="office-tags">
 				{#each Object.entries(office.document.prefixes).filter(([, s]) => s === subject.id) as [p]}<span
@@ -123,7 +123,7 @@
 					>{/each}
 			</div>
 			<div class="office-row">
-				<label>New prefix<input bind:value={prefix} placeholder="ECON" maxlength="5" /></label><button
+				<label>new prefix<input bind:value={prefix} placeholder="ECON" maxlength="5" /></label><button
 					onclick={() => {
 						const p = prefix.trim().toUpperCase();
 						if (!/^[A-Z]{2,5}$/.test(p)) {
@@ -137,10 +137,10 @@
 						office.document!.prefixes[p] = subject.id;
 						prefix = '';
 						error = '';
-					}}>Add prefix</button
+					}}>add prefix</button
 				>
 			</div>
-			<a href="/admin/requirements">Manage this department’s degree requirements →</a>
+			<a href="/admin/requirements">manage this department’s degree requirements →</a>
 		</section>
 	{:else}<div class="office-empty">Select a record to edit its details.</div>{/if}
 </div>

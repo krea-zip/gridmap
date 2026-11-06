@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { usePlan } from '$lib/planner/context';
 	import PixelIcon from '../PixelIcon.svelte';
+	import { usePlan } from '$lib/planner/context';
 	import CourseFaculty from './CourseFaculty.svelte';
 	import {
 		DATA_UPDATED,
@@ -29,16 +29,17 @@
 	import { GRADE_SCALE, OTHER_MARKS, type GradeMark } from '$lib/planner/grades';
 
 	const plan = usePlan();
+	// the panel keeps showing the last course picked, so it can slide out
+	// without emptying and a pinned panel stays put when you click away
+	let shown = $state.raw(plan.selected);
+	$effect(() => {
+		if (plan.selected) shown = plan.selected;
+	});
 	let {
 		canPin = false,
 		pinned = false,
 		onTogglePin
-	}: {
-		canPin?: boolean;
-		pinned?: boolean;
-		onTogglePin?: () => void;
-	} = $props();
-
+	}: { canPin?: boolean; pinned?: boolean; onTogglePin?: () => void } = $props();
 	// only jump to codes that exist in the catalogue; others stay plain text
 	function jump(code: string) {
 		plan.revealCourse(code);
@@ -48,27 +49,27 @@
 	// course is selected before that, ask right now, whichever lands first,
 	// every course fills in from then on
 	$effect(() => {
-		if (plan.selected) loadDescriptions();
+		if (shown) loadDescriptions();
 	});
 
 	const DESC_FOLD = 280;
 	let descOpenFor = $state<string | null>(null);
-	let descOpen = $derived(descOpenFor !== null && descOpenFor === plan.selected?.code);
+	let descOpen = $derived(descOpenFor !== null && descOpenFor === shown?.code);
 
 	// the board entry the panel is about: the course itself, or one of its
 	// failed attempts (COMP201~1) when that is what was clicked
 	let sid = $derived(
-		plan.selectedId && baseCode(plan.selectedId) === plan.selected?.code ? plan.selectedId : (plan.selected?.code ?? '')
+		plan.selectedId && baseCode(plan.selectedId) === shown?.code ? plan.selectedId : (shown?.code ?? '')
 	);
 	let isAttempt = $derived(isAttemptId(sid));
-	let attemptsHere = $derived(plan.selected ? plan.attemptsOf(plan.selected.code) : []);
+	let attemptsHere = $derived(shown ? plan.attemptsOf(shown.code) : []);
 	let failed = $derived(plan.gradeOf(sid) === 'U');
-	let roles = $derived(plan.selected ? plan.rolesIn(plan.selected.code) : []);
+	let roles = $derived(shown ? plan.rolesIn(shown.code) : []);
 
 	// separate courses that stand in for this one or it for them; never the
 	// same course under another code, which is cross-listing
 	let swaps = $derived.by(() => {
-		const c = plan.selected;
+		const c = shown;
 		if (!c) return [];
 		const others = c.substitutes?.length === 1 ? 'the other' : 'the others';
 		return [
@@ -89,26 +90,22 @@
 	});
 	// worth spelling out only when the departments disagree
 	// who teaches it, shown under "about the course" (never for the KCCS core)
-	let hasTeachers = $derived(
-		!!plan.selected &&
-			!isCore(plan.selected.code) &&
-			(facultyOf(plan.selected.code).length > 0 || !!plan.selected.faculty)
-	);
+	let hasTeachers = $derived(!!shown && !isCore(shown.code) && (facultyOf(shown.code).length > 0 || !!shown.faculty));
 	let rolesDiffer = $derived(new Set(roles.map((r) => r.role)).size > 1);
 
 	// ── placing it without dragging ──
 	// where the course sits now, and the trimester the picker offers: its own
 	// slot if it's placed, otherwise the first one it fits cleanly into
-	let placedAt = $derived(plan.placed.find((p) => p.code === plan.selected?.code) ?? null);
+	let placedAt = $derived(plan.placed.find((p) => p.code === shown?.code) ?? null);
 	let target = $derived.by(() => {
-		const code = plan.selected?.code;
+		const code = shown?.code;
 		if (!code) return '';
 		if (placedAt) return `${placedAt.year}-${placedAt.trim}`;
 		for (const y of plan.years) for (const t of plan.trims) if (plan.canDrop(code, y, t)) return `${y}-${t}`;
 		return '2-1';
 	});
 	function placeIt() {
-		const code = plan.selected?.code;
+		const code = shown?.code;
 		if (!code || !target) return;
 		const [y, t] = target.split('-').map(Number);
 		plan.place(code, y, t as 1 | 2 | 3);
@@ -218,25 +215,30 @@
 
 <header class="col-header">
 	<h2>course</h2>
-	{#if plan.selected}
+	{#if canPin || shown}
 		<div class="header-actions">
 			{#if canPin}
 				<button
 					class="pin"
 					aria-label={pinned ? 'unpin course details' : 'pin course details'}
 					aria-pressed={pinned}
-					title={pinned ? 'use a slide-out drawer' : 'keep details beside your plan'}
-					onclick={onTogglePin}><PixelIcon name="pin" snap /></button
+					title={pinned ? 'unpin course details' : 'keep course details open'}
+					onclick={onTogglePin}><PixelIcon name="pin" size="1.6rem" snap /></button
 				>
 			{/if}
-			<button class="close" aria-label="close course details" title="close (Esc)" onclick={() => (plan.selected = null)}
-				>×</button
-			>
+			{#if !canPin}
+				<button
+					class="close"
+					aria-label="close course details"
+					title="close (Esc)"
+					onclick={() => (plan.selected = null)}>×</button
+				>
+			{/if}
 		</div>
 	{/if}
 </header>
-{#if plan.selected}
-	{@const c = plan.selected}
+{#if shown}
+	{@const c = shown}
 	{@const ran = termsOffered(c.code)}
 	{@const desc = descriptionOf(c.code) ?? capstoneAbout(c.code)}
 	<div class="details">
@@ -487,7 +489,12 @@
 					<p class="d-swap-why">{swap.why}</p>
 					<div class="d-chips d-related">
 						{#each swap.codes as code (code)}
-							<button class="d-chip" onclick={() => jump(code)}>
+							<button
+								class="d-chip"
+								data-type={plan.courseType(code)}
+								style:--hue={plan.hueOf(code)}
+								onclick={() => jump(code)}
+							>
 								<span>{plan.courseLabel(code)}</span>
 								{#if plan.onBoard(code)}<span class="d-chip-status">on your plan</span>{/if}
 							</button>
@@ -503,7 +510,14 @@
 							{#if hasCode(p)}
 								{@const status = prereqStatus(p)}
 								<span class="d-prereq">
-									<button class="d-chip" data-status={status.kind} title={status.title} onclick={() => jump(p)}>
+									<button
+										class="d-chip"
+										data-type={plan.courseType(p)}
+										style:--hue={plan.hueOf(p)}
+										data-status={status.kind}
+										title={status.title}
+										onclick={() => jump(p)}
+									>
 										<span>{plan.courseLabel(p)}</span>
 										<span class="d-chip-status">{status.text}</span>
 									</button>
@@ -539,7 +553,12 @@
 							<div class="d-disclosure-body">
 								<div class="d-chips d-related">
 									{#each c.unlocks.filter(hasCode) as u (u)}
-										<button class="d-chip" onclick={() => jump(u)}>{plan.courseLabel(u)}</button>
+										<button
+											class="d-chip"
+											data-type={plan.courseType(u)}
+											style:--hue={plan.hueOf(u)}
+											onclick={() => jump(u)}>{plan.courseLabel(u)}</button
+										>
 									{/each}
 								</div>
 							</div>
@@ -576,6 +595,8 @@
 			</section>
 		{/if}
 	</div>
+{:else}
+	<p class="d-empty">Pick a course to see its details here.</p>
 {/if}
 
 <style lang="scss">
@@ -599,19 +620,19 @@
 		}
 	}
 
+	.d-empty {
+		padding: var(--panel-gutter);
+		font-size: var(--text-body);
+		color: var(--color-text-muted);
+	}
+
 	.header-actions {
 		display: flex;
 		align-items: center;
-		gap: 0.8rem;
+		gap: 0.4rem;
 	}
 
-	// the same switch pill as the catalogue's filters: raised plum when on
-	.pin {
-		@include toggle-pill;
-		display: flex;
-		padding: 0.4rem 0.8rem;
-	}
-
+	.pin,
 	.close {
 		display: flex;
 		align-items: center;
@@ -630,6 +651,11 @@
 			color: var(--color-text);
 			background: var(--color-hover-medium);
 		}
+	}
+
+	.pin[aria-pressed='true'] {
+		color: var(--color-text);
+		background: var(--color-hover-medium);
 	}
 
 	.d-disclosure {
@@ -731,17 +757,10 @@
 		gap: 0.6rem;
 
 		select {
+			@include flat-select;
 			flex: 1 0 100%;
 			width: 100%;
-			min-width: 0;
-			padding: 0.5rem 0.6rem;
 			font: inherit;
-			font-size: var(--text-body);
-			color: var(--color-text);
-			background-color: var(--color-bg-light);
-			border: 1px solid var(--color-border-card);
-			border-radius: 4px;
-			box-shadow: var(--shadow-well);
 		}
 	}
 
@@ -775,7 +794,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.8rem;
-		padding: 1.4rem;
+		padding: var(--panel-gutter);
 
 		.label {
 			@include section-label;
@@ -783,40 +802,26 @@
 		}
 	}
 
-	// the panel's three parts (your plan / in your degree / about the course),
-	// each under a heading a step above the small uppercase labels inside it
+	// Match the rail: full-width section rules and the same quiet labels.
 	.d-section {
 		display: flex;
 		flex-direction: column;
-		gap: 0.8rem;
-		margin-top: 0.8rem;
+		gap: 1rem;
+		margin: 0.8rem calc(-1 * var(--panel-gutter)) 0;
+		padding: 1.2rem var(--panel-gutter) 0;
+		border-top: 1px solid var(--color-border-light);
 	}
 
 	.d-section-title {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
+		@include section-label;
 		margin: 0;
-		font-size: 1.5rem;
-		font-weight: 700;
-		color: var(--color-text);
-
-		// a dotted rule runs on from the heading to the panel's edge
-		&::after {
-			content: '';
-			flex: 1;
-			border-top: 1px dotted var(--color-border-light);
-		}
 	}
 
 	.d-head {
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
-		// reserve room for a two-line title so a one-line course doesn't shrink
-		// the box and shove everything below it up and down between selections
-		min-height: 9rem;
-		@include card;
+		gap: 0.2rem;
+		padding: 0.4rem 0 0.8rem;
 
 		.d-code {
 			font-size: 1.8rem;
@@ -838,8 +843,11 @@
 
 	.d-meta {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 0.8rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		background: var(--color-bg-light);
+		border: 1px solid var(--color-border-card);
+		border-radius: 6px;
+		box-shadow: var(--shadow-inset);
 	}
 
 	.d-stat {
@@ -848,14 +856,16 @@
 		align-items: center;
 		justify-content: center;
 		gap: 0.3rem;
-		// a fixed height so credits / offered / type stay the same size box no
-		// matter how long their value is, the panel doesn't jump between courses
 		min-height: 5.6rem;
-		padding: 0.6rem 0.4rem;
-		background: var(--color-bg-light);
-		border: 1px solid var(--color-border-card);
-		border-radius: 4px;
-		@include card-shine;
+		min-width: 0;
+		padding: 0.8rem 0.4rem;
+		background: transparent;
+		border: 0;
+		text-align: center;
+
+		& + .d-stat {
+			border-left: 1px solid var(--color-border-divider);
+		}
 
 		.d-stat-label {
 			font-size: 1.1rem;
@@ -867,12 +877,12 @@
 		.d-stat-value {
 			font-size: 1.5rem;
 			font-weight: 700;
-			white-space: nowrap; // "t1 t2 t3" / "elective" never wrap to a 2nd line
+			overflow-wrap: anywhere;
 		}
 
 		// when it last ran, under the trimesters it runs in
 		.d-stat-sub {
-			font-size: 1.05rem;
+			font-size: 1.1rem;
 			color: var(--color-text-muted);
 			white-space: nowrap;
 
@@ -889,14 +899,12 @@
 	.d-stat-btn {
 		font: inherit;
 		color: inherit;
+		background: var(--gloss-face);
 		cursor: pointer;
-		transition:
-			border-color 0.15s ease,
-			transform 0.15s var(--spring);
+		transition: background-color 0.15s ease;
 
 		&:hover {
-			border-color: var(--color-accent);
-			transform: translateY(-1px);
+			background-color: var(--color-hover-medium);
 		}
 
 		.d-caret {
@@ -906,7 +914,7 @@
 		}
 
 		&.open {
-			border-color: var(--color-accent);
+			background-color: var(--color-active);
 
 			.d-caret {
 				transform: rotate(180deg);
@@ -1161,6 +1169,10 @@
 		text-align: left;
 		cursor: pointer;
 		@include glossy;
+		@include course-type-fill(false);
+		&[data-type] {
+			background-image: var(--gloss-face);
+		}
 		// keep the lit face, drop only the outer shadow
 		box-shadow: var(--shadow-inset);
 		&:hover {
@@ -1227,10 +1239,6 @@
 	.d-desc {
 		font-size: var(--text-body);
 		line-height: 1.55;
-		padding: 1rem 1.2rem;
-		background: var(--color-bg-light);
-		border: 1px solid var(--color-border-divider);
-		border-radius: 4px;
 
 		.folded {
 			display: -webkit-box;
@@ -1290,8 +1298,7 @@
 			font-size: 2.6rem;
 		}
 		.details {
-			padding: 1.8rem;
-			gap: 1.6rem;
+			gap: 1.2rem;
 		}
 		.d-head .d-title {
 			font-size: 2.4rem;

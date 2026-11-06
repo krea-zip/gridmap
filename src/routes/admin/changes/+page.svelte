@@ -58,9 +58,9 @@
 		<input type="hidden" name="revision" value={office.revision} />
 		<div class="office-actions wide">
 			<button class="primary" disabled={pending || !!blocked || office.revision === 0 || office.status === 'published'}
-				>Publish to students</button
+				>publish to students</button
 			>
-			<button type="button" onclick={() => office.preview()}>Student preview</button>
+			<button type="button" onclick={() => office.preview()}>student preview</button>
 		</div>
 	</form>
 	{#if office.release}
@@ -69,7 +69,7 @@
 		</p>
 		<form method="POST" action="?/redeploy" use:enhance={submitting}>
 			<input type="hidden" name="revision" value={office.revision} />
-			<button disabled={pending}>Retry the website update</button>
+			<button disabled={pending}>retry the website update</button>
 		</form>
 	{/if}
 </section>

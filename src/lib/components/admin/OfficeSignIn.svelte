@@ -41,8 +41,8 @@
 		<h2>sign in to your workspace</h2>
 		<p class="office-help">Use the office password. Your name identifies your changes in the release history.</p>
 		<form class="office-form" onsubmit={signIn}>
-			<label>Your name<input bind:value={name} required maxlength="60" autocomplete="name" /></label>
-			<label>Password<input type="password" bind:value={password} required autocomplete="current-password" /></label>
+			<label>your name<input bind:value={name} required maxlength="60" autocomplete="name" /></label>
+			<label>password<input type="password" bind:value={password} required autocomplete="current-password" /></label>
 			<div class="office-actions wide">
 				<button class="primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
 			</div>

@@ -28,9 +28,9 @@
 	<div class="pool">
 		<div class="office-form">
 			<label class="wide"
-				>Name of the pool<input bind:value={group.rule} placeholder="Pick one analysis course" /></label
+				>name of the pool<input bind:value={group.rule} placeholder="Pick one analysis course" /></label
 			>
-			<label>How many to pick<input type="number" min="1" bind:value={group.pick} /></label>
+			<label>how many to pick<input type="number" min="1" bind:value={group.pick} /></label>
 		</div>
 		<CoursePicker
 			{courses}
@@ -39,10 +39,10 @@
 			id="pool-{i}"
 		/>
 		{#each group.courses.filter((c) => !c.code) as c (c.title)}<p class="office-help">Also: {c.title}</p>{/each}
-		<button onclick={() => remove(group)}>Remove this pool</button>
+		<button onclick={() => remove(group)}>remove this pool</button>
 	</div>
 {/each}
-<button onclick={() => programme.choices.push({ rule: '', pick: 1, courses: [] })}>Add a pool</button>
+<button onclick={() => programme.choices.push({ rule: '', pick: 1, courses: [] })}>add a pool</button>
 
 <style>
 	.pool {

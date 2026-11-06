@@ -11,5 +11,5 @@
 		{page.status === 503 ? 'The office is not connected' : page.status === 403 ? 'No access' : 'Something went wrong'}
 	</h1>
 	<p>{page.error?.message}</p>
-	<p><a href="/admin">Back to the academic office</a></p>
+	<p><a href="/admin">back to the academic office</a></p>
 </section>

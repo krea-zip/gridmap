@@ -14,6 +14,8 @@
 
 	// ── Text ──
 	--text-body: 1.4rem; // the one body size in the side columns, only headings differ
+	--panel-gutter: 1.6rem;
+	--section-space: 1.6rem;
 	--color-text: #623a52;
 	--color-text-muted: #76626c; // ≥4.5:1 on every light surface, so small muted text stays legible
 	--color-accent: #7c4b69;
@@ -23,7 +25,11 @@
 	// --color-text / --color-accent, as the board bar does: a sample of the
 	// board drawn inside the bar's menus uses these to look like the board
 	--color-text-page: var(--color-text);
+	--color-text-muted-page: var(--color-text-muted);
 	--color-accent-page: var(--color-accent);
+	--color-on-accent-page: var(--color-on-accent);
+	--color-bg-light-page: var(--color-bg-light);
+	--gloss-face-page: var(--gloss-face);
 
 	// ── Borders ──
 	// Structural/frame borders (column separators, header + section
@@ -159,10 +165,6 @@
 	--tone-elective-deep-c: 0.07;
 	--tone-ink-l: 0.55;
 	--tone-ink-c: 0.068;
-	// a trimester cell tinted by the courses in it, only a hint of the hue,
-	// a step lighter and much greyer than the chips, so they stand off it
-	--tone-cell-l: 0.935;
-	--tone-cell-c: 0.016;
 	// the text and marks on a course card: translucent black, so over each
 	// fill it reads as a darker shade of that fill rather than a flat grey
 	// course text: one perceptual lightness (oklch L) for every subject,
@@ -318,8 +320,6 @@
 	--tone-elective-deep-c: 0.08;
 	--tone-ink-l: 0.74;
 	--tone-ink-c: 0.065;
-	--tone-cell-l: 0.26;
-	--tone-cell-c: 0.014;
 	--tone-text-l: 0.93;
 	--tone-text-c: 0.025;
 	--now-l: 0.74;

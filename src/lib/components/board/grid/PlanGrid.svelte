@@ -72,6 +72,14 @@
 		padding-right: calc(var(--board-gutter, 3.2rem) + 5.8rem);
 	}
 
+	// On a narrower docked board, use the space normally reserved to centre
+	// the grid so course titles have more room in each trimester.
+	@container plan (max-width: 80rem) {
+		.overview {
+			padding-right: var(--board-gutter, 2.4rem);
+		}
+	}
+
 	@include mobile {
 		.overview {
 			grid-template-columns: minmax(0, 1fr);

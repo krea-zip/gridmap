@@ -330,7 +330,7 @@ export function recommendedElectives(plan: Plan): Record<SlotKey, number> {
 	const placed = Object.values(plan.recommended)
 		.flat()
 		.reduce((sum, code) => sum + byCode(code).credits, 0);
-	let left = plan.degreeTotal - placed;
+	let left = plan.creditTarget - placed;
 	if (left < SLOT_CREDITS) return out;
 
 	const slots: SlotKey[] = [];

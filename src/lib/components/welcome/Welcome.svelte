@@ -9,6 +9,7 @@
 	import { DegreeAnswers } from './answers.svelte';
 	import DegreePicker from './DegreePicker.svelte';
 	import Practice from './Practice.svelte';
+	import MoreTools from './MoreTools.svelte';
 	import { LESSONS, type Lesson } from './lessons';
 
 	let { ondone }: { ondone: (finished: boolean) => void } = $props();
@@ -25,7 +26,8 @@
 	];
 	let windows = $derived([
 		...SETUP,
-		...LESSONS.filter((lesson) => lesson.id !== 'choices' || plan.choices.some((p) => p.role === 'major'))
+		...LESSONS,
+		{ id: 'tools' as const, title: 'a few useful shortcuts', label: 'saving & navigation' }
 	]);
 	let at = $state(0);
 	let current = $derived(windows[at]);
@@ -33,7 +35,6 @@
 	let waiting = $derived(
 		(current.id === 'start' && !answers.answered.batch) || (current.id === 'degree' && !answers.ready)
 	);
-	const GROUPS = ['plan', 'explore', 'check', 'course'];
 	function jump(id: string) {
 		const next = windows.findIndex((w) => w.id === id);
 		if (next < 0) return;
@@ -65,18 +66,8 @@
 	onclose={skip}
 >
 	{#if at >= 3}
-		<nav class="flow" aria-label="demo flow">
-			{#each GROUPS as group, i (group)}
-				{#if i}<span aria-hidden="true">→</span>{/if}
-				<button
-					class:active={current.group === group}
-					aria-current={current.group === group ? 'step' : undefined}
-					onclick={() => jump(windows.find((w) => w.group === group)!.id)}>{group}</button
-				>
-			{/each}
-		</nav>
 		<div class="component-position">
-			<span>miniature demo · {at - 2}/{windows.length - 3}</span><select
+			<span>walkthrough · {at - 2}/{windows.length - 3}</span><select
 				aria-label="demo component"
 				value={current.id}
 				onchange={(e) => jump(e.currentTarget.value)}
@@ -86,7 +77,7 @@
 	{/if}
 	<h3>{current.title}</h3>
 	{#if current.id === 'start'}
-		<p class="lede">pick your batch and degree. you can change both later.</p>
+		<p class="lede">plan your courses and check your degree requirements. start with your batch and degree length.</p>
 		<p class="ask">when did you start?</p>
 		<div class="keys" role="group" aria-label="batch">
 			{#each STUDENT_BATCHES as year (year)}
@@ -102,12 +93,21 @@
 			{/each}
 		</div>
 	{:else if current.id === 'degree'}
+		<p class="lede">pick your major, then add any other programmes you’re taking.</p>
 		<DegreePicker {answers} />
 	{:else if current.id === 'route'}
-		<p class="lede">your department’s starting point. next, try its pieces one at a time.</p>
+		<p class="lede">
+			your department’s suggested order. you can change it later. then take a quick look at the controls below — changes
+			in these examples stay in the demo.
+		</p>
 		<SuggestedPlan />
+	{:else if current.id === 'tools'}
+		<MoreTools />
 	{:else}
-		<Practice lesson={current.id as Lesson} />
+		<div class="lesson-context">
+			{#each current.context as line (line)}<p>{line}</p>{/each}
+		</div>
+		{#key current.id}<Practice lesson={current.id as Lesson} />{/key}
 	{/if}
 	<div class="nav">
 		{#if at > 0}<button class="back" onclick={() => go(-1)}>back</button>{/if}
@@ -120,7 +120,7 @@
 					: current.id === 'start'
 						? 'next'
 						: current.id === 'route'
-							? 'try the components →'
+							? 'try the planner →'
 							: `next · ${windows[at + 1].label}`}</button
 		>
 	</div>
@@ -142,6 +142,15 @@
 	.lede {
 		margin-bottom: 1.2rem;
 		font-size: 1.35rem;
+		line-height: 1.5;
+		color: var(--color-text-muted);
+	}
+
+	.lesson-context {
+		display: grid;
+		gap: 0.5rem;
+		margin-bottom: 1.6rem;
+		font-size: 1.3rem;
 		line-height: 1.5;
 		color: var(--color-text-muted);
 	}
@@ -197,30 +206,6 @@
 		font-size: 1.1rem;
 		white-space: nowrap;
 	}
-	.flow {
-		display: flex;
-		align-items: center;
-		gap: 0.8rem;
-		margin-bottom: 1.4rem;
-		color: var(--color-border-card);
-	}
-	.flow button {
-		flex: 1;
-		padding: 0.4rem 0.7rem;
-		font: inherit;
-		font-size: 1.15rem;
-		color: var(--color-text-muted);
-		background: none;
-		border: 1px solid transparent;
-		border-radius: 99px;
-		cursor: pointer;
-	}
-	.flow button.active {
-		color: var(--color-accent);
-		border-color: var(--color-border-card);
-		background: var(--color-bg-light);
-		font-weight: 700;
-	}
 	.component-position {
 		display: flex;
 		align-items: center;
@@ -240,12 +225,6 @@
 		border-radius: 4px;
 	}
 	@media (max-width: 600px) {
-		.flow {
-			gap: 0.2rem;
-		}
-		.flow button {
-			padding: 0.4rem;
-		}
 		.go {
 			padding: 0.7rem 1rem;
 			font-size: 1.2rem;

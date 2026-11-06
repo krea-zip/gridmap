@@ -11,6 +11,7 @@
 	import OfficeToolbar from '$lib/components/admin/OfficeToolbar.svelte';
 	import OfficeSignIn from '$lib/components/admin/OfficeSignIn.svelte';
 	import OldEditsNotice from '$lib/components/admin/OldEditsNotice.svelte';
+	import { softChanges } from '$lib/ui/transitions';
 
 	let { data, children }: LayoutProps = $props();
 	const office = provideOffice(new Workspace());
@@ -53,8 +54,8 @@
 		}
 	}}
 />
-<a class="office-skip" href="#office-content">Skip to content</a>
-<div class="office-shell" class:large-text={large} class:signed-out={!signedIn}>
+<a class="office-skip" href="#office-content">skip to content</a>
+<div class="office-shell" class:large-text={large} class:signed-out={!signedIn} use:softChanges>
 	{#if signedIn}<OfficeToolbar bind:large /><OldEditsNotice />{/if}
 	<div class="office-body" bind:this={scroller}>
 		<main class="office-main" class:wide id="office-content" tabindex="-1">

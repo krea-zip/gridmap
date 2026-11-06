@@ -10,10 +10,10 @@
 	/>
 </svelte:head>
 
-<h1>Programmes</h1>
+<h1>programmes</h1>
 <p class="lede">
 	What each major, minor and concentration asks for: credits, required courses and the choices you make. These are the
-	rules for the {data.batches} batches.
+	rules for the {data.batches}.
 </p>
 
 <ul class="subjects">

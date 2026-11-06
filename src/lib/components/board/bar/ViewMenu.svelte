@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
+	import PixelIcon from '$lib/components/PixelIcon.svelte';
 	// The board's view menu, drawn with the board's own parts. Every view is
 	// shown by what it does to one of YOUR courses: the same chip the grid
 	// draws, wearing the same mark that view adds (its grade, how often it
@@ -116,8 +117,11 @@
 					<span class="vm-text"
 						><b>
 							<!-- still being built: the view works, but it's unfinished -->
-							{#if 'wip' in v}<i class="wip-mark" role="img" aria-label="under construction" title="under construction"
-									>🚧</i
+							{#if 'wip' in v}<span
+									class="wip-mark"
+									role="img"
+									aria-label="under construction"
+									title="under construction"><PixelIcon name="construction" size="1.4rem" /></span
 								>{/if}{v.label}
 						</b><span>{v.note}</span></span
 					>

@@ -98,7 +98,7 @@
 				/></label
 			>
 			<label id="policy-audit"
-				>Course sizes that can be audited <span class="office-help">credits, comma-separated</span>
+				>course sizes that can be audited <span class="office-help">credits, comma-separated</span>
 				<input
 					value={list(policies.auditCredits)}
 					onchange={(e) => (policies.auditCredits = parts(e.currentTarget.value).map(Number).filter(Number.isFinite))}
@@ -136,13 +136,13 @@
 	<section class="office-card" id="policy-source">
 		<h2>where these come from</h2>
 		<div class="office-form">
-			<label>Effective from<input type="date" bind:value={policies.effectiveFrom} /></label>
+			<label>effective from<input type="date" bind:value={policies.effectiveFrom} /></label>
 			<label
-				>Reference <span class="office-help">the regulation or circular</span><input
+				>reference <span class="office-help">the regulation or circular</span><input
 					bind:value={policies.reference}
 				/></label
 			>
-			<label class="wide">Notes<textarea rows="3" bind:value={policies.notes}></textarea></label>
+			<label class="wide">notes<textarea rows="3" bind:value={policies.notes}></textarea></label>
 		</div>
 	</section>
 {/if}

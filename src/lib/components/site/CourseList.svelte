@@ -59,6 +59,11 @@
 	}
 
 	.code {
+		width: fit-content;
+		padding: 0.1rem 0.5rem;
+		background: var(--color-bg-light);
+		border: 1px solid var(--color-border-card);
+		border-radius: 3px;
 		font-weight: 700;
 		font-variant-numeric: tabular-nums;
 		letter-spacing: 0.01em;

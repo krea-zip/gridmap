@@ -7,6 +7,7 @@
 	import { useBoard } from '../boardState.svelte';
 	import Keys from './Keys.svelte';
 	import ViewMenu from './ViewMenu.svelte';
+	import { softUpdate } from '$lib/ui/transitions';
 
 	const plan = usePlan();
 	const board = useBoard();
@@ -19,7 +20,7 @@
 	function pick(view: BoardView) {
 		open = false;
 		button?.focus(); // back where the menu was opened from
-		board.setView(view);
+		softUpdate(() => board.setView(view));
 	}
 </script>
 

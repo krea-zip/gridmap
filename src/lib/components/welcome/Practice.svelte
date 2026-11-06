@@ -1,100 +1,196 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	// The tour uses the planner's own controls on an unsaved copy.
+	import { onMount, untrack } from 'svelte';
 	import { usePlan, providePlan } from '$lib/planner/context';
 	import { Plan } from '$lib/planner/plan.svelte';
-	import { COURSES, canAudit, facultyOf, byCode } from '$lib/curriculum/data';
-	import { providePractice, type PracticeInteraction } from './practice-context';
-	import MiniPlan from './MiniPlan.svelte';
+	import { COURSES, byCode, canAudit, facultyOf } from '$lib/curriculum/data';
+	import { viewport } from '$lib/planner/viewport.svelte';
+	import { BoardState, provideBoard } from '../board/boardState.svelte';
 	import type { Lesson } from './lessons';
-	import ProgressLesson from './ProgressLesson.svelte';
-	import Demo from './Demo.svelte';
-	import HintLesson from './HintLesson.svelte';
+	import TrimHead from '../board/grid/TrimHead.svelte';
+	import YearHead from '../board/grid/YearHead.svelte';
+	import PlanGrid from '../board/grid/PlanGrid.svelte';
+	import TrimesterZoom from '../board/TrimesterZoom.svelte';
+	import OverviewGrid from '../board/OverviewGrid.svelte';
+	import DegreeProgress from '../sidebar/DegreeProgress.svelte';
+	import ChoicePools from '../sidebar/ChoicePools.svelte';
+	import Hints from '../sidebar/Hints.svelte';
+	import Catalogue from '../catalogue/Catalogue.svelte';
+	import CatalogueCard from '../catalogue/CatalogueCard.svelte';
+	import DetailsPanel from '../details/DetailsPanel.svelte';
 	import DisplayLesson from './DisplayLesson.svelte';
-	import DetailsLesson from './DetailsLesson.svelte';
-	import './practice.scss';
+
 	let { lesson }: { lesson: Lesson } = $props();
 	const source = usePlan();
-	const practice = untrack(() => {
-		const copy = new Plan();
-		copy.rehearsing = true;
-		copy.restore(JSON.parse(JSON.stringify(source.snapshot())));
-		copy.showCodes = true;
-		copy.showTitles = true;
-		copy.trimNaming = 'year';
-		copy.yearCount = copy.fourYear ? 4 : 3;
-		copy.placements = {};
-		copy.audited = [];
-		copy.grades = {};
-		return copy;
-	});
-	providePlan(practice);
-	const interaction = $state<PracticeInteraction>({ picked: null, action: '', code: null, revision: 0 });
-	const example = providePractice(
+	const plan = providePlan(
 		untrack(() => {
-			const own = COURSES.filter(
-				(c) => practice.programmeOf(c.code) === 0 && practice.courseType(c.code) === 'required'
-			);
-			const course = own.find((c) => c.credits === 4 && canAudit(c.code)) ?? own[0] ?? byCode('KCCS190');
-			const detail =
-				own
-					.filter((c) => canAudit(c.code) && facultyOf(c.code).length)
-					.sort(
-						(a, b) =>
-							(b.unlocks.length ? 50 : 0) +
-							(b.prereqs.length ? 20 : 0) +
-							b.unlocks.length -
-							(a.unlocks.length ? 50 : 0) -
-							(a.prereqs.length ? 20 : 0) -
-							a.unlocks.length
-					)[0] ?? course;
-			return {
-				year: Math.min(practice.yearCount, Math.max(2, practice.here.year)),
-				course: course.code,
-				detail: detail.code,
-				interaction
-			};
+			const copy = new Plan();
+			copy.rehearsing = true;
+			copy.restore(JSON.parse(JSON.stringify(source.snapshot())));
+			copy.welcoming = true;
+			copy.touched = true;
+			copy.showCodes = true;
+			copy.showTitles = false;
+			copy.trimNaming = 'year';
+			copy.view = 'plan';
+			copy.now = { year: 2, trim: 3 };
+			copy.clearNarrowing();
+			copy.search = '';
+			copy.placements = {};
+			copy.audited = [];
+			copy.grades = {};
+			copy.breaks = {};
+			copy.waived = [];
+			copy.place('KCCS190', 1, 1);
+			for (let i = 0; i < copy.programmes.length; i++) {
+				for (const kind of ['required', 'elective']) {
+					const course = COURSES.find((c) => copy.programmeOf(c.code) === i && copy.courseType(c.code) === kind);
+					if (!course) continue;
+					const at = copy.years
+						.flatMap((year) => copy.trims.map((trim) => ({ year, trim })))
+						.find((p) => copy.canDrop(course.code, p.year, p.trim));
+					if (at) copy.place(course.code, at.year, at.trim);
+				}
+			}
+			return copy;
 		})
 	);
+	const board = provideBoard(new BoardState(plan));
+	onMount(() => plan.startHistory());
+	const example = untrack(
+		() =>
+			COURSES.find((c) => plan.programmeOf(c.code) === 0 && canAudit(c.code) && facultyOf(c.code).length)?.code ??
+			'KCCS190'
+	);
 	untrack(() => {
-		// The entire teaching plan is only a handful of the selected programmes' courses.
-		practice.place('KCCS190', 1, 1);
-		for (let i = 0; i < practice.programmes.length; i++) {
-			const own = COURSES.filter((c) => practice.programmeOf(c.code) === i && c.code !== example.course);
-			for (const kind of ['required', 'elective']) {
-				const c = own.find(
-					(c) =>
-						practice.courseType(c.code) === kind &&
-						practice.years.some((y) => practice.trims.some((t) => practice.canDrop(c.code, y, t)))
-				);
-				if (!c) continue;
-				const slots = practice.years
-					.flatMap((year) => practice.trims.map((trim) => ({ year, trim })))
-					.filter((p) => practice.canDrop(c.code, p.year, p.trim));
-				const slot = slots.find((p) => !practice.slotCourses(p.year, p.trim).length) ?? slots[0];
-				if (slot) practice.place(c.code, slot.year, slot.trim);
-			}
-		}
-	});
-	$effect(() => {
-		lesson;
-		untrack(() => {
-			interaction.picked = null;
-			interaction.action = '';
-			practice.highlight = [];
-			practice.highlightSlots = [];
-		});
+		if (lesson === 'details') plan.select(example);
+		if (lesson === 'catalogue') plan.filters = [plan.programmes[0].subject];
 	});
 </script>
 
-<div class="welcome-practice">
-	<MiniPlan {lesson} />
-	{#key lesson}
-		{#if lesson === 'progress' || lesson === 'choices'}<ProgressLesson variant={lesson} />
-		{:else if lesson === 'board' || lesson === 'labels' || lesson === 'terms' || lesson === 'catalogue'}<Demo
-				variant={lesson}
+<div class="tour-demo" data-lesson={lesson}>
+	{#if lesson === 'terms'}
+		<div class="term-demo" aria-label="trimester numbering example">
+			<YearHead year={2} />
+			{#each plan.trims as trim (trim)}<TrimHead {trim} />{/each}
+		</div>
+		<p class="caption">{plan.trimName(2, 3)} · year 2, trimester 3</p>
+	{:else if lesson === 'display'}
+		<DisplayLesson />
+	{:else if lesson === 'board'}
+		{#if plan.zoom}<TrimesterZoom touchLayout={!viewport.desktop} />{:else}<PlanGrid
+				touchLayout={!viewport.desktop}
+			/>{/if}
+	{:else if lesson === 'catalogue'}
+		<div class="catalogue-demo"><Catalogue mobile={!viewport.desktop} /></div>
+	{:else if lesson === 'progress'}
+		<div class="rail-demo"><DegreeProgress /><ChoicePools /></div>
+	{:else if lesson === 'hints'}
+		<div class="rail-demo"><Hints /></div>
+	{:else if lesson === 'details'}
+		<div class="course-example">
+			<CatalogueCard
+				course={byCode(example)}
+				type={plan.courseType(example)}
+				placed={plan.onBoard(example)}
+				mobile={!viewport.desktop}
 			/>
-		{:else if lesson === 'hints'}<HintLesson />
-		{:else if lesson === 'display'}<DisplayLesson />
-		{:else}<DetailsLesson variant={lesson} />{/if}
-	{/key}
+		</div>
+	{:else if lesson === 'views'}
+		{#if !viewport.desktop}<p class="caption">these views are available on desktop.</p>{/if}
+		{#if plan.zoom}<TrimesterZoom touchLayout={!viewport.desktop} />{:else}<OverviewGrid
+				touchLayout={!viewport.desktop}
+			/>{/if}
+	{/if}
+	{#if plan.selected}
+		<div class="course-demo"><DetailsPanel /></div>
+	{/if}
 </div>
+
+<style lang="scss">
+	.tour-demo {
+		--board-gutter: 1.2rem;
+		min-width: 0;
+		padding: 1.4rem;
+		border: 1px solid var(--color-border-card);
+		border-radius: 14px;
+		background: color-mix(in srgb, var(--color-accent) 3%, var(--color-bg-light));
+	}
+	.term-demo {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 1rem;
+		padding: 1.2rem 0;
+	}
+	.term-demo :global(.trim-head) {
+		display: flex;
+	}
+	.term-demo :global(.year-head) {
+		grid-column: auto;
+		flex-direction: column;
+		padding: 0;
+	}
+	.caption {
+		margin-top: 1rem;
+		text-align: center;
+		font-size: 1.2rem;
+		color: var(--color-text-muted);
+	}
+	.rail-demo,
+	.course-example,
+	.course-demo {
+		max-width: 40rem;
+		margin-inline: auto;
+	}
+	.rail-demo {
+		max-height: 36rem;
+		overflow-y: auto;
+	}
+	.catalogue-demo {
+		height: 36rem;
+		min-height: 0;
+		overflow: auto;
+	}
+	.catalogue-demo :global(.catalogue) {
+		height: 100%;
+		min-height: 0;
+	}
+	.course-demo {
+		margin-top: 1.4rem;
+		border: 1px solid var(--color-border-card);
+		border-radius: 10px;
+		background: var(--color-bg-light);
+	}
+	.tour-demo :global(.overview) {
+		padding: 1rem 0;
+		gap: 0.6rem;
+		grid-template-columns: 3rem repeat(3, minmax(0, 1fr));
+	}
+	.tour-demo :global(.overview .cell) {
+		min-height: 6rem;
+	}
+	.tour-demo :global(.overview .chip) {
+		max-width: 100%;
+		padding-left: 0.5rem;
+	}
+	.tour-demo :global(.overview .chip .label) {
+		white-space: nowrap;
+	}
+	.tour-demo :global(.board-bar) {
+		position: relative;
+		padding: 0.6rem;
+		gap: 0.8rem;
+		border-radius: 8px;
+	}
+	@media (max-width: 600px) {
+		.tour-demo {
+			padding: 1rem;
+		}
+		.tour-demo :global(.overview) {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.term-demo {
+			gap: 0.6rem;
+		}
+	}
+</style>

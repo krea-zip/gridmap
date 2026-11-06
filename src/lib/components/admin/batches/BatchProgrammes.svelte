@@ -41,8 +41,8 @@
 		until one of them changes it back.
 	</p>
 	<div class="office-row">
-		<label>Find a department<input type="search" bind:value={search} placeholder="e.g. philosophy" /></label>
-		<label class="office-check"><input type="checkbox" bind:checked={changedOnly} /> Only what’s been changed</label>
+		<label>find a department<input type="search" bind:value={search} placeholder="e.g. philosophy" /></label>
+		<label class="office-check"><input type="checkbox" bind:checked={changedOnly} /> only what’s been changed</label>
 	</div>
 
 	<div class="office-table-scroll">

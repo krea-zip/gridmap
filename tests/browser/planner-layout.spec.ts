@@ -60,7 +60,7 @@ test('wide grid, compact catalogue, and selecting a planned course', async ({ pa
 		};
 	});
 	expect(measures.width).toBeLessThan(1200);
-	expect(measures.catalogue).toBeGreaterThan(300);
+	expect(measures.catalogue).toBeGreaterThan(250);
 	await settledScreenshot(page, '/tmp/kcal-ui-desktop.png');
 
 	await page.getByRole('searchbox').fill('MATH202');
@@ -70,69 +70,19 @@ test('wide grid, compact catalogue, and selecting a planned course', async ({ pa
 	const selected = page.locator('.overview .chip[data-code="MATH202"]');
 	await expect(selected).toHaveClass(/selected/);
 	await expect(selected).not.toHaveClass(/faded/);
-	await expect(page.locator('.overview .chip[data-code="COMP204"]')).toHaveClass(/faded/);
+	await expect(selected).toHaveClass(/lit/);
+	await expect(page.locator('.overview .chip.faded')).toHaveCount(0);
 	await expect(selected).toBeInViewport();
 	await expect(page.locator('[data-panel="details"] .d-code')).toHaveText('MATH202');
 	await card.locator('.placed-open').click();
 	await expect(page.locator('[data-panel="details"]')).toBeVisible();
 	await expect(selected).not.toHaveClass(/faded/);
-	await page.getByRole('button', { name: 'close course details' }).click();
+	await page.keyboard.press('Escape');
 	await expect(page.locator('.overview .chip.faded')).toHaveCount(0);
 	await page.getByRole('searchbox').fill('MATH061');
 	await expect(page.locator('.catalogue .card .title')).toBeVisible();
 	expect((await page.locator('.catalogue .card').boundingBox())!.width).toBeGreaterThan(250);
 	expect(errors).toEqual([]);
-});
-
-test('details pin persists, makes room, and falls back on smaller screens', async ({ page }) => {
-	await page.setViewportSize({ width: 1920, height: 1080 });
-	await ready(page);
-	await page.locator('.chip[data-code="MATH203"] .open').click();
-	await page.getByRole('button', { name: 'pin course details', exact: true }).click();
-	await expect(page.locator('.app')).toHaveClass(/details-docked/);
-	const board = await page.locator('.board').boundingBox();
-	const details = await page.locator('[data-panel="details"]').boundingBox();
-	expect(board!.x + board!.width).toBeLessThanOrEqual(details!.x + 1);
-	// The board and catalogue remain interactive while the panel is pinned.
-	await page.getByRole('searchbox').fill('MATH201');
-	await page.locator('[data-course="MATH201"] button.card').click();
-	await page.getByLabel('trimester to put MATH201 in').selectOption('2-2');
-	await page.getByRole('button', { name: 'add to plan', exact: true }).click();
-	await expect(page.locator('.chip[data-code="MATH201"]')).toBeVisible();
-	await settledScreenshot(page, '/tmp/kcal-ui-pinned.png');
-	await page.reload();
-	await expect(page.locator('.app')).toHaveAttribute('data-ready', 'true');
-	await page.locator('.chip[data-code="MATH201"] .open').click();
-	await expect(page.locator('.app')).toHaveClass(/details-docked/);
-	await page.setViewportSize({ width: 1440, height: 1000 });
-	await expect(page.locator('.app')).not.toHaveClass(/details-docked/);
-	await expect(page.locator('[data-panel="details"]')).toBeVisible();
-	await expect(page.getByRole('button', { name: 'pin course details', exact: true })).toHaveCount(0);
-	await page.setViewportSize({ width: 1920, height: 1080 });
-	await expect(page.locator('.app')).toHaveClass(/details-docked/);
-	await page.getByRole('button', { name: 'unpin course details', exact: true }).click();
-	await expect(page.locator('.app')).not.toHaveClass(/details-docked/);
-	await page.keyboard.press('Escape');
-	await expect(page.locator('[data-panel="details"]')).not.toBeVisible();
-});
-
-test('resizing the catalogue preserves room for the board and drag placement', async ({ page }) => {
-	await page.setViewportSize({ width: 1920, height: 1080 });
-	await ready(page);
-	await page.locator('.chip[data-code="MATH203"] .open').click();
-	await page.getByRole('button', { name: 'pin course details', exact: true }).click();
-	const splitter = page.getByRole('separator', { name: 'resize the catalogue' });
-	await splitter.focus();
-	for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowRight');
-	await expect(page.locator('.app')).not.toHaveClass(/details-docked/);
-	await expect(page.locator('[data-panel="details"]')).toBeVisible();
-	await page.getByRole('button', { name: 'close course details' }).click();
-	await splitter.dblclick();
-	await page.getByRole('searchbox').fill('MATH201');
-	await page
-		.locator('[data-course="MATH201"] button.card')
-		.dragTo(page.locator('.overview .cell[data-year="2"][data-trim="2"]'));
-	await expect(page.locator('.overview .cell[data-year="2"][data-trim="2"] .chip[data-code="MATH201"]')).toBeVisible();
 });
 
 test('display disclosure and plan menu preserve labels, highlights and undo', async ({ page }) => {

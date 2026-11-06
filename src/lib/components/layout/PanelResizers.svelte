@@ -35,7 +35,10 @@
 	function setWidth(id: Panel, rem: number, px: number) {
 		const p = PANELS.find((q) => q.id === id)!;
 		const others = PANELS.filter((q) => q.id !== id).reduce((sum, q) => sum + drawn(q.id, px), 0);
-		const room = window.innerWidth / px - BOARD_MIN - others;
+		const docked = document.querySelector('.app.details-docked');
+		const details = docked?.querySelector<HTMLElement>('[data-panel="details"]');
+		const detailsWidth = details ? details.getBoundingClientRect().width / px : 0;
+		const room = window.innerWidth / px - BOARD_MIN - others - detailsWidth;
 		widths[id] = Math.round(Math.max(p.min, Math.min(p.max, room, rem)) * 10) / 10;
 	}
 

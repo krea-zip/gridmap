@@ -1,6 +1,6 @@
 <script lang="ts">
 	// The planner's shell: one plan, shared through context, and one CSS grid
-	// of sidebar | catalogue | board, with an optional pinned course panel.
+	// of sidebar | catalogue | board.
 	// The grid stays readable on wide screens; the side columns can be resized.
 	//
 	// The course details slide in over the board when a course is picked. An
@@ -15,6 +15,7 @@
 	import { plannerKeys } from '$lib/planner/shortcuts';
 	import { takeIncoming, type Incoming } from '$lib/planner/incoming';
 	import { focusScope } from '$lib/ui/focusScope';
+	import { softChanges, softUpdate } from '$lib/ui/transitions';
 	import { dragMotion } from '$lib/ui/dragMotion';
 	import { touchDrag } from '$lib/ui/touchDrag';
 	import { hasCode, PREVIEWING, subjectById } from '$lib/curriculum/data';
@@ -49,42 +50,19 @@
 	let widths = $state<PanelWidths>({});
 	let resizing = $state<Panel | null>(null);
 	let detailsEl = $state<HTMLElement>();
-	let appEl = $state<HTMLDivElement>();
 	let detailsPinned = $state(false);
-	let roomForDetails = $state(false);
-	let canPinDetails = $derived(viewport.desktop && !viewport.railSlide && roomForDetails);
-	let detailsDocked = $derived(canPinDetails && detailsPinned && !!plan.selected);
+	let detailsDocked = $derived(viewport.desktop && detailsPinned);
 
 	function toggleDetailsPin() {
-		detailsPinned = !detailsPinned;
-		try {
-			localStorage.setItem('kcal-details-pinned', String(detailsPinned));
-		} catch {
-			// The preference still works for this visit.
-		}
+		softUpdate(() => {
+			detailsPinned = !detailsPinned;
+			try {
+				localStorage.setItem('kcal-details-pinned', String(detailsPinned));
+			} catch {
+				// the preference still works for this visit
+			}
+		});
 	}
-
-	onMount(() => {
-		try {
-			detailsPinned = localStorage.getItem('kcal-details-pinned') === 'true';
-		} catch {
-			// Storage is optional.
-		}
-		const rail = appEl!.querySelector<HTMLElement>('[data-panel="rail"]')!;
-		const catalogue = appEl!.querySelector<HTMLElement>('[data-panel="catalogue"]')!;
-		const measure = () => {
-			const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-			// Leave at least 90rem for the board beside the 36rem details.
-			// Measure the side panels too, so resizing them or enlarging text
-			// falls back to the drawer before the grid becomes cramped.
-			roomForDetails = appEl!.clientWidth - rail.offsetWidth - catalogue.offsetWidth >= 126 * rem;
-		};
-		const observer = new ResizeObserver(measure);
-		for (const el of [appEl!, rail, catalogue]) observer.observe(el);
-		measure();
-		return () => observer.disconnect();
-	});
-
 	// the "now" ring's colours, a subject on the plan in its colour there
 	let now = $derived(nowHues(plan.programmes, (s) => plan.hueFor(s) ?? subjectById(s).hue));
 
@@ -109,6 +87,11 @@
 	});
 
 	onMount(() => {
+		try {
+			detailsPinned = localStorage.getItem('kcal-details-pinned') === 'true';
+		} catch {
+			// storage is optional
+		}
 		incoming = takeIncoming();
 		accountSettings = !!incoming.account && !incoming.shareId && !incoming.sharedPlan;
 		if (incoming.account === 'error')
@@ -132,13 +115,13 @@
 		plan.railOpen = false;
 	}
 
-	// on a laptop the slid-in course panel goes away at a click anywhere else,
+	// on a laptop the course panel (slid in, or pinned) lets go of its course at a click anywhere else,
 	// unless that click picked another course: then it just switches to it.
 	// a drag never clicks, so dragging a course leaves the panel be
 	let pressedOutside = false;
 	let pickedAtPress: typeof plan.selected = null;
 	function notePress(e: PointerEvent) {
-		pressedOutside = viewport.desktop && overlayDetails && !detailsEl?.contains(e.target as Node);
+		pressedOutside = viewport.desktop && !!plan.selected && !detailsEl?.contains(e.target as Node);
 		pickedAtPress = plan.selected;
 	}
 	function closeIfNothingPicked(e: MouseEvent) {
@@ -149,7 +132,7 @@
 	// and Esc slides it away, unless a menu or dialog took the key first
 	function onWindowKeys(e: KeyboardEvent) {
 		onKeys(e);
-		if (e.key === 'Escape' && !e.defaultPrevented && overlayDetails) plan.selected = null;
+		if (e.key === 'Escape' && !e.defaultPrevented && plan.selected) plan.selected = null;
 	}
 
 	// what each column may be interacted with: everything on a laptop (the
@@ -177,7 +160,6 @@
 
 <div
 	class="app"
-	bind:this={appEl}
 	data-ready={ready}
 	data-layout={viewport.desktop ? 'desktop' : 'phone'}
 	data-mobile-view={mobileView}
@@ -188,8 +170,9 @@
 	class:rail-open={plan.railOpen}
 	use:dragMotion
 	use:touchDrag
-	style:--rail-w={widths.rail && `${widths.rail}rem`}
-	style:--catalogue-w={widths.catalogue && `${widths.catalogue}rem`}
+	use:softChanges
+	style:--rail-user-w={widths.rail && `${widths.rail}rem`}
+	style:--catalogue-user-w={widths.catalogue && `${widths.catalogue}rem`}
 	style:--now-a={now?.[0]}
 	style:--now-b={now?.[1]}
 >
@@ -241,9 +224,9 @@
 		aria-label="course details"
 		bind:this={detailsEl}
 		use:focusScope={overlayDetails}
-		inert={!plan.selected}
+		inert={!plan.selected && !detailsDocked}
 	>
-		<DetailsPanel canPin={canPinDetails} pinned={detailsDocked} onTogglePin={toggleDetailsPin} />
+		<DetailsPanel canPin={viewport.desktop} pinned={detailsPinned} onTogglePin={toggleDetailsPin} />
 	</aside>
 </div>
 
@@ -277,8 +260,9 @@
 	// nothing ever runs past the page. Side panels follow the text size;
 	// a dragged edge overrides their default widths.
 	.app {
-		--rail-w: minmax(max-content, 28rem); // a touch wider than the catalogue
-		--catalogue-w: 32rem;
+		--rail-w: var(--rail-user-w, minmax(max-content, 28rem));
+		--catalogue-w: var(--catalogue-user-w, 32rem);
+		--details-w: 36rem;
 		--board-w: minmax(0, 1fr);
 		--rail-strip-w: 5.2rem;
 		// the "now" trimester's ring, tag and number (see TrimesterCell),
@@ -437,7 +421,7 @@
 	@include details-overlay {
 		.details {
 			@include slide-in(right);
-			width: min(36rem, 90vw);
+			width: min(var(--details-w), 90vw);
 			padding-right: env(safe-area-inset-right);
 			box-shadow: -10px 0 30px rgba(20, 30, 50, 0.18);
 			transform: translateX(100%);
@@ -448,8 +432,11 @@
 		}
 
 		.app.details-docked {
+			--rail-w: var(--rail-user-w, minmax(0, 25rem));
+			--catalogue-w: var(--catalogue-user-w, 25rem);
+			--details-w: 30rem;
 			grid-template-areas: 'rail catalogue board details';
-			grid-template-columns: var(--rail-w) var(--catalogue-w) var(--board-w) 36rem;
+			grid-template-columns: var(--rail-w) var(--catalogue-w) var(--board-w) var(--details-w);
 
 			.details {
 				grid-area: details;
@@ -459,6 +446,7 @@
 				width: auto;
 				box-shadow: none;
 				transform: none;
+				visibility: visible;
 				transition: none;
 			}
 		}
@@ -470,6 +458,11 @@
 		.app {
 			grid-template-areas: 'strip catalogue board';
 			grid-template-columns: var(--rail-strip-w) var(--catalogue-w) minmax(0, 3fr);
+		}
+
+		.app.details-docked {
+			grid-template-areas: 'strip catalogue board details';
+			grid-template-columns: var(--rail-strip-w) var(--catalogue-w) minmax(0, 1fr) var(--details-w);
 		}
 
 		.rail-strip {

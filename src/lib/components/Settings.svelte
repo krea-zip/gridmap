@@ -184,7 +184,7 @@
 			Export your current draft without signing in. PDFs and copied text exclude your grades and email.
 		</p>
 		<div class="actions">
-			<button onclick={exportPdf}>Save as PDF</button>
+			<button onclick={exportPdf}>save as PDF</button>
 			<button onclick={copyPlan}>{shared ? 'copied ✓' : 'copy plan as text'}</button>
 			<button class="danger" onclick={startOver}>
 				{confirming ? 'really start over?' : 'start over'}

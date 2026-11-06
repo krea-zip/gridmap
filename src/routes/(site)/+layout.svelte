@@ -52,7 +52,7 @@
 		flex-wrap: wrap;
 		align-items: baseline;
 		gap: 1.2rem 3.2rem;
-		padding: 2rem max(2.4rem, calc((100% - 96rem) / 2));
+		padding: 2rem max(2.4rem, calc((100% - 96rem) / 2 + 2.4rem));
 		border-bottom: 1px dotted var(--color-border-light);
 	}
 

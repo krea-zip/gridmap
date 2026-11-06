@@ -2666,7 +2666,7 @@
    "eligible_phd": false,
    "required_for": "Elective for BUSI minor/Concentration",
    "prereq_text": "BUSI201",
-   "description": "Course Coverage:\nFinancial Management\nTime value of money – advanced concepts\nInvestment Appraisal Techniques\nTechnical and Fundamental Analysis\nRisk Management – Options, Futures, Forwards and Risk Management\nLearning Outcomes:\nAt the end of the course, the students would be able to:\n1. Understand general and specific cash flows, based on which financial analysis is carried out\n2. Apply investment appraisal techniques to determine the financial feasibility of the projects\n3. Valuation of shares and bonds; determination of WACC\n4. Use of fundamental &amp; technical analysis to determine the value of a share / company / business.\n5. Determine working capital requirements of a business and how to optimize the same\n6. Advanced topics in Financial Management – including options &amp; futures (to manage risk better)",
+   "description": "Course Coverage:\nFinancial Management\nTime value of money – advanced concepts\nInvestment Appraisal Techniques\nTechnical and Fundamental Analysis\nRisk Management – Options, Futures, Forwards and Risk Management\nLearning Outcomes:\nAt the end of the course, the students would be able to:\n1. Understand general and specific cash flows, based on which financial analysis is carried out\n2. Apply investment appraisal techniques to determine the financial feasibility of the projects\n3. Valuation of shares and bonds; determination of WACC\n4. Use of fundamental & technical analysis to determine the value of a share / company / business.\n5. Determine working capital requirements of a business and how to optimize the same\n6. Advanced topics in Financial Management – including options & futures (to manage risk better)",
    "prereqs": [
     "BUSI201"
    ],
@@ -5449,7 +5449,7 @@
    "eligible_phd": false,
    "required_for": "Elective course for math major, minor & concentration",
    "prereq_text": "Discrete Mathematics/MFCS - I, Familiarity with Computer Systems",
-   "description": "Much of the contemporary life in the post internet era relies on information security. This course teaches the basic concepts and principles of information security, and the fundamental\n approaches to secure computers and networks. It mainly focuses on security fundamentals, standard cryptographic functions and protocols, threats and defenses for real-world\n systems, privacy, legal &amp; ethical issues of security, computer forensics, malicious software, denial of service, and firewalls.",
+   "description": "Much of the contemporary life in the post internet era relies on information security. This course teaches the basic concepts and principles of information security, and the fundamental\n approaches to secure computers and networks. It mainly focuses on security fundamentals, standard cryptographic functions and protocols, threats and defenses for real-world\n systems, privacy, legal & ethical issues of security, computer forensics, malicious software, denial of service, and firewalls.",
    "prereqs": [
     "COMP201"
    ],

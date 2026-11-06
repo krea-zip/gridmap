@@ -6,6 +6,7 @@
 	import { optionLabel, type PickRole } from '$lib/planner/picks';
 	import Settings from '$lib/components/Settings.svelte';
 	import FourYearToggle from '$lib/components/FourYearToggle.svelte';
+	import { softUpdate } from '$lib/ui/transitions';
 
 	const plan = usePlan();
 
@@ -15,9 +16,7 @@
 	// and leaves an edited one alone, see Plan.programmeChanged. a subject an
 	// earlier role holds shows disabled in the later roles' lists; moving an
 	// earlier role onto a later one's subject bumps the later pick instead
-	const distinct = () => {
-		plan.programmeChanged();
-	};
+	const distinct = () => softUpdate(() => plan.programmeChanged());
 </script>
 
 {#snippet picker(role: PickRole, label: string, title?: string)}
@@ -35,7 +34,7 @@
 	<h2>kcal</h2>
 	{#if viewport.desktop}
 		<button class="gear help" title="what's what" aria-label="what's what" onclick={() => (plan.guiding = true)}
-			>?</button
+			><PixelIcon name="help" size="1.6rem" snap /></button
 		>
 	{/if}
 	<button
@@ -60,10 +59,10 @@
 		<div class="batch-line">
 			<select id="batch" bind:value={plan.batchStartYear} onchange={distinct}>
 				{#each STUDENT_BATCHES as year (year)}
-					<option value={year}>{year}-{String(year + (plan.fourYear ? 4 : 3)).slice(-2)}</option>
+					<option value={year}>{year}–{String(year + (plan.fourYear ? 4 : 3)).slice(-2)}</option>
 				{/each}
 			</select>
-			<FourYearToggle onchange={distinct} />
+			<FourYearToggle onchange={() => plan.programmeChanged()} />
 		</div>
 	</div>
 
@@ -74,7 +73,7 @@
 			<option value="double-major">double major</option>
 			<option value="major-minor">major + minor</option>
 			<option value="major-conc">major + conc.</option>
-			<option value="major-minor-conc">major + minor + conc.</option>
+			{#if plan.fourYear}<option value="major-minor-conc">major + minor + conc.</option>{/if}
 		</select>
 	</label>
 

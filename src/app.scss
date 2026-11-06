@@ -20,6 +20,18 @@
 		background-color 140ms ease,
 		box-shadow 140ms ease;
 }
+button:disabled {
+	background-image: none;
+	box-shadow: none;
+	cursor: not-allowed;
+}
+
+// A short crossfade for changes that redraw several desktop panels at once.
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 140ms;
+	animation-timing-function: ease-out;
+}
 // the tick box's pixel checkmark drawing itself in, a column of blocks at a
 // time (see the tick mixin), global so every component's tick shares it
 @keyframes kcal-tick-draw {

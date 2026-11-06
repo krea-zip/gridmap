@@ -51,4 +51,4 @@
 {:else}
 	<p class="office-help">No suggested path yet.</p>
 {/if}
-<button onclick={() => programme.pathway.push({ year: 1, trim: 1, code: '' })}>Add a course to the path</button>
+<button onclick={() => programme.pathway.push({ year: 1, trim: 1, code: '' })}>add a course to the path</button>

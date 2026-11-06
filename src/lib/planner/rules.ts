@@ -320,6 +320,15 @@ export function planHints(plan: Plan): Hint[] {
 	// law 5, degree credit total, and the drop form's hard ceiling on
 	// extra credits (128 for a 3-year tenure, 132 for a 3-year double major,
 	// 176 for a 4-year one)
+	if (plan.totalPlacedCredits < plan.creditMinimum) {
+		const left = plan.creditMinimum - plan.totalPlacedCredits;
+		hints.push({
+			kind: 'caution',
+			id: 'credit-minimum',
+			text: `${left} more credits needed to reach the ${plan.creditMinimum}-credit degree minimum; completing your major alone is not enough`,
+			codes: []
+		});
+	}
 	const tenureCap = plan.creditCeiling;
 	if (plan.totalPlacedCredits > tenureCap) {
 		hints.push({

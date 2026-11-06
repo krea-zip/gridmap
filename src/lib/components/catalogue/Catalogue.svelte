@@ -81,8 +81,8 @@
 		</div>
 		<!-- how many the search and filters leave, out of the whole catalogue
 		     (kccs foundation courses included) -->
-		<span class="result-count" role="status"
-			>{plan.catalogue.length}/{COURSES.length} course{COURSES.length === 1 ? '' : 's'}</span
+		<span class="result-count" role="status" aria-label="{plan.catalogue.length} of {COURSES.length} courses"
+			>{plan.catalogue.length}/{COURSES.length}</span
 		>
 	</header>
 

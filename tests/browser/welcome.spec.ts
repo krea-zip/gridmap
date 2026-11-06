@@ -53,191 +53,121 @@ test('start with one major and add another programme only when requested', async
 	await expect(dialog.getByRole('heading', { name: 'your suggested plan' })).toBeVisible();
 });
 
-test('miniature components respond to actions and preserve the real suggested plan', async ({ page }) => {
-	test.setTimeout(120_000);
+test('the tour uses real controls, explains their meaning and preserves the plan', async ({ page }) => {
+	test.setTimeout(60_000);
 	const errors: string[] = [];
 	page.on('pageerror', (e) => errors.push(e.message));
 	const dialog = await setup(page);
-	const original = await page.evaluate(() => JSON.parse(localStorage.getItem('kcal-plan')!).placements);
-	await expect(dialog.locator('.suggestion-grid .head, .suggestion-grid .year')).toHaveCount(0);
-	await dialog.screenshot({ path: test.info().outputPath('suggested-grid.png') });
+	const original = await page.evaluate(() => localStorage.getItem('kcal-plan'));
 	await dialog.locator('[data-next]').click();
 	const component = dialog.getByRole('combobox', { name: 'demo component' });
-	await expect(component).toHaveValue('progress');
-	await expect(dialog.locator('.gentle, .tip, .lesson-lead')).toHaveCount(0);
-	const before = await dialog.locator('[data-total]').innerText();
-	await dialog.getByRole('button', { name: 'add example course' }).click();
-	await expect(dialog.locator('[data-total]')).not.toHaveText(before);
-	await dialog.locator('.programme').first().click();
-	await expect(dialog.locator('.breakdown')).toBeVisible();
-	await dialog.screenshot({ path: test.info().outputPath('mini-progress.png') });
-
-	await component.selectOption('board');
-	await expect(dialog.locator('.miniature-plan .mini-cell')).toHaveCount(12);
-	await expect(dialog.locator('.miniature-plan')).toHaveAttribute('data-cols', '3');
-	await expect(dialog.locator('.miniature-plan')).toHaveAttribute('data-rows', '4');
-	const pool = dialog.locator('.course-pool .mini-course');
-	const code = await pool.getAttribute('data-code');
-	await pool.click();
-	await dialog.locator('.miniature-plan .mini-place').first().click();
-	await expect(dialog.locator(`.miniature-plan .mini-course[data-code="${code}"]`)).toHaveAttribute('data-code', code!);
-	await dialog.screenshot({ path: test.info().outputPath('mini-board.png') });
-	const from = await dialog
-		.locator(`.miniature-plan .mini-cell:has([data-code="${code}"])`)
-		.evaluate((el) => ({ year: (el as HTMLElement).dataset.year, trim: (el as HTMLElement).dataset.trim }));
-	await dialog.locator(`.miniature-plan .mini-course[data-code="${code}"]`).click();
-	const other = dialog
-		.locator(`.miniature-plan .mini-cell.fits:not([data-year="${from.year}"][data-trim="${from.trim}"])`)
-		.first();
-	if (await other.count()) await dialog.locator(`.miniature-plan .mini-course[data-code="${code}"]`).dragTo(other);
-	await dialog.locator(`.miniature-plan .course-piece:has([data-code="${code}"]) .chip-remove`).click();
-	await expect(dialog.locator('.course-pool .mini-course')).toBeVisible();
-
-	await component.selectOption('labels');
-	await dialog.getByRole('button', { name: 'titles', exact: true }).click();
-	await expect(dialog.locator('.miniature-plan .course-title')).toHaveCount(0);
-	await dialog.getByRole('button', { name: 'titles', exact: true }).click();
-	await dialog.getByRole('button', { name: 'codes', exact: true }).click();
-	await expect(dialog.locator('.miniature-plan .mini-course b')).toHaveCount(0);
-	await dialog.screenshot({ path: test.info().outputPath('mini-labels.png') });
-
-	await component.selectOption('terms');
-	await dialog.getByRole('button', { name: 't11', exact: true }).click();
-	await expect(dialog.locator('.mini-number')).toHaveCount(12);
-	await expect(dialog.locator('.mini-number').last()).toHaveText('t12');
-	const t1 = dialog.getByRole('button', { name: 'filter catalogue by t1', exact: true });
-	await t1.click();
-	await expect(t1).toHaveAttribute('aria-pressed', 'true');
-	await t1.click();
-	await expect(t1).toHaveAttribute('aria-pressed', 'false');
-
-	await component.selectOption('catalogue');
-	await dialog.getByRole('group', { name: 'subjects', exact: true }).getByRole('button').first().click();
-	await dialog.getByRole('searchbox', { name: 'search practice catalogue' }).fill('CHEM');
-	await dialog.getByRole('button', { name: 'advanced filters' }).click();
-	await dialog
-		.getByRole('group', { name: 'credits', exact: true })
-		.getByRole('button', { name: '4', exact: true })
-		.click();
-	await dialog.getByRole('button', { name: 'clear', exact: true }).click();
-	await dialog.locator('.catalogue-results .mini-course').first().click();
-	const takeOff = dialog.getByRole('button', { name: 'take off plan', exact: true });
-	if (await takeOff.count()) await takeOff.click();
-	await dialog.getByRole('button', { name: /^\+ add to / }).click();
-	await expect(dialog.getByRole('button', { name: 'take off plan', exact: true })).toBeVisible();
-	await dialog.screenshot({ path: test.info().outputPath('mini-catalogue.png') });
-
-	await component.selectOption('hints');
-	await dialog.getByRole('button', { name: 'prerequisites first' }).click();
-	await expect(dialog.locator('.miniature-plan .mini-course.lit')).toBeVisible();
-	await dialog.getByRole('checkbox', { name: 'show problems' }).click();
-	await expect(dialog.getByRole('button', { name: 'prerequisites first' })).toHaveCount(0);
-	await dialog.getByRole('checkbox', { name: 'show problems' }).click();
-	await dialog.getByRole('button', { name: /advisories/ }).click();
-	await dialog.screenshot({ path: test.info().outputPath('mini-hints.png') });
+	await expect(component).toHaveValue('terms');
+	await expect(dialog.locator('.task')).toHaveCount(0);
+	await expect(dialog.locator('.lesson-context')).toContainText('y2 t3');
+	const numbering = dialog.locator('.term-demo .name').last();
+	await expect(numbering).toHaveText('t3');
+	await numbering.click();
+	await expect(numbering).toHaveText('t6');
+	await expect(dialog.locator('.caption')).toContainText('t6');
+	await numbering.click();
+	await expect(numbering).toHaveText('t3');
 
 	await component.selectOption('display');
-	await expect(dialog.locator('.miniature-plan .mini-course[data-type="required"]').first()).toBeVisible();
-	await expect(dialog.locator('.miniature-plan .mini-course[data-type="elective"]').first()).toBeVisible();
-	const requiredColours = await dialog
-		.locator('.miniature-plan .mini-course[data-type="required"]')
-		.evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor));
-	expect(new Set(requiredColours).size).toBeGreaterThanOrEqual(2);
+	await expect(dialog.locator('.lesson-context')).toContainText('a dot means required');
+	await expect(dialog.locator('.lesson-context')).toContainText('left edge means elective');
+	await expect(dialog.locator('.blocks')).toHaveText('');
 	await dialog.getByRole('button', { name: 'display', exact: false }).click();
+	await expect(dialog.getByRole('group', { name: 'course labels', exact: true })).toBeVisible();
+	await dialog.getByRole('button', { name: 'titles', exact: true }).click();
+	await expect(dialog.getByRole('button', { name: 'titles', exact: true })).toHaveAttribute('aria-pressed', 'true');
 	await dialog.getByRole('button', { name: 'required (filled)', exact: true }).click();
-	await expect(dialog.locator('.miniature-plan .mini-course.lit').first()).toBeVisible();
-	await dialog.getByRole('button', { name: 'elective (outlined)', exact: true }).click();
-	await dialog.screenshot({ path: test.info().outputPath('mini-colours.png') });
+	await expect(dialog.locator('.blocks .lit').first()).toBeVisible();
+	await dialog.screenshot({ path: test.info().outputPath('simple-display.png') });
+
+	await component.selectOption('board');
+	const cells = dialog.locator('.tour-demo .overview .cell');
+	await expect(cells).toHaveCount(12);
+	await dialog.locator('.tour-demo .chip .open').first().click();
+	await expect(dialog.locator('.course-demo .d-title')).toBeVisible();
+	await dialog.getByRole('button', { name: 'close course details', exact: true }).click();
+	await cells.last().click();
+	await expect(dialog.getByRole('button', { name: '← back', exact: true })).toBeVisible();
+	await dialog.getByRole('button', { name: '← back', exact: true }).click();
+	await expect(cells).toHaveCount(12);
+
+	await component.selectOption('catalogue');
+	await dialog.getByRole('searchbox', { name: 'search courses or lecturers' }).fill('CHEM');
+	await dialog.locator('[data-course-card]').first().click();
+	await expect(dialog.locator('.course-demo .d-title')).toBeVisible();
+
+	await component.selectOption('progress');
+	await dialog.locator('.rail-demo .toggle').first().click();
+	await expect(dialog.locator('.rail-demo .detail')).toBeVisible();
+
+	await component.selectOption('hints');
+	await expect(dialog.locator('.tour-demo [data-tour="hints"]')).toBeVisible();
 
 	await component.selectOption('details');
-	await dialog.locator('.details-scene > .course-piece .mini-course').click();
-	await dialog.getByLabel('trimester', { exact: true }).selectOption('4-2');
-	await dialog.getByRole('button', { name: 'move', exact: true }).click();
+	await dialog.getByRole('combobox', { name: /^trimester to put/ }).selectOption('2-3');
+	const place = dialog.getByRole('button', { name: 'add to plan', exact: true });
+	if (await place.count()) await place.click();
+	else await dialog.getByRole('button', { name: 'move', exact: true }).click();
+	await expect(dialog.getByRole('button', { name: 'remove', exact: true })).toBeVisible();
+	await dialog.locator('summary', { hasText: 'audit & result' }).click();
+	await dialog.getByRole('checkbox', { name: /Audit this course/ }).check();
 	await dialog.getByRole('button', { name: 'remove', exact: true }).click();
-	await expect(dialog.getByRole('button', { name: 'remove', exact: true })).toBeDisabled();
+	await expect(dialog.getByRole('button', { name: 'add to plan', exact: true })).toBeVisible();
 
-	await component.selectOption('record');
-	await dialog.getByRole('checkbox', { name: /audit this course/ }).check();
-	await expect(dialog.locator('.credit-result')).toHaveText('0 cr');
-	await dialog.getByRole('checkbox', { name: /audit this course/ }).uncheck();
-	await dialog.getByRole('radio', { name: 'failed', exact: true }).check();
-	await expect(dialog.locator('.credit-result')).toHaveText('0 cr');
-	await dialog.getByRole('radio', { name: 'not failed', exact: true }).check();
-	await expect(dialog.locator('.credit-result')).not.toHaveText('0 cr');
+	await component.selectOption('views');
+	const exampleCode = await dialog.locator('.tour-demo .chip').first().getAttribute('data-code');
+	await dialog.locator('.tour-demo .chip .x').first().click();
+	await dialog.getByRole('button', { name: 'undo', exact: true }).click();
+	await expect(dialog.locator(`.tour-demo .chip[data-code="${exampleCode}"]`)).toBeVisible();
+	await dialog.getByRole('button', { name: /view: plan/ }).click();
+	await dialog.getByRole('radio', { name: /grades/ }).click();
+	await expect(dialog.getByRole('button', { name: /view: grades/ })).toBeVisible();
+	await expect(dialog.getByRole('button', { name: 'enter grades', exact: true })).toBeVisible();
 
-	await component.selectOption('about');
-	await expect(dialog.locator('.suggested-term').first()).toBeVisible();
-	await dialog.locator('.suggested-term').first().click();
-	await expect(dialog.locator('.prerequisites .pre-row').first().locator('.missing')).toHaveCount(0);
-	await dialog.locator('summary', { hasText: 'leads to' }).click();
-	await dialog.screenshot({ path: test.info().outputPath('mini-course-links.png') });
-	await dialog.locator('summary', { hasText: 'about the course' }).click();
-	await expect(dialog.locator('.description')).toBeVisible();
-	await dialog.locator('summary', { hasText: 'about the course' }).click();
-	await dialog.locator('.related-list button').first().click();
-	await expect(dialog.getByRole('button', { name: /back to/ })).toBeVisible();
-
-	await component.selectOption('faculty');
-	await dialog.getByRole('button', { name: 'Contact & teaching', exact: true }).first().click();
-	await expect(dialog.locator('.d-taught-list').first()).toBeVisible();
-	await dialog.getByRole('button', { name: 'Hide details', exact: true }).first().click();
-	await dialog.locator('[data-next]').click();
+	await component.selectOption('tools');
+	await expect(dialog.getByText('settings ⚙', { exact: true })).toBeVisible();
+	await dialog.getByRole('button', { name: 'start planning', exact: true }).click();
 	await expect(dialog).toHaveCount(0);
-	expect(await page.evaluate(() => JSON.parse(localStorage.getItem('kcal-plan')!).placements)).toEqual(original);
+	expect(await page.evaluate(() => localStorage.getItem('kcal-plan'))).toEqual(original);
 	expect(errors).toEqual([]);
 });
 
-test('choices use the selected major and connect a pick to the miniature plan', async ({ page }) => {
-	const dialog = await setup(page, 'history', null);
-	await dialog.locator('[data-next]').click();
-	await dialog.getByRole('combobox', { name: 'demo component' }).selectOption('choices');
-	await expect(dialog.locator('.choice-pool')).toContainText('history');
-	await dialog.locator('.choice-pool .mini-course').first().click();
-	await dialog.getByRole('button', { name: '+ add to plan', exact: true }).click();
-	await expect(dialog.locator('.choice-dots i.on')).toHaveCount(1);
-	await dialog.screenshot({ path: test.info().outputPath('mini-choices.png') });
-});
-
-test('each miniature fits a phone and majors without choices skip that step', async ({ page }) => {
+test('the simplified tour fits a phone and places explanations above controls', async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 844 });
 	const dialog = await setup(page, 'chemistry', 'computer science', 2026);
 	await dialog.locator('[data-next]').click();
 	const component = dialog.getByRole('combobox', { name: 'demo component' });
-	await expect(component.locator('option[value="choices"]')).toHaveCount(0);
-	for (const id of [
-		'progress',
-		'board',
-		'labels',
-		'terms',
-		'catalogue',
-		'hints',
-		'display',
-		'details',
-		'record',
-		'about',
-		'faculty'
-	]) {
+	for (const id of ['terms', 'display', 'board', 'catalogue', 'progress', 'hints', 'details', 'views', 'tools']) {
 		await component.selectOption(id);
 		const bounds = await dialog.evaluate((el) => ({ width: el.scrollWidth, client: el.clientWidth }));
 		expect(bounds.width, id).toBeLessThanOrEqual(bounds.client + 1);
-		await expect(dialog.locator('.miniature-plan .mini-cell')).toHaveCount(12);
-		if (id === 'progress') await dialog.screenshot({ path: test.info().outputPath('phone-progress.png') });
-		if (id === 'display') await dialog.screenshot({ path: test.info().outputPath('phone-colours.png') });
+		if (id !== 'tools') {
+			await expect(dialog.locator('.lesson-context p')).toHaveCount(2);
+			const order = await dialog.evaluate(
+				(el) =>
+					!!(
+						el.querySelector('.lesson-context')!.compareDocumentPosition(el.querySelector('.tour-demo')!) &
+						Node.DOCUMENT_POSITION_FOLLOWING
+					)
+			);
+			expect(order, id).toBe(true);
+		}
+		if (id === 'terms') {
+			await dialog.locator('.term-demo .name').last().click();
+			await expect(dialog.locator('.term-demo .name').last()).toHaveText('t6');
+			await dialog.screenshot({ path: test.info().outputPath('phone-terms.png') });
+		}
+		if (id === 'display') {
+			await dialog.getByRole('button', { name: 'display', exact: false }).click();
+			await dialog.screenshot({ path: test.info().outputPath('phone-display.png') });
+		}
 	}
-});
-
-test('a three-year degree uses a miniature 3 by 3 plan', async ({ page }) => {
-	await page.goto('/');
-	const dialog = page.getByRole('dialog', { name: 'welcome to kcal' });
-	await dialog.getByRole('button', { name: '2024', exact: true }).click();
-	await dialog.getByRole('button', { name: '3 years', exact: true }).click();
-	await dialog.locator('[data-next]').click();
-	await dialog.locator('.pill', { hasText: 'mathematics' }).click();
-	await dialog.locator('[data-next]').click();
-	await dialog.locator('[data-next]').click();
-	await expect(dialog.locator('.miniature-plan')).toHaveAttribute('data-rows', '3');
-	await expect(dialog.locator('.miniature-plan .mini-cell')).toHaveCount(9);
-	await dialog.screenshot({ path: test.info().outputPath('mini-3-by-3.png') });
+	await dialog.getByRole('button', { name: 'start planning', exact: true }).click();
+	await expect(dialog).toHaveCount(0);
 });
 
 test('the ? key brings the labels back, and a click anywhere or escape puts them away', async ({ page }) => {

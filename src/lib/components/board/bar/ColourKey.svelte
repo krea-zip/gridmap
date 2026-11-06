@@ -325,6 +325,10 @@
 		margin-bottom: 0.4rem;
 		border-bottom: 1px solid var(--bar-edge);
 
+		.section-label {
+			padding-left: 0;
+		}
+
 		// the segments share the menu's width, so no empty end is left over
 		:global(button) {
 			flex: 1;

@@ -37,7 +37,7 @@
 			</select>
 		</label>
 		{#if !alone}
-			<button class="primary" onclick={() => forkSet(doc, batch)}>Give this batch its own copy</button>
+			<button class="primary" onclick={() => forkSet(doc, batch)}>give this batch its own copy</button>
 		{/if}
 	</div>
 	{#if alone}
@@ -61,7 +61,7 @@
 		<h2>its programmes</h2>
 		<span class="office-badge">{programmes.length}</span>
 	</div>
-	<label>Find a programme<input type="search" bind:value={search} placeholder="e.g. computer science double" /></label>
+	<label>find a programme<input type="search" bind:value={search} placeholder="e.g. computer science double" /></label>
 	<div class="office-table-scroll">
 		<table>
 			<thead>
@@ -77,7 +77,7 @@
 						<td>{p.electives.length}</td>
 						<td>
 							<a href="/admin/requirements?set={set?.id}&subject={encodeURIComponent(p.subject)}&variant={p.variant}"
-								>Edit</a
+								>edit</a
 							>
 						</td>
 					</tr>

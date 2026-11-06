@@ -113,7 +113,7 @@
 {#if doc && set}
 	<div class="office-row">
 		<label
-			>Requirements for
+			>requirements for
 			<select bind:value={setId}>
 				{#each sets as s (s.id)}
 					<option value={s.id}>{s.name}{s.batches ? ` · batches ${s.batches.join(', ')}` : ' · everyone else'}</option>
@@ -121,7 +121,7 @@
 			</select>
 		</label>
 		<label
-			>Department
+			>department
 			<select bind:value={subject}>
 				{#each doc.curriculum.subjects.filter((s) => s.id !== 'core') as s (s.id)}<option value={s.id}>{s.label}</option
 					>{/each}
@@ -140,7 +140,7 @@
 			? `Applies to the ${set.batches.join(', ')} ${set.batches.length === 1 ? 'batch' : 'batches'}.`
 			: 'Applies to every batch no other curriculum names.'}
 	/>
-	<p class="office-help">For one entering batch only, open it under <a href="/admin/batches">Batches</a>.</p>
+	<p class="office-help">For one entering batch only, open it under <a href="/admin/batches">batches</a>.</p>
 
 	{#if !programme}
 		<section class="office-card">
@@ -155,7 +155,7 @@
 						</select>
 					</label>
 				{/if}
-				<button class="primary" onclick={create}>Create it</button>
+				<button class="primary" onclick={create}>create it</button>
 			</div>
 		</section>
 	{:else}
@@ -233,7 +233,7 @@
 			>
 			{#if programme.capstone}
 				<div class="office-form">
-					<label>Credits<input type="number" min="0" bind:value={programme.capstone.credits} /></label>
+					<label>credits<input type="number" min="0" bind:value={programme.capstone.credits} /></label>
 					<label class="office-check"
 						><input type="checkbox" bind:checked={programme.capstone.required} /> Required
 						<span class="office-help">if not, it stands in for electives</span></label

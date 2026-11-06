@@ -1,12 +1,11 @@
 <script lang="ts">
-	// one trimester on the grid. the cell is tinted by its courses, ringed by
-	// its state (now, a warning, a drag's fit) and opens the trimester view
+	// one neutral trimester on the grid, ringed by its state (now, a warning,
+	// a drag's fit); its course cards carry the subject colours. It opens
 	// when clicked anywhere that isn't a course.
 	import { slotOrder, termMonths } from '$lib/planner/calendar';
 	import { usePlan } from '$lib/planner/context';
 	import type { TrimNum } from '$lib/types';
 	import { useBoard } from '../boardState.svelte';
-	import { cellTone } from './cellTone';
 	import CourseChips from './CourseChips.svelte';
 	import Ghosts from './Ghosts.svelte';
 	import CellFoot from './CellFoot.svelte';
@@ -41,14 +40,12 @@
 	class:here={whatIf && order === board.hereAt}
 	class:past={whatIf && order < board.hereAt}
 	class:fresh={year === board.freshYear}
-	class:core-slot={coreSlot}
 	class:problem={plan.slotHasProblem(year, trim)}
 	class:dim={!!board.spotSlots && !board.spotSlots.has(key)}
 	class:drop-target={dragging !== null && board.drag.target === key}
 	class:can-drop={dragging !== null && plan.canDrop(dragging, year, trim)}
 	class:no-fit={dragging !== null && !plan.canDrop(dragging, year, trim)}
 	style:--t={trim}
-	style:--mix={cellTone(plan, codes)}
 	data-year={year}
 	data-trim={trim}
 	data-core-only={coreSlot || undefined}
@@ -82,8 +79,7 @@
 		</span>
 	{/if}
 
-	<!-- named only while the cell is empty; once courses are in, the core tint
-	     alone marks the slot -->
+	<!-- named while empty; the course cards identify foundation courses -->
 	{#if coreSlot && codes.length === 0 && (plan.view !== 'plan' || plan.suggestionsFor(year, trim).length === 0)}
 		<span class="core-note">kccs courses</span>
 	{/if}
@@ -115,7 +111,7 @@
 		gap: 0.8rem;
 		min-height: 13rem;
 		padding: 1rem 1rem 2.6rem;
-		background: var(--mix, var(--color-grid-cell));
+		background: var(--color-grid-cell);
 		border-radius: 8px;
 		cursor: zoom-in;
 		// One quiet boundary; stronger outlines are reserved for state.
@@ -167,12 +163,6 @@
 			&:is(.drop-target, .problem, .can-drop)::after {
 				opacity: 0;
 			}
-		}
-
-		// year 1's t1/t2 are reserved for the foundation core, tinted like the
-		// core chips so the pairing is obvious
-		&.core-slot {
-			background: var(--mix, color-mix(in srgb, var(--color-course-core) 45%, var(--color-grid-cell)));
 		}
 
 		// the courses keep their colours; the warning rides on the rule

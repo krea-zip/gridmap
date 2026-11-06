@@ -33,7 +33,7 @@ test('guests keep their draft and can export a private PDF, with no sign-in on o
 	await expect(page.getByRole('button', { name: 'Create share link' })).toHaveCount(0);
 	await expect(page.getByRole('button', { name: 'Save this plan', exact: true })).toHaveCount(0);
 	const popupPromise = page.waitForEvent('popup');
-	await page.getByRole('button', { name: 'Save as PDF', exact: true }).click();
+	await page.getByRole('button', { name: 'save as PDF', exact: true }).click();
 	const popup = await popupPromise;
 	await expect(popup.getByRole('heading', { name: 'Study plan' })).toBeVisible();
 	await expect(popup.locator('body')).toContainText('MATH201');

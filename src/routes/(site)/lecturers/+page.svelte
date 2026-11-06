@@ -12,7 +12,7 @@
 	/>
 </svelte:head>
 
-<h1>Lecturers</h1>
+<h1>lecturers</h1>
 <p class="lede">
 	{teaching.length} people who have taught undergraduate courses recently, and the rest of the directory.
 </p>
@@ -21,13 +21,13 @@
 	{#each teaching as l (l.id)}
 		<li>
 			<a href="/lecturers/{l.id}">{l.name}</a>
-			<span>{l.title || 'lecturer'} · {l.courses} course{l.courses === 1 ? '' : 's'}</span>
+			<span>{l.title || 'Lecturer'} · {l.courses} course{l.courses === 1 ? '' : 's'}</span>
 		</li>
 	{/each}
 </ul>
 
 {#if directory.length}
-	<h2>Also in the directory</h2>
+	<h2>also in the directory</h2>
 	<ul class="people">
 		{#each directory as l (l.id)}
 			<li>

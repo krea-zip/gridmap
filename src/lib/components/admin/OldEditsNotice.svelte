@@ -34,8 +34,8 @@
 			ever saved here. Add them to the shared draft?
 		</p>
 		<div class="office-actions">
-			<button class="primary" onclick={add}>Add to the draft</button>
-			<button onclick={discard}>Discard them</button>
+			<button class="primary" onclick={add}>add to the draft</button>
+			<button onclick={discard}>discard them</button>
 		</div>
 	</div>
 {/if}

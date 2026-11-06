@@ -25,7 +25,7 @@ export class DegreeAnswers {
 	roles = $derived(ROLES_OF[this.structure]);
 	/** a second major stands alone: it can't sit with a minor or concentration */
 	addable: Extra[] = $derived.by(() => {
-		if (this.extras.includes('major2')) return [];
+		if (this.extras.includes('major2') || (!this.#plan.fourYear && this.extras.length)) return [];
 		const free = (['minor', 'conc'] as const).filter((role) => !this.extras.includes(role));
 		return this.extras.length ? free : [...free, 'major2'];
 	});
@@ -61,6 +61,10 @@ export class DegreeAnswers {
 
 	setFourYear(four: boolean) {
 		this.#plan.fourYear = four;
+		if (!four && this.structure === 'major-minor-conc') {
+			this.remove('conc');
+			return;
+		}
 		this.sync();
 	}
 

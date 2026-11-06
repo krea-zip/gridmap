@@ -81,7 +81,7 @@
 
 <h1>upload spreadsheet</h1>
 <p class="office-lead">
-	Import a term’s course list (CSV or Excel). You’ll see every row before anything changes, and nothing is shared until
+	import a term’s course list (CSV or Excel). You’ll see every row before anything changes, and nothing is shared until
 	you save the draft.
 </p>
 
@@ -106,12 +106,12 @@
 				</label>
 			{/if}
 			<label
-				>Term
+				>term
 				<select bind:value={office.term}>
 					{#each office.document.terms as t (t.id)}<option value={t.id}>{t.label}</option>{/each}
 				</select>
 			</label>
-			<a href="/admin/offerings">Add a term</a>
+			<a href="/admin/offerings">add a term</a>
 		</div>
 	</section>
 
@@ -136,7 +136,7 @@
 				</label>
 			{/each}
 		</div>
-		<button class="primary" disabled={busy} onclick={review}>Review the rows</button>
+		<button class="primary" disabled={busy} onclick={review}>review the rows</button>
 	</section>
 {/if}
 
@@ -165,8 +165,8 @@
 			</table>
 		</div>
 		<div class="office-actions">
-			<button class="primary" disabled={!chosen} onclick={apply}>Add {chosen} rows to the draft</button>
-			<button onclick={reset}>Cancel</button>
+			<button class="primary" disabled={!chosen} onclick={apply}>add {chosen} rows to the draft</button>
+			<button onclick={reset}>cancel</button>
 		</div>
 	</section>
 {/if}

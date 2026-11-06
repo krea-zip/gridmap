@@ -90,7 +90,7 @@
 {#if doc}
 	<div class="office-row">
 		<label
-			>Term
+			>term
 			<select bind:value={office.term}>
 				{#each doc.terms as t (t.id)}<option value={t.id}
 						>{t.label}{t.status === 'archived' ? ' · archived' : ''}</option
@@ -101,7 +101,7 @@
 	</div>
 	{#if addingTerm}
 		<div class="office-row">
-			<label>Year<input type="number" min="2018" max="2099" bind:value={newYear} /></label>
+			<label>year<input type="number" min="2018" max="2099" bind:value={newYear} /></label>
 			<label
 				>Trimester
 				<select bind:value={newTrim}>
@@ -110,7 +110,7 @@
 					<option value={3}>3 · Feb–Apr</option>
 				</select>
 			</label>
-			<button class="primary" onclick={addTerm}>Add term</button>
+			<button class="primary" onclick={addTerm}>add term</button>
 		</div>
 	{/if}
 
@@ -118,9 +118,9 @@
 		<section class="office-card">
 			<h2>{term.label}</h2>
 			<div class="office-form">
-				<label>Name<input bind:value={term.label} /></label>
-				<label>Starts<input type="date" bind:value={term.starts} /></label>
-				<label>Ends<input type="date" bind:value={term.ends} /></label>
+				<label>name<input bind:value={term.label} /></label>
+				<label>starts<input type="date" bind:value={term.starts} /></label>
+				<label>ends<input type="date" bind:value={term.ends} /></label>
 				<label
 					>Status
 					<select bind:value={term.status}>
@@ -135,16 +135,16 @@
 		<div class="office-split">
 			<section>
 				<div class="office-row">
-					<label>Course<input list="offering-courses" bind:value={newCode} placeholder="Code" /></label>
-					<label>Section<input bind:value={newSection} placeholder="optional" /></label>
-					<button class="primary" onclick={addOffering}>Add</button>
+					<label>course<input list="offering-courses" bind:value={newCode} placeholder="Code" /></label>
+					<label>section<input bind:value={newSection} placeholder="optional" /></label>
+					<button class="primary" onclick={addOffering}>add</button>
 				</div>
 				<datalist id="offering-courses">
 					{#each doc.curriculum.courses.filter((c) => !c.retired) as c (c.code)}<option value={c.code}>{c.title}</option
 						>{/each}
 				</datalist>
 				{#if problem}<p class="office-note error" role="alert">{problem}</p>{/if}
-				<label>Search {offerings.length} offerings<input type="search" bind:value={search} /></label>
+				<label>search {offerings.length} offerings<input type="search" bind:value={search} /></label>
 				<div class="office-list">
 					{#each offerings as o (o.id)}
 						<button aria-pressed={selected === o.id} onclick={() => (selected = o.id)}>
@@ -162,7 +162,7 @@
 				<section class="office-card">
 					<h2>{offering.code} {titleOf(offering.code)}</h2>
 					<fieldset class="office-form">
-						<label>Section<input bind:value={offering.section} /></label>
+						<label>section<input bind:value={offering.section} /></label>
 						<label
 							>Approval
 							<select bind:value={offering.approval}>
@@ -170,7 +170,7 @@
 							</select>
 						</label>
 						<label class="wide"
-							>Faculty
+							>faculty
 							<span class="office-tags">
 								{#each offering.faculty as id (id)}
 									<span class="office-tag"
@@ -190,11 +190,11 @@
 									e.currentTarget.value = '';
 								}}
 							>
-								<option value="">Add a faculty member…</option>
+								<option value="">add a faculty member…</option>
 								{#each doc.curriculum.lecturers as f (f.id)}<option value={f.id}>{f.name}</option>{/each}
 							</select>
 						</label>
-						<label class="wide">Faculty as the sheet wrote it <input bind:value={offering.facultyText} /></label>
+						<label class="wide">faculty as the sheet wrote it <input bind:value={offering.facultyText} /></label>
 						{#each YEARS as year (year)}
 							<label
 								>{year[0].toUpperCase() + year.slice(1)}
@@ -225,10 +225,10 @@
 								onchange={(e) => (offering.minimum = whole(e.currentTarget.value))}
 							/></label
 						>
-						<label>Delivery<input bind:value={offering.delivery} /></label>
-						<label>Lab / practical<input bind:value={offering.practical} /></label>
-						<label class="wide">Requirements<textarea rows="2" bind:value={offering.requirements}></textarea></label>
-						<label class="wide">Note for students <textarea rows="2" bind:value={offering.publicNote}></textarea></label
+						<label>delivery<input bind:value={offering.delivery} /></label>
+						<label>lab / practical<input bind:value={offering.practical} /></label>
+						<label class="wide">requirements<textarea rows="2" bind:value={offering.requirements}></textarea></label>
+						<label class="wide">note for students <textarea rows="2" bind:value={offering.publicNote}></textarea></label
 						>
 						<label class="wide"
 							>Office note <span class="office-help">never published</span><textarea
@@ -251,7 +251,7 @@
 						{/each}
 					</fieldset>
 					<div class="office-actions">
-						<button class="danger" onclick={() => remove(offering.id)}>Remove offering</button>
+						<button class="danger" onclick={() => remove(offering.id)}>remove offering</button>
 					</div>
 				</section>
 			{/if}

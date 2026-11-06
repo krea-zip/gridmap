@@ -39,14 +39,14 @@
 </p>
 
 <div class="office-row">
-	<label>New field<input bind:value={label} placeholder="e.g. Room" /></label>
-	<button class="primary" onclick={add}>Add field</button>
+	<label>new field<input bind:value={label} placeholder="e.g. Room" /></label>
+	<button class="primary" onclick={add}>add field</button>
 </div>
 
 {#each fields as field (field.id)}
 	<section class="office-card">
 		<fieldset class="office-form">
-			<label>Label<input bind:value={field.label} /></label>
+			<label>label<input bind:value={field.label} /></label>
 			<label
 				>Type
 				<select bind:value={field.type}>
@@ -74,7 +74,7 @@
 				><input type="checkbox" bind:checked={field.required} />Required on every offering</label
 			>
 		</fieldset>
-		<button class="danger" onclick={() => remove(field.id)}>Remove</button>
+		<button class="danger" onclick={() => remove(field.id)}>remove</button>
 	</section>
 {:else}
 	<p class="office-empty">No extra fields yet.</p>

@@ -46,7 +46,9 @@
 		class="chip"
 		class:faded={(!!board.chain && !board.chain.nodes.has(code)) || (!!board.spotCodes && !board.spotCodes.has(code))}
 		class:chain-root={board.chain?.root === code}
-		class:lit={board.spotCodes?.has(code) || (plan.selectedId ?? plan.selected?.code) === code}
+		class:lit={board.spotCodes?.has(code) ||
+			!!board.chain?.nodes.has(code) ||
+			(plan.selectedId ?? plan.selected?.code) === code}
 		class:is-audit={plan.isAudit(code)}
 		class:is-attempt={attempt}
 		class:retake={!attempt && plan.attemptsOf(code).length > 0}
@@ -178,13 +180,13 @@
 			}
 		}
 
-		// the prerequisite chain, or what a pointed-at hint or colour names,
-		// stands out by everything else stepping back
+		// what a pointed-at hint or colour names stands out by everything else
+		// stepping back; a course's prerequisite chain is only outlined
 		&.faded {
 			opacity: 0.3;
 		}
 
-		// the dimming does the work, so what stays only needs a soft edge
+		// a soft edge: on its own for a prerequisite chain, beside the dimming for a hint
 		&.lit {
 			outline: 2px solid color-mix(in srgb, var(--color-board-text) 35%, transparent);
 			outline-offset: 2px;

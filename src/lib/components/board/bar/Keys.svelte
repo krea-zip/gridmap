@@ -25,7 +25,7 @@
 	.keys {
 		display: flex;
 		overflow: hidden; // clips the end segments to the rounded corners
-		border: 1px solid var(--bar-key-edge);
+		border: 1px solid var(--color-control-deep);
 		border-radius: 6px;
 		box-shadow: 0 1px 0 var(--bar-hi);
 	}
@@ -41,16 +41,10 @@
 		font-weight: 700;
 		white-space: nowrap;
 		text-decoration: none;
-		color: var(--bar-key-text);
+		color: var(--color-text-muted-page);
 		text-shadow: 0 1px 0 var(--bar-hi); // embossed, faint on the dark theme
-		background-color: var(--bar-key);
-		// lit top half, hard crease, deeper bottom half that lifts again
-		background-image: linear-gradient(
-			rgba(255, 255, 255, 0.6),
-			rgba(255, 255, 255, 0.22) 50%,
-			rgba(120, 40, 80, 0.06) 50%,
-			rgba(255, 255, 255, 0.08)
-		);
+		background-color: var(--color-bg-light-page);
+		background-image: var(--gloss-face-page);
 		border: 0;
 		border-radius: 0;
 		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
@@ -61,22 +55,17 @@
 			box-shadow 120ms ease;
 
 		&:hover {
-			background-color: color-mix(in srgb, var(--bar-key) 88%, var(--bar-key-on));
+			background-color: color-mix(in srgb, var(--color-bg-light-page) 90%, var(--color-accent-page));
 		}
 	}
 
 	// the pressed segment: dark pink and sunk in. its own rule, a nested
 	// :global(.active) doesn't survive the :global(button) around it
 	.keys :global(:is(button, a).active) {
-		color: var(--bar-key-on-text);
-		text-shadow: 0 -1px 0 rgba(60, 10, 35, 0.45);
-		background-color: var(--bar-key-on);
-		background-image: linear-gradient(
-			rgba(255, 255, 255, 0.24),
-			rgba(255, 255, 255, 0.07) 50%,
-			rgba(60, 10, 35, 0.1) 50%,
-			rgba(60, 10, 35, 0)
-		);
+		color: var(--color-on-accent-page);
+		text-shadow: none;
+		background-color: var(--color-accent-page);
+		background-image: var(--gloss-face-accent);
 		box-shadow:
 			inset 0 1px 3px rgba(60, 10, 35, 0.5),
 			inset 0 0 0 1px rgba(60, 10, 35, 0.12);
@@ -84,7 +73,7 @@
 
 	// a hairline groove between segments, lit on its right side
 	.keys :global(:is(button, a) + :is(button, a)) {
-		border-left: 1px solid var(--bar-key-edge);
+		border-left: 1px solid var(--color-control-deep);
 		box-shadow:
 			inset 0 1px 0 rgba(255, 255, 255, 0.7),
 			inset 1px 0 0 rgba(255, 255, 255, 0.45);
@@ -92,7 +81,14 @@
 
 	.keys :global(:is(button, a) + :is(button, a).active),
 	.keys :global(:is(button, a).active + :is(button, a)) {
-		border-left-color: var(--bar-key-on-edge);
+		border-left-color: var(--color-control-deep);
+	}
+
+	.keys :global(button:disabled) {
+		opacity: 0.5;
+		background-image: none;
+		box-shadow: none;
+		cursor: not-allowed;
 	}
 
 	// undo / redo: glyphs, a touch larger than the labels

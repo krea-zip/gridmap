@@ -55,8 +55,8 @@
 				{#each doc.curriculum.subjects as s (s.id)}<option value={s.id}>{s.label}</option>{/each}
 			</select>
 		</label>
-		<label>As<input bind:value={code} placeholder="Code" /></label>
-		<button onclick={add}>Add</button>
+		<label>as<input bind:value={code} placeholder="Code" /></label>
+		<button onclick={add}>add</button>
 	</div>
 	{#if problem}<p class="office-note error" role="alert">{problem}</p>{/if}
 	<label

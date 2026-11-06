@@ -23,7 +23,7 @@
 <p class="office-lead">What students were shown, newest first. Open one as a draft to go back to it.</p>
 
 {#if office.dirty}
-	<p class="office-note error">Save or discard your current changes before opening an older revision.</p>
+	<p class="office-note error">save or discard your current changes before opening an older revision.</p>
 {/if}
 
 <div class="office-table-scroll">
@@ -51,7 +51,7 @@
 									}}
 							>
 								<input type="hidden" name="revision" value={h.revision} />
-								<button disabled={office.dirty}>Open as draft</button>
+								<button disabled={office.dirty}>open as draft</button>
 							</form>
 						{/if}
 					</td>

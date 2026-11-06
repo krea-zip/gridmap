@@ -20,7 +20,7 @@
 	{#if data.reps.length}
 		<p class="reps">Student reps ({REPS_YEAR}): <b>{data.reps.join(', ')}</b></p>
 	{/if}
-	<p class="lede">The rules for the {data.batches} batches. Jump to a programme:</p>
+	<p class="lede">The rules for the {data.batches}. Jump to a programme:</p>
 	<nav aria-label="programmes">
 		{#each data.programmes as p (p.key)}<a href="#{p.key}">{p.label}</a>{/each}
 	</nav>
@@ -35,7 +35,7 @@
 			{#if p.credits.elective}· {p.credits.elective} elective{/if}
 		</p>
 
-		<h3>Required</h3>
+		<h3>required</h3>
 		<CourseList courses={p.required} empty="No fixed course, see the choices below." />
 
 		{#each p.choices as choice, i (i)}
@@ -45,7 +45,7 @@
 
 		{#if p.electives.length}
 			<details>
-				<summary>Electives that count <small>{p.electives.length}</small></summary>
+				<summary>electives that count <small>{p.electives.length}</small></summary>
 				<CourseList courses={p.electives} />
 			</details>
 		{/if}
@@ -53,6 +53,7 @@
 {/each}
 
 <style lang="scss">
+	@use '$lib/styles/mixins' as *;
 	header {
 		padding-bottom: 2.4rem;
 		border-bottom: 1px dotted var(--color-border-light);
@@ -60,14 +61,15 @@
 
 	.up {
 		font-size: 1.35rem;
-		color: var(--color-text-muted);
+		color: var(--color-accent);
+		text-underline-offset: 0.2em;
 	}
 
 	h1 {
 		margin-top: 0.8rem;
 		font-size: 3.4rem;
 		letter-spacing: -0.02em;
-		color: oklch(0.42 0.08 var(--hue, 300));
+		color: var(--color-text);
 	}
 
 	.reps {
@@ -96,14 +98,11 @@
 		a {
 			padding: 0.4rem 1rem;
 			font-size: 1.3rem;
-			color: var(--color-text);
+			@include subject-pill;
 			text-decoration: none;
-			background: var(--color-bg-light);
-			border: 1px solid var(--color-border-card);
-			border-radius: 999px;
 
 			&:hover {
-				background: var(--color-hover);
+				background: subject-tone(required);
 			}
 		}
 	}

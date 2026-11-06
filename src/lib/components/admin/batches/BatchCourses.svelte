@@ -78,7 +78,7 @@
 	</p>
 	<div class="office-row">
 		<label
-			>Department
+			>department
 			<select bind:value={subject}>
 				{#each doc.curriculum.subjects.filter((s) => s.id !== 'core' && s.id !== 'open') as s (s.id)}
 					<option value={s.id}>{s.label}</option>
@@ -120,7 +120,7 @@
 			{/if}
 			Total: {programme.credits.total} credits.
 		</p>
-		<label>Find a course<input type="search" bind:value={search} /></label>
+		<label>find a course<input type="search" bind:value={search} /></label>
 		<div class="office-table-scroll">
 			<table>
 				<thead><tr><th>Course</th><th>Inherited</th><th>This batch</th></tr></thead>

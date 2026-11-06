@@ -11,13 +11,13 @@
 {#if office.document}
 	<section class="office-card" id="cross-listed">
 		<h2>cross-listed courses</h2>
-		<p>Manage department codes within each course record.</p>
+		<p>manage department codes within each course record.</p>
 		<div class="office-table-scroll">
 			<table>
 				<thead><tr><th>Course</th><th>Codes</th><th></th></tr></thead><tbody
 					>{#each office.document.curriculum.courses.filter((c) => c.codes.length > 1) as c}<tr
 							><td>{c.title}</td><td>{c.codes.join(' · ')}</td><td
-								><a href="/admin/courses?course={c.code}">Edit course</a></td
+								><a href="/admin/courses?course={c.code}">edit course</a></td
 							></tr
 						>{/each}</tbody
 				>
@@ -36,10 +36,10 @@
 					label="Group {i + 1}"
 					id="substitute-{i}"
 				/><button class="danger" onclick={() => office.document!.curriculum.equivalences.substitutes.splice(i, 1)}
-					>Remove group</button
+					>remove group</button
 				>
 			</div>{/each}<button onclick={() => office.document!.curriculum.equivalences.substitutes.push([])}
-			>Add interchangeable group</button
+			>add interchangeable group</button
 		>
 	</section>
 	<section class="office-card" id="one-way">
@@ -50,7 +50,7 @@
 				<thead><tr><th>Accepted course</th><th>In place of</th><th></th></tr></thead><tbody
 					>{#each office.document.curriculum.equivalences.covers as pair, i}<tr
 							><td>{pair.maths}</td><td>{pair.applied}</td><td
-								><button onclick={() => office.document!.curriculum.equivalences.covers.splice(i, 1)}>Remove</button
+								><button onclick={() => office.document!.curriculum.equivalences.covers.splice(i, 1)}>remove</button
 								></td
 							></tr
 						>{/each}</tbody
@@ -76,7 +76,7 @@
 					if (!office.document!.curriculum.equivalences.covers.some((p) => p.maths === from && p.applied === to))
 						office.document!.curriculum.equivalences.covers.push({ maths: from, applied: to });
 					from = to = '';
-				}}>Add substitution</button
+				}}>add substitution</button
 			>
 		</div>
 	</section>

@@ -1,7 +1,5 @@
 <script lang="ts">
-	// the band between the filters and the cards: how many courses are left and
-	// how they're sorted. it sits outside the filters' scroll, so it stays put
-	// and its shadow falls over the cards as they pass underneath.
+	// The count and sort controls sit quietly between the filters and results.
 	import { fade } from 'svelte/transition';
 	import { usePlan } from '$lib/planner/context';
 	import type { CatalogueSort } from '$lib/planner/catalogue';
@@ -13,9 +11,14 @@
 </script>
 
 <div class="ribbon">
-	<p class="count" role="status">
-		{plan.catalogue.length} course{plan.catalogue.length === 1 ? '' : 's'}
-	</p>
+	<label class="sort">
+		sort by
+		<select aria-label="sort courses" bind:value={plan.catalogueSort}>
+			{#each SORTS as sort (sort)}
+				<option value={sort}>{sort}</option>
+			{/each}
+		</select>
+	</label>
 	{#if plan.narrowed}
 		<button
 			class="clear"
@@ -24,14 +27,6 @@
 			onclick={() => plan.clearNarrowing()}>clear</button
 		>
 	{/if}
-	<label class="sort">
-		sort
-		<select aria-label="sort courses" bind:value={plan.catalogueSort}>
-			{#each SORTS as sort (sort)}
-				<option value={sort}>{sort}</option>
-			{/each}
-		</select>
-	</label>
 </div>
 
 <style lang="scss">
@@ -42,27 +37,17 @@
 		flex-shrink: 0;
 		display: flex;
 		align-items: center;
-		gap: 1rem;
-		min-height: 2.8rem;
-		padding: 0.2rem 1.8rem;
-		font-size: var(--text-body);
+		gap: 0.8rem;
+		min-height: 3.6rem;
+		padding: 0.4rem 1.4rem;
+		font-size: 1.2rem;
 		color: var(--color-text-muted);
-		// a touch darker than whatever it sits on, with a faint outline
-		background: rgba(60, 10, 35, 0.06);
-		border-block: 1px solid color-mix(in srgb, var(--color-border-card) 55%, transparent);
-		// set into the panel: a soft inner shadow along the top, a thin highlight along the bottom
-		box-shadow:
-			inset 0 2px 4px rgba(98, 58, 82, 0.14),
-			inset 0 -1px 0 rgba(255, 255, 255, 0.6);
+		border-bottom: 1px solid var(--color-border-divider);
 		contain: inline-size;
 	}
 
-	.count {
-		font-variant-numeric: tabular-nums; // the digits don't jitter as filters change
-		white-space: nowrap;
-	}
-
 	.clear {
+		margin-left: auto;
 		padding: 0;
 		font: inherit;
 		color: var(--color-accent);
@@ -75,15 +60,15 @@
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-		margin-left: auto;
 		white-space: nowrap;
 
 		select {
-			padding: 0;
+			padding: 0.25rem 0.5rem;
 			font: inherit;
 			color: var(--color-text);
-			background: none;
-			border: 0;
+			background: var(--color-bg-light);
+			border: 1px solid var(--color-border-card);
+			border-radius: 4px;
 			cursor: pointer;
 		}
 	}

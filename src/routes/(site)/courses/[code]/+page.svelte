@@ -51,13 +51,13 @@
 
 	{#if data.description}
 		<section>
-			<h2>About</h2>
+			<h2>about</h2>
 			<p class="prose">{data.description}</p>
 		</section>
 	{/if}
 
 	<section>
-		<h2>Before this</h2>
+		<h2>before this</h2>
 		<CourseList courses={data.prerequisites} empty="No prerequisites." />
 		{#if data.equivalents.length}
 			<p class="note">Interchangeable with these (take one, not both):</p>
@@ -67,15 +67,15 @@
 
 	{#if data.unlocks.length}
 		<section>
-			<h2>Leads on to</h2>
+			<h2>leads on to</h2>
 			<CourseList courses={data.unlocks} />
 		</section>
 	{/if}
 
 	{#if data.programmes.length}
 		<section>
-			<h2>In these programmes</h2>
-			<p class="note">For the {data.batches} batches.</p>
+			<h2>in these programmes</h2>
+			<p class="note">For the {data.batches}.</p>
 			<ul class="programmes">
 				{#each data.programmes as p (p.slug)}
 					<li>
@@ -91,7 +91,7 @@
 
 	{#if data.lecturers.length}
 		<section>
-			<h2>Recently taught by</h2>
+			<h2>recently taught by</h2>
 			<ul class="people">
 				{#each data.lecturers as l (l.id)}
 					<li>
@@ -179,6 +179,7 @@
 		dd {
 			margin-top: 0.4rem;
 			font-size: 1.6rem;
+			font-weight: 700;
 		}
 	}
 

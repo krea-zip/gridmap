@@ -38,11 +38,7 @@ export class BoardState {
 	spotCodes = $derived.by(() => {
 		const { highlight, placedCodes } = this.plan;
 		if (highlight.some((c) => placedCodes.has(c))) return new Set(highlight);
-		// Hints and legend previews take priority. Otherwise the open course
-		// stays bright, including when it was opened from the catalogue.
-		if (highlight.length || this.plan.highlightSlots.length || this.plan.view === 'prereqs') return null;
-		const selected = this.plan.selectedId ?? this.plan.selected?.code;
-		return selected && this.plan.onBoard(selected) ? new Set([selected]) : null;
+		return null;
 	});
 	spotSlots = $derived.by(() =>
 		!this.spotCodes && this.plan.highlightSlots.length ? new Set(this.plan.highlightSlots) : null

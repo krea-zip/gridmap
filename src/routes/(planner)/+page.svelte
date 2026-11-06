@@ -5,15 +5,21 @@
 	import { viewport } from '$lib/planner/viewport.svelte';
 	import OverviewGrid from '$lib/components/board/OverviewGrid.svelte';
 	import TrimesterZoom from '$lib/components/board/TrimesterZoom.svelte';
+	import { fade } from 'svelte/transition';
+	import { reducedMotion } from '$lib/ui/transitions';
 
 	const plan = usePlan();
 </script>
 
 <div class="board-main" data-tour="board">
 	{#if plan.zoom}
-		<TrimesterZoom touchLayout={!viewport.desktop} />
+		<div in:fade={{ duration: reducedMotion() || !viewport.desktop ? 0 : 120 }}>
+			<TrimesterZoom touchLayout={!viewport.desktop} />
+		</div>
 	{:else}
-		<OverviewGrid touchLayout={!viewport.desktop} />
+		<div in:fade={{ duration: reducedMotion() || !viewport.desktop ? 0 : 120 }}>
+			<OverviewGrid touchLayout={!viewport.desktop} />
+		</div>
 	{/if}
 </div>
 

@@ -65,14 +65,14 @@
 						}}
 					/> May be taken in the same trimester</label
 				>
-				<button class="danger" onclick={() => edit((r) => r.groups.splice(i, 1))}>Remove</button>
+				<button class="danger" onclick={() => edit((r) => r.groups.splice(i, 1))}>remove</button>
 			</div>
 		</div>
 	{/each}
 
 	<div class="office-row">
-		<label>Add a prerequisite<input list="course-codes" bind:value={adding} placeholder="Course code" /></label>
-		<button onclick={add}>Add</button>
+		<label>add a prerequisite<input list="course-codes" bind:value={adding} placeholder="Course code" /></label>
+		<button onclick={add}>add</button>
 	</div>
 	<datalist id="course-codes">
 		{#each courses as c (c.code)}<option value={c.code}>{c.title}</option>{/each}
@@ -99,7 +99,7 @@
 			id="recommended"
 		/>
 		<label
-			>Note for students
+			>note for students
 			<textarea
 				rows="2"
 				value={rule.note}

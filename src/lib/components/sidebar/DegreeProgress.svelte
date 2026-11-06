@@ -3,12 +3,17 @@
 	// and a bar per programme that opens onto what's still owed
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import { subjectById } from '$lib/curriculum/data';
+	import { CORE_CREDITS, byCode, isCore } from '$lib/curriculum/data';
 	import { usePlan } from '$lib/planner/context';
 	import { reducedMotion } from '$lib/ui/transitions';
 	import Progress from './Progress.svelte';
 
 	const plan = usePlan();
+	let creditsLeft = $derived(Math.max(0, plan.creditMinimum - plan.totalPlacedCredits));
+	let coreDone = $derived(
+		plan.placed.filter((p) => isCore(p.code)).reduce((sum, p) => sum + byCode(p.code).credits, 0)
+	);
+	let programmeCreditsMet = $derived(plan.stats.every((s) => s.creditsLeft === 0));
 
 	// one programme's breakdown open at a time
 	let openProg = $state<string | null>(null);
@@ -27,9 +32,58 @@
 
 	<div class="stats">
 		<div class="total">
-			<span>total</span>
+			<span>planned credits</span>
 			<b>{plan.totalPlacedCredits}<em>/</em>{plan.creditTarget} cr</b>
 		</div>
+
+		<div class="degree-status" class:short={creditsLeft > 0} aria-live="polite">
+			{#if creditsLeft > 0}
+				<strong>{creditsLeft} more credits to reach {plan.creditMinimum}</strong>
+				{#if creditsLeft % 4 === 0}
+					<span>That’s {creditsLeft / 4} more 4-credit {creditsLeft === 4 ? 'course' : 'courses'}.</span>
+				{/if}
+				<p>
+					{#if programmeCreditsMet && coreDone >= CORE_CREDITS}
+						Your programme and KCCS credit totals are met, but the degree minimum is not.
+						{#if plan.structure === 'single-major'}
+							Choose additional courses outside your major; a minor or concentration is optional.
+						{:else}
+							Add eligible electives to make up the total.
+						{/if}
+					{:else}
+						Complete your KCCS and programme requirements, then use additional courses to reach the degree minimum.
+					{/if}
+				</p>
+			{:else}
+				<strong>Degree credit minimum reached</strong>
+				<span>Check the requirements below and any planning issues. Planned credits still need to be earned.</span>
+			{/if}
+		</div>
+		<div class="row foundation"><span>KCCS credits planned</span><b>{tally(coreDone, CORE_CREDITS)}</b></div>
+
+		<details class="credit-breakdown">
+			<summary>How the {plan.creditTarget} credits add up</summary>
+			<div class="row"><span>KCCS</span><b>{CORE_CREDITS} cr</b></div>
+			{#each plan.stats as s (s.role + s.subject)}
+				<div class="row"><span>{s.label} {s.subject === 'open' ? '' : s.role}</span><b>{s.totalCredits} cr</b></div>
+			{/each}
+			{#if plan.creditTarget > plan.degreeTotal}
+				<div class="row"><span>Additional courses</span><b>{plan.creditTarget - plan.degreeTotal} cr</b></div>
+				<p>
+					These are in addition to your programme electives.
+					{#if plan.structure === 'single-major'}
+						A minor or concentration is optional. Without one, take extra courses outside your major.
+					{/if}
+				</p>
+			{/if}
+			<p>
+				Cross-listed credits count once toward the degree total. Sharing them between programmes can mean you need more
+				courses to reach {plan.creditTarget}.
+			</p>
+			<p>
+				{Math.max(0, plan.creditTarget - plan.totalPlacedCredits)} credits still to plan · ceiling {plan.creditCeiling} cr
+			</p>
+		</details>
 		<!-- planned, not earned: what stands between this plan and graduating -->
 		<button class="readiness" class:clear={!problems} onclick={toHints}>
 			{problems ? `${problems} planning issue${problems === 1 ? '' : 's'} to sort out ↓` : '✓ no planning issues'}
@@ -94,6 +148,55 @@
 		em {
 			font-style: normal;
 			font-weight: 400;
+			color: var(--color-text-muted);
+		}
+	}
+
+	.degree-status {
+		margin-top: 0.8rem;
+		padding: 0.8rem 1rem;
+		border-left: 3px solid var(--color-border-light);
+		background: var(--color-bg-light);
+		font-size: 1.25rem;
+		strong,
+		span {
+			display: block;
+		}
+		strong {
+			color: var(--color-text);
+		}
+		span,
+		p {
+			color: var(--color-text-muted);
+		}
+		p {
+			margin: 0.5rem 0 0;
+		}
+		&.short {
+			border-left-color: var(--color-hint-warn-deep);
+		}
+	}
+	.foundation {
+		margin-top: 0.8rem;
+		gap: 0.6rem;
+		font-size: 1.25rem;
+	}
+
+	.credit-breakdown {
+		margin-top: 0.5rem;
+		font-size: 1.25rem;
+		summary {
+			cursor: pointer;
+		}
+		.row {
+			gap: 0.8rem;
+			margin-top: 0.4rem;
+		}
+		b {
+			white-space: nowrap;
+		}
+		p {
+			margin: 0.5rem 0;
 			color: var(--color-text-muted);
 		}
 	}

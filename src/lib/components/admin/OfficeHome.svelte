@@ -28,7 +28,7 @@
 	<div>
 		<small>Working on</small>
 		<b>{term?.label || 'No term selected'}</b>
-		<span><a href="/admin/offerings">Change term</a></span>
+		<span><a href="/admin/offerings">change term</a></span>
 	</div>
 	<div>
 		<small>Your draft</small>
@@ -51,7 +51,7 @@
 						? 'Nothing waiting'
 						: 'Review and publish'}</b
 		>
-		<span><a href="/admin/changes">Open Review & publish</a></span>
+		<span><a href="/admin/changes">open review & publish</a></span>
 	</div>
 </div>
 
@@ -98,7 +98,7 @@
 			<p>No changes from the {next - 1} batch yet.</p>
 		{/if}
 		<a class="button primary" href="/admin/batches/{next}"
-			>Open the {next} batch <OfficeIcon name="arrow" size={16} /></a
+			>open the {next} batch <OfficeIcon name="arrow" size={16} /></a
 		>
 	</section>
 	<section class="office-card">
@@ -118,7 +118,7 @@
 					</li>
 				{/each}
 			</ul>
-			<a class="office-text-link" href="/admin/changes">See all checks →</a>
+			<a class="office-text-link" href="/admin/changes">see all checks →</a>
 		{:else}
 			<div class="office-all-clear">
 				<OfficeIcon name="check" size={28} /><b>Looking good.</b>

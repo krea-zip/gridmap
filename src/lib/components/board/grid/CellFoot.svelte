@@ -44,7 +44,11 @@
 			{#if plan.gradeMode}
 				<span title="term GPA, this trimester's grade average">TGPA {tgpa === null ? '–' : tgpa.toFixed(2)}</span>
 			{:else}
-				<span class="credits" title={load.note || undefined}>{credits}{limit ? `/${limit}` : ''} cr</span>
+				<span
+					class="credits"
+					title={load.note || undefined}
+					aria-label={load.note ? `${credits} credits, ${load.note}` : undefined}>{credits} cr</span
+				>
 			{/if}
 			<button
 				class="clear"

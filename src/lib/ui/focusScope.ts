@@ -1,5 +1,6 @@
 /** Keep keyboard focus in an open overlay and return it to its trigger on close. */
-export function focusScope(node: HTMLElement, enabled = true) {
+type FocusScopeOptions = boolean | { enabled: boolean; restoreFocus?: boolean };
+export function focusScope(node: HTMLElement, enabled: FocusScopeOptions = true) {
 	let active = false;
 	let previous: HTMLElement | null = null;
 	let frame = 0;
@@ -26,14 +27,21 @@ export function focusScope(node: HTMLElement, enabled = true) {
 			(event.shiftKey ? last : first)?.focus();
 		}
 	}
-	function update(next: boolean) {
+	function update(options: FocusScopeOptions) {
+		const next = typeof options === 'boolean' ? options : options.enabled;
+		const restoreFocus = typeof options === 'boolean' || options.restoreFocus !== false;
 		if (next === active) return;
 		active = next;
 		cancelAnimationFrame(frame);
-		if (active) {
+		if (active && !node.contains(document.activeElement)) {
 			previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-			frame = requestAnimationFrame(() => focusable()[0]?.focus({ preventScroll: true }));
-		} else if (previous?.isConnected) previous.focus({ preventScroll: true });
+			frame = requestAnimationFrame(() =>
+				(node.matches('[data-initial-focus]')
+					? node
+					: (node.querySelector<HTMLElement>('[data-initial-focus]') ?? focusable()[0])
+				)?.focus({ preventScroll: true })
+			);
+		} else if (!active && restoreFocus && previous?.isConnected) previous.focus({ preventScroll: true });
 	}
 	document.addEventListener('keydown', onKey);
 	update(enabled);
