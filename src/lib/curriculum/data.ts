@@ -26,7 +26,6 @@ export type { ChoiceCourse, ChoiceGroup } from '$lib/curriculum/snapshot';
 
 const snapshot: CurriculumSnapshot = previewSnapshot() ?? (snapshotData as unknown as CurriculumSnapshot);
 export const PREVIEWING = snapshot !== (snapshotData as unknown);
-export const CURRICULUM_RELEASE = snapshot.release;
 
 /** when the catalogue was last rebuilt from the term sheets */
 export const DATA_UPDATED = snapshot.updatedOn ? new Date(snapshot.updatedOn) : null;

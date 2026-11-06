@@ -26,7 +26,6 @@ export const GRADE_POINTS = Object.fromEntries(GRADE_SCALE.map((g) => [g.letter,
 >;
 export const GRADE_LETTERS: GradeLetter[] = GRADE_SCALE.map((g) => g.letter);
 export const MAX_GRADE_POINT = GRADE_SCALE[0].points; // 10 (A+)
-export const MIN_PASS_POINT = GRADE_POINTS['E']; // 5.5, 'U' is the only fail
 
 export const isGradeLetter = (v: unknown): v is GradeLetter =>
 	typeof v === 'string' && (GRADE_LETTERS as string[]).includes(v);
@@ -43,7 +42,6 @@ export const isGradeMark = (v: unknown): v is GradeMark => isGradeLetter(v) || v
 
 // graduation thresholds from the manual's Graduation Requirements section
 export const gradMinCredits = (fourYear: boolean): number => (fourYear ? 160 : 120);
-export const gradMaxCredits = (fourYear: boolean): number => (fourYear ? 176 : 128);
 export const GRAD_MIN_CGPA = 5.5; // and "E and above in all courses", i.e. no U
 // the manual's other two standing lines (CGPA Requirements section)
 export const AID_MIN_CGPA = 6.5; // to keep receiving financial aid

@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────
 // Plan, all app state + the "laws" in one class.
-// Instantiated once in +page.svelte, passed down as a prop.
+// Created once in the planner layout and shared through context (usePlan).
 // ─────────────────────────────────────────────
 
 import { browser } from '$app/environment';
@@ -73,7 +73,6 @@ const SAVE_VERSION = 1;
 // a trimester's foot marks the running pace only past one ordinary course
 // either way
 const PACE_SLACK = 4;
-// the most years the grid can run to: a 4-year degree plus one
 /** the longest any plan runs: a 4-year degree's n + 2 years (a 3-year
  *  degree stops at 5, see Plan.maxYears) */
 export const MAX_YEARS = 6;
@@ -107,6 +106,15 @@ const isBreakKind = (v: unknown): v is BreakKind => v === 'break' || v === 'susp
  *  even when its lists don't name it. not a capstone: that counts only where
  *  the programme's document takes one (Plan.#setsFor) */
 const ofSubject = (c: Course, subject: string): boolean => c.subjects.includes(subject) && !isCapstone(c.code);
+
+/** one programme's course lists, for the exact variant on the plan */
+type ProgrammeSets = {
+	subject: string;
+	required: Set<string>;
+	requiredAll: Set<string>;
+	pick: Set<string>;
+	elective: Set<string>;
+};
 
 /** the programmes a degree structure and its picks add up to */
 export function programmesFor(structure: StructureKind, picks: Picks): Programme[] {
@@ -693,13 +701,13 @@ export class Plan {
 	// Topology 1) must be taken too, so it reads as required.
 	programmeSets = $derived(this.#setsFor(this.programmes, this.isDouble));
 
-	/** the sets for a list of programmes (the what-if view's, say) */
-	programmeSetsOf(programmes: Programme[], double: boolean) {
-		return this.#setsFor(programmes, double);
-	}
-
 	/** each programme's required / choice / elective sets, for the exact variant */
-	#setsFor(programmes: Programme[], double: boolean, fourYear = this.fourYear, batch = this.batchStartYear) {
+	#setsFor(
+		programmes: Programme[],
+		double: boolean,
+		fourYear = this.fourYear,
+		batch = this.batchStartYear
+	): ProgrammeSets[] {
 		return programmes.map((p) => {
 			// start from the stated required core, THEN close over prerequisites
 			//, but a prereq whose interchangeable partner is already required
@@ -758,7 +766,7 @@ export class Plan {
 		return this.#typeIn(code, this.programmeSets);
 	}
 
-	#typeIn(code: string, sets: ReturnType<Plan['programmeSetsOf']>): CourseType {
+	#typeIn(code: string, sets: ProgrammeSets[]): CourseType {
 		if (isCore(code)) return 'core'; // the foundation curriculum, everyone's requirement
 		if (isTranscriptOnly(code)) return 'other'; // on the transcript, toward no programme
 		const c = byCode(code);
@@ -806,20 +814,6 @@ export class Plan {
 				) + CORE_CREDITS
 			: 0
 	);
-	/** the tried degree's required courses that aren't on the plan */
-	whatIfMissing = $derived.by(() => {
-		const out = new Set<string>();
-		for (const s of this.whatIfSets)
-			for (const code of s.required)
-				if (
-					hasCode(code) &&
-					!this.placedCodes.has(byCode(code).code) &&
-					!satisfiedBy(code).some((x) => this.placedCodes.has(x))
-				)
-					out.add(byCode(code).code);
-		return [...out];
-	});
-
 	/** start a what-if from the plan as it is */
 	startWhatIf() {
 		this.whatIf = {
@@ -959,9 +953,6 @@ export class Plan {
 		this.breaks = rest;
 		this.#setFlash(`${this.trimName(year, trim)} is a normal trimester again`);
 	}
-
-	// true once more than one programme is on the plan
-	multiProgramme = $derived(this.programmes.length > 1);
 
 	/** which chosen programme (by index) a course counts toward, picks the
 	 *  hue it wears. -1 when it belongs to none of them. A placed course wears
@@ -1152,7 +1143,6 @@ export class Plan {
 		return parts.join(' · ');
 	}
 
-	/** flip one of the label switches, keeping at least one of them on */
 	trimName(year: number, trim: TrimNum): string {
 		return trimName(year, trim, this.trimNaming);
 	}
@@ -1160,6 +1150,7 @@ export class Plan {
 		return trimSpelled(year, trim, this.trimNaming);
 	}
 
+	/** flip one of the label switches, keeping at least one of them on */
 	toggleLabel(which: 'code' | 'title') {
 		if (which === 'code') {
 			this.showCodes = !this.showCodes;
@@ -1179,10 +1170,6 @@ export class Plan {
 		return this.slotCourses(year, trim).reduce((sum, code) => sum + byCode(code).credits, 0);
 	}
 
-	/** A trimester's credit load against the drop form, as its footer shows it.
-	 *  Year 1 (the foundation core) and a year past the degree's length are
-	 *  exempt, as in the hints. 'heavy' is allowed, but only HEAVY_TRIMS_ALLOWED
-	 *  times in the whole tenure. A fine load says nothing about other rules. */
 	/** the trimesters past the degree's first year holding more than
 	 *  TRIM_STANDARD_MAX (but not over the hard cap), each one uses an
 	 *  extra-load allowance, and only HEAVY_TRIMS_ALLOWED are allowed */
@@ -1199,9 +1186,12 @@ export class Plan {
 			.reduce((a, b) => a + b, 0)
 	);
 
-	/** How a trimester's load stands. 'over' is what the corner shows red:
-	 *  past the hard cap, or heavy once more trimesters are heavy than the
-	 *  allowance covers. */
+	/** A trimester's credit load against the drop form, as its footer shows it.
+	 *  Year 1 (the foundation core) and a year past the degree's length are
+	 *  exempt, as in the hints. 'heavy' is allowed, but only HEAVY_TRIMS_ALLOWED
+	 *  times in the whole tenure. 'over' is what the corner shows red: past the
+	 *  hard cap, or heavy once more trimesters are heavy than the allowance
+	 *  covers. A fine load says nothing about other rules. */
 	slotLoad(
 		year: number,
 		trim: TrimNum
@@ -1479,9 +1469,6 @@ export class Plan {
 		keepPicksDistinct(this.structure, this.picks, this.batchStartYear);
 	}
 
-	/** fill the grid with the suggested path for the chosen programmes (see
-	 *  planner/recommended.ts), replacing whatever is on it. called when an
-	 *  untouched plan's degree changes */
 	/** the first-visit welcome: lay out the suggested path for the programmes
 	 *  answered so far, adding only what's new. courses already on the grid
 	 *  stay put, so it fills in rather than reshuffling with every answer; a
@@ -1498,6 +1485,9 @@ export class Plan {
 		this.placements = grid;
 	}
 
+	/** fill the grid with the suggested path for the chosen programmes (see
+	 *  planner/recommended.ts), replacing whatever is on it. called when an
+	 *  untouched plan's degree changes */
 	seedRecommended() {
 		quietRedraw(); // every chip is about to change at once, fade, don't fly
 		this.placements = Object.fromEntries(Object.entries(this.recommended).map(([key, codes]) => [key, [...codes]]));
@@ -1687,19 +1677,6 @@ export class Plan {
 				? `filled in, but no trimester has room for ${unplaced.map((c) => this.courseLabel(c)).join(', ')} under the recommended load`
 				: 'filled in: every required course is on your plan'
 		);
-	}
-
-	/** empty the whole grid, the bottom of the "add / remove everything"
-	 *  pair. Grades and audits go too: they were about courses now gone. */
-	clearPlan() {
-		quietRedraw();
-		this.#touch();
-		this.placements = {};
-		this.zoomPos = {};
-		this.audited = [];
-		this.grades = {};
-		this.selected = null;
-		this.#setFlash('grid cleared, the dashed courses are the recommended path, click any to add it');
 	}
 
 	// ── clearing out the strays ──

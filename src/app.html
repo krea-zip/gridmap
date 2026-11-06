@@ -24,7 +24,7 @@
 		</script>
 		<!-- theme + text size applied before first paint, so a dark-mode
 		     reload never flashes the light palette. Mirrors the storage
-		     shape in $lib/settings.svelte.ts, change both together. -->
+		     shape in $lib/ui/settings.svelte.ts, change both together. -->
 		<script>
 			try {
 				var s = JSON.parse(localStorage.getItem('kcal-settings') || '{}');
@@ -43,7 +43,7 @@
 		<!-- Netlify reads forms out of the deployed HTML at build time, and the
 		     real feedback form lives inside a modal that isn't rendered until
 		     the student opens settings. This hidden twin is what gets detected;
-		     Settings.svelte posts to it by name. Keep the fields in step. -->
+		     FeedbackForm.svelte posts to it by name. Keep the fields in step. -->
 		<form name="feedback" data-netlify="true" netlify-honeypot="bot-field" hidden>
 			<input type="hidden" name="form-name" value="feedback" />
 			<input type="text" name="bot-field" />
