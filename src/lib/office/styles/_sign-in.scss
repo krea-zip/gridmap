@@ -1,0 +1,37 @@
+@use '$lib/styles/mixins' as *;
+
+// ── signing in ──
+
+.office-login {
+	display: grid;
+	gap: 0.6rem;
+	max-width: 44rem;
+	padding: 6rem 2rem;
+	margin: 0 auto;
+
+	.office-card {
+		margin-top: 1.4rem;
+	}
+}
+
+.office-login-brand {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	margin-bottom: 2rem;
+	font-size: 2.4rem;
+	font-weight: 600;
+	color: var(--color-text) !important;
+	text-decoration: none;
+
+	span {
+		font-size: 1.4rem;
+		font-weight: 500;
+		color: var(--color-text-muted);
+	}
+}
+
+.office-login-back {
+	margin-top: 1rem;
+	font-size: 1.25rem;
+}

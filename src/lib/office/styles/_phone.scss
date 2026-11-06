@@ -1,0 +1,74 @@
+@use '$lib/styles/mixins' as *;
+
+// the office is for a laptop; a phone gets the same pages, one column
+@include mobile {
+	.office-head {
+		flex-wrap: wrap;
+		height: auto;
+		padding: 0.8rem 1.6rem;
+	}
+
+	.office-search {
+		order: 3;
+		flex-basis: 100%;
+	}
+
+	.office-bar {
+		padding: 0.5rem 1.6rem;
+		overflow-x: auto;
+		scrollbar-width: none;
+
+		> * {
+			flex: none;
+		}
+	}
+
+	.office-bar-note {
+		display: none;
+	}
+
+	.office-main {
+		padding: 1.6rem 1.6rem 4rem;
+	}
+
+	.office-stats {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.office-home-bottom,
+	.office-split,
+	.office-form {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.office-split > section:first-child {
+		position: static;
+	}
+
+	.office-desk > div {
+		padding: 0.8rem 0;
+
+		& + div {
+			border-top: var(--office-rule);
+			border-left: 0;
+		}
+	}
+}
+
+@media print {
+	.office-head,
+	.office-bar,
+	.office-banner,
+	.office-actions {
+		display: none !important;
+	}
+
+	.office-body {
+		overflow: visible;
+	}
+
+	.office-main {
+		max-width: none;
+		padding: 0;
+	}
+}

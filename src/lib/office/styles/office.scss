@@ -1,0 +1,11 @@
+// the academic office: the planner's own look, in krea blue. the planner's
+// palette is all tokens, so re-pointing them below turns every shared control
+// blue (keys, ticks, gloss, buttons). what follows is only what's particular
+// to the office. `:where()` keeps the base rules light, so a component's own
+// style, or a shared control's, always wins over them.
+@use './tokens';
+@use './top';
+@use './page';
+@use './overview';
+@use './sign-in';
+@use './phone';

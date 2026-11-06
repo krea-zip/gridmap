@@ -22,14 +22,14 @@ Plan your whole degree at Krea University, one trimester at a time. Pick your ba
 - [ ] Rename kcal to gridmap in the app and docs, keeping the `kcal-` storage keys so saved plans survive
 - [ ] Load rarely used parts on demand: welcome, settings, grades, what-if, credit rules
 - [ ] Fetch course descriptions when a course is first opened, not for everyone
-- [ ] Split `plan.svelte.ts` (2,064 lines) into history, saving, credit claims and what-if
-- [ ] Break up `DetailsPanel.svelte` (1,330 lines)
+- [ ] Keep shrinking `plan.svelte.ts` (1,581 lines): what-if and breaks are next
+- [ ] Break up `DetailsPanel.svelte` (1,246 lines) into its three sections
 - [ ] Prune `office_history`: every save keeps a full copy of the draft
 - [ ] Tell open tabs when a new catalogue is published (`version.pollInterval`, `updated`)
 - [ ] Back button closes course details on a phone (shallow routing)
 - [ ] Add security headers
 - [ ] Migrate to SvelteKit 3 (Vite 8, TypeScript 6, `$lib` becomes `#lib`)
-- [ ] Remove unused code and the retired tables (`course_reviews`, `office_staff`, `office_submissions`)
+- [ ] Drop the retired tables (`course_reviews`, `office_staff`, `office_submissions`)
 - [ ] Finish the work-in-progress views: will it run?, prerequisites, what-if
 - [ ] Turn Google sign-in back on
 - [ ] Test phone sizes: 320, 360, 375, 390, 412 and 430px

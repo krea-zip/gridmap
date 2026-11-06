@@ -2,6 +2,8 @@
 	import PixelIcon from '$lib/ui/PixelIcon.svelte';
 	import { usePlan } from '$lib/planner/context';
 	import CourseFaculty from './CourseFaculty.svelte';
+	import { prereqStatus, spelled } from './prereqStatus';
+	import { runGrid } from './runGrid';
 	import {
 		DATA_UPDATED,
 		baseCode,
@@ -12,18 +14,13 @@
 		hasCode,
 		isAttemptId,
 		isCore,
-		RECORDED_TERMS,
-		ranIn,
-		satisfiedBy,
-		termsOffered,
-		TRIM_NORMAL_MAX
+		termsOffered
 	} from '$lib/curriculum/data';
 	import { runText } from '$lib/planner/board/views';
 	import { reducedMotion } from '$lib/ui/transitions';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import type { TrimNum } from '$lib/types';
-	import { academicYear, slotOrder, termMonthsShort } from '$lib/planner/calendar';
+	import { termMonthsShort } from '$lib/planner/calendar';
 	import { descriptionOf, loadDescriptions } from '$lib/curriculum/descriptions.svelte';
 	import { viewport } from '$lib/planner/viewport.svelte';
 	import { GRADE_SCALE, OTHER_MARKS, type GradeMark } from '$lib/planner/grades/grades';
@@ -114,27 +111,6 @@
 	// ── when it ran: the offered tile opens the course's history, term by
 	//    term, against the timetables on record (it stays open between courses) ──
 	let ranOpen = $state(false);
-	// the academic years the timetables cover: 24 is 24 to 25 (24_T1 … 24_T3)
-	const RUN_YEARS = [
-		...new Set(([1, 2, 3] as TrimNum[]).flatMap((t) => RECORDED_TERMS[t].map((term) => term.split('_')[0])))
-	].sort();
-	/** laid out as the grid is: one row per academic year, one cell per
-	 *  trimester (t1 t2 t3 across); each ran, didn't run, or has no timetable */
-	function runGrid(code: string) {
-		const history = new Set(ranIn(code));
-		return RUN_YEARS.map((yy) => ({
-			yy,
-			cells: ([1, 2, 3] as TrimNum[]).map((trim) => {
-				const term = `${yy}_T${trim}`;
-				const state = !RECORDED_TERMS[trim].includes(term) ? 'none' : history.has(term) ? 'ran' : 'not';
-				return {
-					trim,
-					state,
-					label: `${yy} to ${Number(yy) + 1}, T${trim}: ${state === 'ran' ? 'ran' : state === 'not' ? "didn't run" : 'no timetable on record'}`
-				};
-			})
-		}));
-	}
 	// the academic year the course sits in on your plan, "26" for 26 to 27
 	let placedYY = $derived(placedAt ? String(plan.batchStartYear + placedAt.year - 1).slice(-2) : null);
 
@@ -142,67 +118,7 @@
 		return `Year ${year} · Trimester ${trim}`;
 	}
 
-	// ── a prerequisite against the plan: placed earlier (fine), placed too
-	//    late, or nowhere yet, an interchangeable course counts as placed ──
-	// Said in the grid's own trimester numbers (t8 is year 3, T2), short:
-	// "✓ t5" when taken (the tick alone says done), "t8" or "t8 · now" when
-	// planned, "t11 · too late", "not planned"; the full
-	// sentence waits in the tooltip. A missing one also says where it would
-	// fit, as a button that puts it there.
-	type PrereqStatus = {
-		kind: 'done' | 'ok' | 'late' | 'missing';
-		text: string;
-		title: string;
-		fits?: { year: number; trim: TrimNum };
-	};
-	let hereAt = $derived(slotOrder(plan.here.year, plan.here.trim));
-	const spelled = (year: number, trim: TrimNum) =>
-		`${plan.trimSpelled(year, trim)}, ${academicYear(plan.batchStartYear, year)}`;
-	// the first trimester after now, and before this course when it's placed,
-	// that the prerequisite runs in and has room in under the recommended load
-	function fitsFor(pre: string): { year: number; trim: TrimNum } | null {
-		const code = byCode(pre).code;
-		const before = placedAt ? slotOrder(placedAt.year, placedAt.trim) : Infinity;
-		for (const year of plan.years)
-			for (const trim of plan.trims) {
-				const o = slotOrder(year, trim);
-				if (o <= hereAt || o >= before || !plan.canDrop(code, year, trim)) continue;
-				if (!plan.coreOnly(year, trim) && plan.slotCredits(year, trim) + byCode(code).credits > TRIM_NORMAL_MAX)
-					continue;
-				return { year, trim };
-			}
-		return null;
-	}
-	function prereqStatus(pre: string): PrereqStatus {
-		const options = [byCode(pre).code, ...satisfiedBy(pre)];
-		const at = plan.placed
-			.filter((p) => options.includes(p.code))
-			.sort((a, b) => a.year - b.year || a.trim - b.trim)[0];
-		if (!at) {
-			const fits = fitsFor(pre) ?? undefined;
-			return {
-				kind: 'missing',
-				text: 'not planned',
-				title: fits
-					? `not on your plan; it fits in ${spelled(fits.year, fits.trim)}`
-					: `not on your plan, and no trimester ${placedAt ? 'before this course' : 'ahead'} has room for it`,
-				fits
-			};
-		}
-		const o = slotOrder(at.year, at.trim);
-		const n = plan.trimName(at.year, at.trim);
-		const via = at.code === byCode(pre).code ? '' : `, as ${plan.courseLabel(at.code)}`;
-		if (placedAt && o >= slotOrder(placedAt.year, placedAt.trim))
-			return {
-				kind: 'late',
-				text: `${n} · too late`,
-				title: `planned for ${spelled(at.year, at.trim)}${via}, not before this course: move it earlier`
-			};
-		if (o < hereAt) return { kind: 'done', text: `✓ ${n}`, title: `taken in ${spelled(at.year, at.trim)}${via}` };
-		if (o === hereAt)
-			return { kind: 'ok', text: `${n} · now`, title: `being taken now, ${spelled(at.year, at.trim)}${via}` };
-		return { kind: 'ok', text: n, title: `planned for ${spelled(at.year, at.trim)}${via}` };
-	}
+	const statusOf = (pre: string) => prereqStatus(plan, pre, placedAt);
 
 	// shut on Esc, unless a dialog is open, which Esc closes first
 	function onkey(e: KeyboardEvent) {
@@ -508,7 +424,7 @@
 					<div class="d-chips d-related">
 						{#each c.prereqs as p (p)}
 							{#if hasCode(p)}
-								{@const status = prereqStatus(p)}
+								{@const status = statusOf(p)}
 								<span class="d-prereq">
 									<button
 										class="d-chip"
@@ -526,7 +442,7 @@
 										{@const fits = status.fits}
 										<button
 											class="d-add"
-											title="add {plan.courseLabel(p)} to {spelled(fits.year, fits.trim)}"
+											title="add {plan.courseLabel(p)} to {spelled(plan, fits.year, fits.trim)}"
 											onclick={() => plan.place(byCode(p).code, fits.year, fits.trim)}
 											>+ {plan.trimName(fits.year, fits.trim)}</button
 										>

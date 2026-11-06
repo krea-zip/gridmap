@@ -3,7 +3,7 @@
 	// fresh copy from the server, after a reload or a sign-in, replaces
 	// what's on screen.
 	import '../../app.scss';
-	import './admin.scss';
+	import '$lib/office/styles/office.scss';
 	import type { LayoutProps } from './$types';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';

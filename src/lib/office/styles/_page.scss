@@ -1,0 +1,349 @@
+@use '$lib/styles/mixins' as *;
+
+// ── the page ──
+
+.office-body {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+}
+
+.office-main {
+	max-width: 132rem;
+	padding: 2.4rem 3.2rem 6rem;
+	margin: 0 auto;
+	outline: none;
+
+	&.wide {
+		max-width: none;
+	}
+}
+
+.office-skip {
+	position: fixed;
+	top: -6rem;
+	left: 1rem;
+	z-index: 100;
+	padding: 1rem 2rem;
+	color: #123e73;
+	background: #fff;
+
+	&:focus {
+		top: 1rem;
+	}
+}
+
+.office-page-heading {
+	display: flex;
+	gap: 2rem;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 1.2rem;
+}
+
+.office-eyebrow {
+	@include section-label;
+	margin-bottom: 0.4rem;
+	font-size: 1.1rem;
+}
+
+.office-lead {
+	color: var(--color-text-muted);
+}
+
+.office-help {
+	font-size: 1.25rem;
+	font-weight: 400;
+	color: var(--color-text-muted);
+}
+
+.office-card {
+	padding: 1.8rem 2rem;
+	margin: 1.4rem 0;
+	background: linear-gradient(to bottom, var(--color-bg-card-start), var(--color-bg-card-end));
+	border: 1px solid var(--color-border-card);
+	border-radius: 6px;
+	@include card-shine;
+}
+
+.office-section-heading {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+
+	h2 {
+		margin: 0;
+	}
+}
+
+.office-badge {
+	display: inline-block;
+	padding: 0 0.8rem;
+	font-size: 1.15rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--color-text-muted);
+	white-space: nowrap;
+	background: color-mix(in srgb, var(--color-bg-light) 60%, transparent);
+	border: 1px solid var(--color-border-card);
+	border-radius: 999px;
+}
+
+.office-scope {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.2rem 1.2rem;
+	align-items: baseline;
+	padding: 0.8rem 1.2rem;
+	margin: 1.2rem 0;
+	font-size: 1.3rem;
+	background: var(--color-subtle);
+	border-left: 3px solid var(--color-accent);
+	border-radius: 0 6px 6px 0;
+
+	b {
+		font-weight: 600;
+	}
+
+	span {
+		color: var(--color-text-muted);
+	}
+}
+
+.office-note {
+	padding: 0.8rem 1.2rem;
+	margin: 1rem 0;
+	font-size: 1.3rem;
+	background: var(--color-subtle);
+	border-left: 3px solid var(--color-accent);
+	border-radius: 0 6px 6px 0;
+
+	&.error {
+		background: var(--color-hint-warn);
+		border-left-color: var(--color-danger);
+	}
+}
+
+.office-banner,
+.office-alert,
+.office-confirm {
+	padding: 1rem 2.4rem;
+	background: var(--color-subtle);
+	border-bottom: 1px solid var(--color-border-card);
+}
+
+.office-alert {
+	background: var(--color-hint-warn);
+	border-left: 4px solid var(--color-danger);
+}
+
+.office-confirm {
+	margin: 1rem;
+	border: 2px solid var(--color-accent);
+}
+
+.office-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	align-items: flex-end;
+	margin: 1rem 0;
+
+	> label {
+		flex: 1;
+		min-width: 12rem;
+	}
+}
+
+.office-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.8rem;
+	align-items: center;
+}
+
+.office-form {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1.2rem 1.6rem;
+
+	&.thirds {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.wide {
+		grid-column: 1 / -1;
+	}
+
+	+ .office-actions {
+		margin-top: 1.4rem;
+	}
+}
+
+.office-check {
+	flex-direction: row !important;
+	gap: 0.6rem;
+	align-items: center;
+	font-weight: 400 !important;
+}
+
+.office-table-scroll {
+	max-width: 100%;
+	margin: 1.2rem 0;
+	overflow: auto;
+	background: var(--color-bg-card-start);
+	border: 1px solid var(--color-border-card);
+	border-radius: 6px;
+}
+
+.office-split {
+	display: grid;
+	grid-template-columns: 30rem minmax(0, 1fr);
+	gap: 1.6rem;
+	align-items: start;
+	margin-top: 1.4rem;
+
+	> section:first-child {
+		position: sticky;
+		top: 0;
+		padding: 1.4rem;
+		background: var(--color-bg-card-start);
+		border: 1px solid var(--color-border-card);
+		border-radius: 6px;
+	}
+}
+
+.office-list {
+	display: grid;
+	gap: 0.1rem;
+	max-height: calc(100dvh - 30rem);
+	margin-top: 0.8rem;
+	overflow: auto;
+
+	button {
+		display: block;
+		width: 100%;
+		padding: 0.6rem 0.8rem;
+		text-align: left;
+		text-shadow: none;
+		background: none;
+		border: 0;
+		border-bottom: var(--office-rule);
+		border-radius: 0;
+		box-shadow: none;
+
+		&[aria-pressed='true'] {
+			background: var(--color-subtle);
+		}
+	}
+
+	small {
+		display: block;
+	}
+}
+
+.office-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 0.5rem 0;
+}
+
+.office-tag {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.1rem 0.6rem;
+	font-size: 1.25rem;
+	background: var(--color-subtle);
+	border: 1px solid var(--color-border-card);
+	border-radius: 4px;
+
+	button {
+		min-height: 2.4rem;
+		padding: 0 0.3rem;
+		font-size: 1.5rem;
+		text-shadow: none;
+		background: none;
+		border: 0;
+		box-shadow: none;
+	}
+}
+
+.office-picker {
+	position: relative;
+}
+
+.office-results {
+	max-height: 28rem;
+	overflow: auto;
+	border: 1px solid var(--color-border-card);
+	border-radius: 6px;
+
+	button {
+		display: block;
+		width: 100%;
+		text-align: left;
+		background: none;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+}
+
+.office-empty {
+	display: grid;
+	place-content: center;
+	min-height: 20rem;
+	padding: 3rem;
+	color: var(--color-text-muted);
+	text-align: center;
+	border: 1px dashed var(--color-border-card);
+	border-radius: 6px;
+}
+
+.office-pre {
+	max-height: 25rem;
+	overflow: auto;
+	font-size: 1.2rem;
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
+}
+
+// a search result lands on its setting and lights it up for a moment
+.office-shell [id] {
+	scroll-margin-top: 2rem;
+}
+
+.office-shell :target {
+	border-radius: 6px;
+	animation: office-found 2.4s ease-out;
+}
+
+@keyframes office-found {
+	0%,
+	45% {
+		background: color-mix(in srgb, #4fb3e6 28%, transparent);
+		box-shadow: 0 0 0 0.6rem color-mix(in srgb, #4fb3e6 28%, transparent);
+	}
+
+	100% {
+		background: transparent;
+		box-shadow: 0 0 0 0.6rem transparent;
+	}
+}
+
+// the steps a draft goes through, on review & publish
+.office-steps {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 2rem;
+	padding-left: 2rem;
+	margin: 0;
+
+	span {
+		display: block;
+		font-size: 1.25rem;
+		color: var(--color-text-muted);
+	}
+}

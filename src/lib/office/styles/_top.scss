@@ -1,0 +1,250 @@
+@use '$lib/styles/mixins' as *;
+
+// ── the top: a header, then the bar of keys ──
+
+.office-head {
+	@include card-header;
+	position: relative;
+	z-index: 4; // its search results open over the bar below
+	gap: 1rem;
+	height: var(--office-head);
+	padding: 0 2.4rem;
+}
+
+.office-brand {
+	display: flex;
+	flex: none;
+	align-items: baseline;
+	gap: 0.6rem;
+	font-size: 2rem;
+	font-weight: 600;
+	color: var(--color-text) !important;
+	text-decoration: none;
+
+	span {
+		font-size: 1.3rem;
+		font-weight: 500;
+		color: var(--color-text-muted);
+	}
+}
+
+.office-bar {
+	position: relative;
+	z-index: 3;
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+	gap: 1.2rem;
+	min-height: var(--office-bar);
+	padding: 0.5rem 2.4rem;
+	background: linear-gradient(to bottom, var(--bar-top), var(--bar-bottom));
+	border-bottom: 1px solid var(--bar-edge);
+	box-shadow: inset 0 1px 0 var(--bar-hi);
+
+	--color-text: var(--bar-text);
+	--color-text-muted: var(--bar-text-muted);
+}
+
+.office-bar-rule {
+	align-self: stretch;
+	margin: 0.4rem 0;
+	border-left: 1px dotted color-mix(in srgb, var(--bar-text-muted) 55%, transparent);
+}
+
+.office-bar-note {
+	margin: 0 0 0 auto;
+	overflow: hidden;
+	font-size: 1.25rem;
+	color: var(--bar-text-muted);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.office-search {
+	position: relative;
+	display: flex;
+	flex: 1;
+	align-items: center;
+	max-width: 62rem;
+	margin-inline: auto;
+
+	> svg {
+		position: absolute;
+		left: 1.2rem;
+		z-index: 1;
+		color: var(--color-text-muted);
+		pointer-events: none;
+	}
+
+	input:not([type='checkbox'], [type='radio']) {
+		padding: 0 6.4rem 0 3.6rem;
+		border-radius: 999px;
+	}
+
+	kbd {
+		position: absolute;
+		right: 1.2rem;
+		font: inherit;
+		font-size: 1.1rem;
+		color: var(--color-text-muted);
+		pointer-events: none;
+	}
+}
+
+.office-search-results {
+	position: absolute;
+	top: calc(100% + 0.6rem);
+	right: 0;
+	left: 0;
+	z-index: 20;
+	max-height: min(62rem, 72vh);
+	padding: 0.5rem;
+	overflow: auto;
+	background: var(--color-bg-card-start);
+	border: 1px solid var(--color-border-card);
+	border-radius: 6px;
+	box-shadow: 0 6px 18px rgba(20, 40, 70, 0.18);
+
+	p {
+		@include section-label;
+		margin: 0.8rem 0.7rem 0.2rem;
+		font-size: 1.05rem;
+	}
+
+	a {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+		padding: 0.6rem 0.7rem;
+		color: var(--color-text);
+		text-decoration: none;
+		border-radius: 4px;
+
+		> span {
+			min-width: 0;
+		}
+
+		&:hover,
+		&.active {
+			background: var(--color-subtle);
+		}
+	}
+
+	svg {
+		flex-shrink: 0;
+		color: var(--color-accent);
+	}
+
+	b,
+	small {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	b {
+		font-size: 1.3rem;
+		font-weight: 600;
+	}
+}
+
+.office-save-state {
+	display: flex;
+	flex: none;
+	gap: 0.6rem;
+	align-items: center;
+	font-size: 1.25rem;
+	color: var(--color-text-muted);
+	white-space: nowrap;
+}
+
+.office-status-dot,
+.office-issue-dot {
+	flex-shrink: 0;
+	width: 0.7rem;
+	height: 0.7rem;
+	background: var(--office-sky);
+	border-radius: 50%;
+
+	&.unsaved {
+		background: #b98a35;
+	}
+
+	&.error {
+		background: var(--color-danger);
+	}
+}
+
+.office-issue-dot {
+	margin-top: 0.6rem;
+	background: #bf9a52;
+}
+
+.office-account-menu {
+	position: relative;
+	flex: none;
+	margin: 0;
+
+	summary {
+		display: block;
+		list-style: none;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+	}
+
+	> div {
+		position: absolute;
+		top: calc(100% + 0.8rem);
+		right: 0;
+		z-index: 21;
+		display: grid;
+		gap: 0.2rem;
+		width: 24rem;
+		padding: 0.5rem;
+		background: var(--color-bg-card-start);
+		border: 1px solid var(--color-border-card);
+		border-radius: 6px;
+		box-shadow: 0 6px 18px rgba(20, 40, 70, 0.18);
+
+		p {
+			margin: 0.4rem 0.8rem;
+			font-size: 1.2rem;
+			color: var(--color-text-muted);
+		}
+
+		button,
+		a {
+			justify-content: flex-start;
+			width: 100%;
+			padding: 0.5rem 0.8rem;
+			font-size: 1.3rem;
+			color: var(--color-text);
+			text-decoration: none;
+			text-shadow: none;
+			background: none;
+			border: 0;
+			border-radius: 4px;
+			box-shadow: none;
+
+			&:hover {
+				background: var(--color-subtle);
+			}
+		}
+	}
+}
+
+.office-avatar {
+	display: grid;
+	place-items: center;
+	width: 3.2rem;
+	height: 3.2rem;
+	font-weight: 600;
+	color: var(--color-on-accent);
+	background-color: var(--color-accent);
+	border: 1px solid var(--color-control-deep);
+	border-radius: 50%;
+	@include glossy-accent;
+}
