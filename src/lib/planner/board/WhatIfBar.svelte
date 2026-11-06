@@ -8,7 +8,7 @@
 	// a later batch): what they've taken that still counts, what they've
 	// planned that wouldn't, what the new degree still needs and where it
 	// could go, and whether it all still fits in time.
-	import { programmesFor } from '$lib/planner/plan.svelte';
+	import { programmesFor } from '$lib/planner/structure';
 	import {
 		keepPicksDistinct,
 		optionLabel,

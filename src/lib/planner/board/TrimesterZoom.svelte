@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { usePlan } from '$lib/planner/context';
-	import { BREAK_KINDS, type BreakKind } from '$lib/planner/plan.svelte';
+	import { BREAK_KINDS, type BreakKind } from '$lib/planner/structure';
 	import { TRIM_HARD_MAX, TRIM_MIN, byCode, isAttemptId } from '$lib/curriculum/data';
 	import { flip } from 'svelte/animate';
 	import { courseIn, courseOut, courseShift } from '$lib/ui/transitions';

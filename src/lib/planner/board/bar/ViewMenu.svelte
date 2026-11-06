@@ -10,7 +10,7 @@
 	import { fade, scale } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
 	import { reducedMotion } from '$lib/ui/transitions';
-	import { BOARD_VIEWS, type BoardView } from '$lib/planner/plan.svelte';
+	import { BOARD_VIEWS, type BoardView } from '$lib/planner/structure';
 	import { COURSES, byCode, hasCode, isCore, satisfiedBy } from '$lib/curriculum/data';
 	import { isGradeLetter } from '$lib/planner/grades/grades';
 	import { runRecord } from '$lib/planner/board/views';

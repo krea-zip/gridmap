@@ -13,7 +13,6 @@ import { guessNow, slotAt, slotOrder, trimName, trimSpelled, type Here, type Tri
 import {
 	CORE_COURSES,
 	CORE_CREDITS,
-	CREDIT_SHARE_DEFAULT,
 	SUBJECTS,
 	HEAVY_TRIMS_ALLOWED,
 	creditCeilingFor,
@@ -21,7 +20,6 @@ import {
 	MIN_TOTAL_4YR,
 	TRIM_HARD_MAX,
 	TRIM_MIN,
-	TRIM_NORMAL_MAX,
 	TRIM_STANDARD_MAX,
 	Y1_CORE_MAX,
 	attemptId,
@@ -29,34 +27,34 @@ import {
 	baseCode,
 	byCode,
 	capstoneFor,
-	isCapstone,
 	isCore,
-	isTranscriptOnly,
-	choiceGroupsFor,
 	creditsFor,
-	creditsOfCodes,
-	electiveSetFor,
 	hasCode,
 	isAttemptId,
 	pickSetFor,
-	reachableIn,
-	requiredCreditsFor,
 	requiredSetFor,
-	batchRuleFor,
 	satisfiedBy,
 	subjectById,
 	STUDENT_BATCHES,
 	offeredTo
 } from '$lib/curriculum/data';
-import {
-	GRADE_POINTS,
-	isGradeLetter,
-	isGradeMark,
-	recovery,
-	weightedGpa,
-	type GradeMark
-} from '$lib/planner/grades/grades';
+import { GRADE_POINTS, isGradeLetter, weightedGpa, type GradeMark } from '$lib/planner/grades/grades';
 import { planHints } from './rules';
+import { choicePools } from './choices';
+import { claimCredits, programmeStats } from './credits';
+import { planFill } from './fill';
+import { PlanHistory } from './history.svelte';
+import { ofSubject, setsFor, typeIn } from './programmeSets';
+import { cleanBreaks, cleanGrades, cleanNow, cleanPlacements, cleanZoomPos } from './saveFormat';
+import {
+	BREAK_KINDS,
+	coreOnly,
+	isBoardView,
+	MAX_YEARS,
+	programmesFor,
+	type BoardView,
+	type BreakInfo
+} from './structure';
 import { distinctHues } from './hues';
 import { keepPicksDistinct, pickOptions, type Picks, type PickRole } from './picks';
 import { recommendedElectives, recommendedPath } from './recommended';
@@ -80,78 +78,6 @@ const SAVE_VERSION = 1;
 // a trimester's foot marks the running pace only past one ordinary course
 // either way
 const PACE_SLACK = 4;
-/** the longest any plan runs: a 4-year degree's n + 2 years (a 3-year
- *  degree stops at 5, see Plan.maxYears) */
-export const MAX_YEARS = 6;
-
-/** What the board shows. 'plan' is the planner itself; every other view lays
- *  its own information over the same grid, one view at a time. Grouped as the
- *  menu shows them: your own plan and record, then ways to explore it. */
-export const BOARD_VIEWS = [
-	{ id: 'plan', group: 'yours', label: 'plan', note: 'arrange your courses' },
-	{ id: 'grades', group: 'yours', label: 'grades', note: 'your grades, TGPA and CGPA' },
-	{ id: 'runs', group: 'explore', label: 'will it run?', note: 'how often it ran in that trimester', wip: true },
-	{ id: 'prereqs', group: 'explore', label: 'prerequisites', note: 'what a course needs and leads to', wip: true },
-	{ id: 'whatif', group: 'explore', label: 'what-if', note: 'try another programme on your plan', wip: true }
-] as const;
-export type BoardView = (typeof BOARD_VIEWS)[number]['id'];
-const isBoardView = (v: unknown): v is BoardView => BOARD_VIEWS.some((b) => b.id === v);
-
-/** A trimester not spent taking courses here. A term away (an exchange)
- *  brings credits back; they count toward the degree's total, not toward a
- *  programme, and carry no grade. */
-export type BreakKind = 'break' | 'suspension' | 'away';
-export type BreakInfo = { kind: BreakKind; credits?: number };
-export const BREAK_KINDS: Record<BreakKind, { label: string; note: string }> = {
-	break: { label: 'break', note: 'a trimester off: leave, health, work, anything' },
-	suspension: { label: 'suspension', note: 'suspended for the trimester' },
-	away: { label: 'away', note: 'an exchange or study-abroad term; its credits come back with you' }
-};
-const isBreakKind = (v: unknown): v is BreakKind => v === 'break' || v === 'suspension' || v === 'away';
-
-/** a course of the department, which a major counts as a general elective
- *  even when its lists don't name it. not a capstone: that counts only where
- *  the programme's document takes one (Plan.#setsFor) */
-const ofSubject = (c: Course, subject: string): boolean => c.subjects.includes(subject) && !isCapstone(c.code);
-
-/** one programme's course lists, for the exact variant on the plan */
-type ProgrammeSets = {
-	subject: string;
-	required: Set<string>;
-	requiredAll: Set<string>;
-	pick: Set<string>;
-	elective: Set<string>;
-};
-
-/** the programmes a degree structure and its picks add up to */
-export function programmesFor(structure: StructureKind, picks: Picks): Programme[] {
-	switch (structure) {
-		case 'single-major':
-			return [{ role: 'major', subject: picks.major1 }];
-		case 'double-major':
-			return [
-				{ role: 'major', subject: picks.major1 },
-				{ role: 'major', subject: picks.major2 }
-			];
-		case 'major-minor':
-			return [
-				{ role: 'major', subject: picks.major1 },
-				{ role: 'minor', subject: picks.minor }
-			];
-		case 'major-conc':
-			return [
-				{ role: 'major', subject: picks.major1 },
-				{ role: 'concentration', subject: picks.conc }
-			];
-		case 'major-minor-conc':
-			return [
-				{ role: 'major', subject: picks.major1 },
-				{ role: 'minor', subject: picks.minor },
-				{ role: 'concentration', subject: picks.conc }
-			];
-	}
-}
-
 export class Plan {
 	storageError = $state('');
 	// ── raw state ──
@@ -281,7 +207,7 @@ export class Plan {
 
 		$effect(() => {
 			// Practice plans keep local undo history while skipping autosave.
-			this.#recordHistory();
+			this.#history.record(this.#planningState());
 			if (this.rehearsing) return;
 			const json = JSON.stringify(this.snapshot());
 			try {
@@ -298,14 +224,13 @@ export class Plan {
 	// grades, audits, crossed-off hints, so undo puts back exactly what was
 	// there, however many courses one action moved. How the board is viewed
 	// (codes, titles, filters, grade view) is not history.
-	static readonly HISTORY_LIMIT = 100;
-	#past: string[] = [];
-	#future: string[] = [];
-	#present = '';
-	#travelling = false;
-	#recording = false;
-	canUndo = $state(false);
-	canRedo = $state(false);
+	#history = new PlanHistory();
+	get canUndo() {
+		return this.#history.canUndo;
+	}
+	get canRedo() {
+		return this.#history.canRedo;
+	}
 
 	#planningState(): string {
 		const {
@@ -338,57 +263,24 @@ export class Plan {
 		});
 	}
 
-	/** after every change (the autosave effect): a new state pushes the last one */
-	#recordHistory() {
-		const state = this.#planningState();
-		// the change an undo/redo itself made is never a new step
-		const travelled = this.#travelling;
-		this.#travelling = false;
-		if (state === this.#present) return;
-		if (this.#recording && !travelled && this.#present) {
-			this.#past.push(this.#present);
-			if (this.#past.length > Plan.HISTORY_LIMIT) this.#past.shift();
-			this.#future = [];
-		}
-		this.#present = state;
-		this.#syncHistoryFlags();
-	}
-
-	/** Start recording once the page is up, the restore and first-render
-	 *  normalisation of a saved plan aren't steps anyone could undo. */
+	/** Start recording once the page is up (see PlanHistory.start) */
 	startHistory() {
-		this.#present = this.#planningState();
-		this.#past = [];
-		this.#future = [];
-		this.#recording = true;
-		this.#syncHistoryFlags();
-	}
-
-	#syncHistoryFlags() {
-		this.canUndo = this.#past.length > 0;
-		this.canRedo = this.#future.length > 0;
+		this.#history.start(this.#planningState());
 	}
 
 	undo() {
-		const previous = this.#past.pop();
-		if (previous === undefined) return;
-		this.#future.push(this.#present);
-		this.#travel(previous, 'undone');
+		const state = this.#history.undo();
+		if (state !== undefined) this.#travel(state, 'undone');
 	}
 
 	redo() {
-		const next = this.#future.pop();
-		if (next === undefined) return;
-		this.#past.push(this.#present);
-		this.#travel(next, 'redone');
+		const state = this.#history.redo();
+		if (state !== undefined) this.#travel(state, 'redone');
 	}
 
 	#travel(state: string, done: string) {
 		quietRedraw(); // a whole state at once, fade, don't fly
-		this.#travelling = true;
-		this.#present = state;
 		this.applySave({ ...this.snapshot(), ...JSON.parse(state) });
-		this.#syncHistoryFlags();
 		this.#setFlash(done);
 	}
 
@@ -483,51 +375,18 @@ export class Plan {
 			if (ok(pick)) this.picks[k] = pick as string;
 		}
 		if (Array.isArray(parsed.filters)) this.filters = parsed.filters.filter(isSubject);
-		// breaks: a known kind on a real trimester, an away term's credits a
-		// sensible number
-		const rawBreaks = parsed.breaks;
-		if (rawBreaks && typeof rawBreaks === 'object' && !Array.isArray(rawBreaks)) {
-			const out: Record<SlotKey, BreakInfo> = {};
-			for (const [key, b] of Object.entries(rawBreaks)) {
-				const { year, trim } = parseSlot(key);
-				if (!(year >= 1 && year <= MAX_YEARS) || ![1, 2, 3].includes(trim)) continue;
-				if (!b || typeof b !== 'object' || !isBreakKind((b as BreakInfo).kind)) continue;
-				const credits = (b as BreakInfo).credits;
-				out[key] = {
-					kind: (b as BreakInfo).kind,
-					...((b as BreakInfo).kind === 'away' && typeof credits === 'number' && credits >= 0 && credits <= 40
-						? { credits: Math.round(credits) }
-						: {})
-				};
-			}
-			this.breaks = out;
-		}
-		const rawNow = parsed.now as { year?: unknown; trim?: unknown } | null | undefined;
-		if (
-			rawNow &&
-			typeof rawNow.year === 'number' &&
-			rawNow.year >= 1 &&
-			rawNow.year <= MAX_YEARS &&
-			(rawNow.trim === 1 || rawNow.trim === 2 || rawNow.trim === 3)
-		)
-			this.now = { year: rawNow.year, trim: rawNow.trim };
-		const placements = this.#cleanPlacements(parsed.placements);
+		const breaks = cleanBreaks(parsed.breaks);
+		if (breaks) this.breaks = breaks;
+		const now = cleanNow(parsed.now);
+		if (now) this.now = now;
+		const placements = cleanPlacements(parsed.placements);
 		if (placements) this.placements = placements;
-		const rawPos = (parsed as { zoomPos?: unknown }).zoomPos;
-		if (rawPos && typeof rawPos === 'object' && !Array.isArray(rawPos)) {
-			const pos: Record<string, number> = {};
-			for (const [code, cell] of Object.entries(rawPos)) {
-				if (hasCode(code) && typeof cell === 'number' && cell >= 0 && cell < 24) pos[code] = cell;
-			}
-			this.zoomPos = pos;
-		}
+		const zoomPos = cleanZoomPos((parsed as { zoomPos?: unknown }).zoomPos);
+		if (zoomPos) this.zoomPos = zoomPos;
 		if (Array.isArray(parsed.audited))
 			this.audited = parsed.audited.filter((c: unknown): c is string => typeof c === 'string' && hasCode(c));
-		if (parsed.grades && typeof parsed.grades === 'object' && !Array.isArray(parsed.grades)) {
-			const g: Record<string, GradeMark> = {};
-			for (const [code, mark] of Object.entries(parsed.grades)) if (hasCode(code) && isGradeMark(mark)) g[code] = mark;
-			this.grades = g;
-		}
+		const grades = cleanGrades(parsed.grades);
+		if (grades) this.grades = grades;
 		if (parsed.creditTargetMode === 'minimum' || parsed.creditTargetMode === 'maximum')
 			this.creditTargetMode = parsed.creditTargetMode;
 		if (typeof parsed.showCodes === 'boolean') this.showCodes = parsed.showCodes;
@@ -554,28 +413,8 @@ export class Plan {
 		this.ensureDistinctPicks();
 	}
 
-	/** validate a raw placements object against the current catalogue,
-	 *  null when it isn't one at all */
-	#cleanPlacements(raw: unknown): Record<SlotKey, string[]> | null {
-		if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-		const placements: Record<SlotKey, string[]> = {};
-		for (const [key, codes] of Object.entries(raw)) {
-			const { year, trim } = parseSlot(key);
-			if (!(year >= 1 && year <= MAX_YEARS) || ![1, 2, 3].includes(trim)) continue;
-			if (!Array.isArray(codes)) continue;
-			let valid = codes.filter((c): c is string => typeof c === 'string' && hasCode(c));
-			// year-1 t1/t2 hold only foundation courses (an over-max slot
-			// is kept as-is, the hints flag it rather than dropping data)
-			if (this.coreOnly(year, trim)) valid = valid.filter(isCore);
-			if (valid.length) placements[key] = valid;
-		}
-		return placements;
-	}
-
-	/** first-year t1/t2 belong to the foundation core: ONLY common-core
-	 *  (KCCS) courses may sit there, at most Y1_CORE_MAX per trimester */
 	coreOnly(year: number, trim: TrimNum): boolean {
-		return year === 1 && trim !== 3;
+		return coreOnly(year, trim);
 	}
 
 	// ── derived: structure ──
@@ -706,87 +545,14 @@ export class Plan {
 	// scraped website structure (requirements.json). Required closes over
 	// prerequisites: a hard prereq of a required course (Analysis 4 for
 	// Topology 1) must be taken too, so it reads as required.
-	programmeSets = $derived(this.#setsFor(this.programmes, this.isDouble));
-
-	/** each programme's required / choice / elective sets, for the exact variant */
-	#setsFor(
-		programmes: Programme[],
-		double: boolean,
-		fourYear = this.fourYear,
-		batch = this.batchStartYear
-	): ProgrammeSets[] {
-		return programmes.map((p) => {
-			// start from the stated required core, THEN close over prerequisites
-			//, but a prereq whose interchangeable partner is already required
-			// (COMP321 needs MATH191, and COMP201 ⇄ MATH191 is already in) is
-			// already satisfied, so it must not be added as a separate course.
-			// `required` = what reads as required (lavender); `requiredAll` also
-			// carries cross-department prereqs for the credit budget.
-			const required = new Set(requiredSetFor(p.subject, p.role, fourYear, double, batch));
-			// a capstone joins the programme's own lists: required where the
-			// document says so, else one of the electives it stands in for
-			const capstone = capstoneFor(p.subject, p.role, fourYear, double, batch);
-			if (capstone?.required) required.add(capstone.code);
-			const requiredAll = new Set(required);
-			// the degree's stated required-credit figure, prereqs only fill
-			// the budget up to it, so a course's biology prereq (BIOS201 for an
-			// env-studies major) doesn't inflate the requirement past the table
-			const cap = requiredCreditsFor(p.subject, p.role, fourYear, double, batch);
-			let sum = [...requiredAll].reduce((s, c) => s + byCode(c).credits, 0);
-			const queue = [...required];
-			while (queue.length) {
-				const code = queue.pop()!;
-				for (const pre of byCode(code).prereqs) {
-					if (!reachableIn(pre, fourYear) || requiredAll.has(pre)) continue;
-					if (batchRuleFor(p.subject, p.role, fourYear, double, batch)?.courses[byCode(pre).code] === 'elective')
-						continue;
-					if (satisfiedBy(pre).some((s) => requiredAll.has(s))) continue;
-					if (cap !== undefined && sum + byCode(pre).credits > cap) continue;
-					requiredAll.add(pre);
-					sum += byCode(pre).credits;
-					queue.push(pre);
-					// it only READS as required (white) if it's a course of this
-					// subject, a cross-department prereq stays a green 'other'
-					// support course (it's on the site's list nowhere)
-					if (byCode(pre).subjects.includes(p.subject)) required.add(pre);
-				}
-			}
-			return {
-				subject: p.subject,
-				required,
-				requiredAll,
-				// 'choose N from' pools, required choices, coloured as required
-				pick: new Set(pickSetFor(p.subject, p.role, fourYear, double, batch)),
-				elective: new Set([
-					...electiveSetFor(p.subject, p.role, fourYear, double, batch),
-					...(capstone && !capstone.required ? [capstone.code] : [])
-				])
-			};
-		});
-	}
+	programmeSets = $derived(setsFor(this.programmes, this.isDouble, this.fourYear, this.batchStartYear));
 
 	// role toward your chosen major/minor. Anything the programmes don't
 	// list, a different department, or an in-department course that isn't a
 	// stated requirement, is 'other', NOT an audit. Audits are a separate
 	// flag the student sets.
 	courseType(code: string): CourseType {
-		return this.#typeIn(code, this.programmeSets);
-	}
-
-	#typeIn(code: string, sets: ProgrammeSets[]): CourseType {
-		if (isCore(code)) return 'core'; // the foundation curriculum, everyone's requirement
-		if (isTranscriptOnly(code)) return 'other'; // on the transcript, toward no programme
-		const c = byCode(code);
-		let role: CourseType = 'other';
-		for (const s of sets) {
-			if (c.codes.some((x) => s.required.has(x) || s.pick.has(x))) return 'required';
-			// in the variant's elective pool, OR simply a course in your
-			// major/minor's own department (a general subject elective),
-			// either way it's not 'other'. 'other' (untinted) is reserved for a
-			// different department.
-			if (c.codes.some((x) => s.elective.has(x)) || ofSubject(c, s.subject)) role = 'elective';
-		}
-		return role;
+		return typeIn(code, this.programmeSets);
 	}
 
 	// ── what-if ──
@@ -796,7 +562,7 @@ export class Plan {
 	whatIfProgrammes = $derived(this.whatIf ? programmesFor(this.whatIf.structure, this.whatIf.picks) : []);
 	whatIfSets = $derived(
 		this.whatIf
-			? this.#setsFor(
+			? setsFor(
 					this.whatIfProgrammes,
 					this.whatIf.structure === 'double-major',
 					this.whatIf.fourYear,
@@ -832,7 +598,7 @@ export class Plan {
 	}
 
 	whatIfType(code: string): CourseType {
-		return this.#typeIn(code, this.whatIfSets);
+		return typeIn(code, this.whatIfSets);
 	}
 
 	#whatIfHues = $derived(
@@ -1610,65 +1376,8 @@ export class Plan {
 		);
 	}
 
-	// ── filling in the plan ──
-	// The suggested path and every required course in one move. They used to
-	// be two buttons that mostly did the same thing, each missing what the
-	// other caught: the path brings prerequisites that aren't required
-	// themselves (PSYC205 under a psychology minor), and the required list
-	// has what the path found no room for (ECON207 beside a data science
-	// minor). Nothing another course already clears goes on twice (MATH230
-	// clears COMP208).
-
-	/** required courses the suggested path won't place, given what's on (or
-	 *  about to be on) the grid */
-	#requiredBeyond(placed: Set<string>): string[] {
-		return this.missingRequiredCodes.filter(
-			(code) => !placed.has(code) && !satisfiedBy(code).some((sub) => placed.has(sub))
-		);
-	}
-
-	/** what fillIn() would make of the grid: each suggestion in its own
-	 *  trimester, then each required course the path left out, and any
-	 *  suggestion whose trimester your own courses have filled, in the
-	 *  earliest trimester it can legally sit in with room under the target
-	 *  load. one that fits nowhere is left off and named, not forced into a
-	 *  broken slot. worked out ahead, so the button's count is exact */
-	#fill = $derived.by(() => {
-		const next: Record<SlotKey, string[]> = Object.fromEntries(
-			Object.entries(this.placements).map(([key, codes]) => [key, [...codes]])
-		);
-		const load = (key: SlotKey) => (next[key] ?? []).reduce((sum, c) => sum + byCode(c).credits, 0);
-		const fits = (code: string, year: number, trim: TrimNum) => {
-			const key = slotKey(year, trim);
-			if (!this.canDrop(code, year, trim)) return false;
-			return this.coreOnly(year, trim)
-				? (next[key] ?? []).length < Y1_CORE_MAX
-				: load(key) + byCode(code).credits <= TRIM_NORMAL_MAX;
-		};
-		const put = (code: string, key: SlotKey) => (next[key] = [...(next[key] ?? []), code]);
-
-		const crowdedOut: string[] = [];
-		for (const [key, codes] of Object.entries(this.suggestions)) {
-			const { year, trim } = parseSlot(key);
-			for (const code of codes)
-				if (fits(code, year, trim)) put(code, key as SlotKey);
-				else crowdedOut.push(code);
-		}
-		// lowest-numbered first, so a prerequisite lands before what needs it
-		const placedOrComing = new Set([...Object.values(next).flat(), ...crowdedOut]);
-		const rest = [...crowdedOut, ...this.#requiredBeyond(placedOrComing)].sort((a, b) =>
-			a.localeCompare(b, undefined, { numeric: true })
-		);
-		const slots = this.years.flatMap((year) => TRIMS.map((trim) => ({ year, trim })));
-		const unplaced: string[] = [];
-		for (const code of rest) {
-			const slot = slots.find(({ year, trim }) => fits(code, year, trim));
-			if (slot) put(code, slotKey(slot.year, slot.trim));
-			else unplaced.push(code);
-		}
-		const added = Object.values(next).flat().length - Object.values(this.placements).flat().length;
-		return { next, added, unplaced };
-	});
+	// ── filling in the plan, see fill.ts ──
+	#fill = $derived.by(() => planFill(this));
 
 	/** how many courses fillIn() adds */
 	fillCount = $derived.by(() => this.#fill.added);
@@ -1804,188 +1513,12 @@ export class Plan {
 		return this.slotCourses(year, trim).some((code) => this.warnCodes.has(code));
 	}
 
-	/** Match a required course using the same directed equivalences as missing-course hints. */
-	#satisfiesStructure(course: Course, codes: Set<string>): boolean {
-		return [...codes].some(
-			(code) => course.codes.includes(code) || satisfiedBy(code).some((sub) => course.codes.includes(sub))
-		);
-	}
+	// ── which programme each placed course counts toward (see credits.ts) ──
+	claims: Map<string, number[]> = $derived.by(() => claimCredits(this));
+	stats: ProgrammeStat[] = $derived.by(() => programmeStats(this));
 
-	// ── which programme each placed course counts toward ──
-	/** Ordinary cross-listed courses follow the configured sharing policy.
-	 * Explicit required-course equivalences satisfy both programme tallies;
-	 * totalPlacedCredits still counts the actual course only once. */
-	claims: Map<string, number[]> = $derived.by(() => {
-		const counts = (c: Course, i: number): boolean => {
-			if (isTranscriptOnly(c.code)) return false;
-			const prog = this.programmes[i];
-			if (prog.subject === 'open') return !isCore(c.code);
-			const s = this.programmeSets[i];
-			// is the course named in this programme's scraped required / choice /
-			// elective lists for the exact variant?
-			const inLists =
-				this.#satisfiesStructure(c, s.requiredAll) ||
-				this.#satisfiesStructure(c, s.pick) ||
-				c.codes.some((x) => s.elective.has(x));
-			// a minor counts ONLY the courses its scraped structure names, not
-			// every course in the department, so cross-listed or extra
-			// department courses don't inflate its credits
-			if (prog.role === 'minor') return inLists;
-			return ofSubject(c, prog.subject) || inLists;
-		};
-		// …unless /admin has set the course (or the whole site) to share its
-		// credits: then it counts toward EVERY declared programme it satisfies.
-		// The open minor still only takes what no declared programme did.
-		//
-		// A course counted once goes where it is needed: first to a programme
-		// that requires it (or has it in a 'choose N' pool), then to the first
-		// that still has credits to fill, and only when every one is full to the
-		// first that takes it, so a cross-listed elective doesn't vanish into
-		// a major that is already complete while the minor still needs it.
-		const claimedBy = new Map<string, number[]>();
-		const room = this.programmes.map((prog) =>
-			creditsFor(prog.subject, prog.role, this.fourYear, this.isDouble, this.batchStartYear)
-		);
-		const requires = (c: Course, i: number) => {
-			const sets = this.programmeSets[i];
-			return this.#satisfiesStructure(c, sets.requiredAll) || this.#satisfiesStructure(c, sets.pick);
-		};
-		const claim = (c: Course, i: number) => {
-			claimedBy.set(c.code, [...(claimedBy.get(c.code) ?? []), i]);
-			room[i] -= c.credits;
-		};
-		const courses = this.placed.map((p) => byCode(p.code));
-		// required courses first, so an elective never takes a programme's room
-		// from the course it actually demands; then the courses only one
-		// programme takes, so a cross-listed one that could count for either
-		// fills whichever still has room
-		const takersOf = (c: Course) => this.programmes.filter((prog, i) => prog.subject !== 'open' && counts(c, i)).length;
-		const ordered = [
-			...courses.filter((c) => this.programmes.some((_, i) => requires(c, i))),
-			...courses
-				.filter((c) => !this.programmes.some((_, i) => requires(c, i)))
-				.sort((a, b) => takersOf(a) - takersOf(b))
-		];
-		for (const c of ordered) {
-			const takers = this.programmes.map((_, i) => i).filter((i) => counts(c, i));
-			const declared = takers.filter((i) => this.programmes[i].subject !== 'open');
-			const equivalentRequirement = declared.some((i) => {
-				const sets = this.programmeSets[i];
-				return [...sets.requiredAll, ...sets.pick].some(
-					(code) => !c.codes.includes(code) && satisfiedBy(code).some((sub) => c.codes.includes(sub))
-				);
-			});
-			if (((c.share ?? CREDIT_SHARE_DEFAULT) === 'all' || equivalentRequirement) && declared.length) {
-				for (const i of declared) claim(c, i);
-				continue;
-			}
-			const pick =
-				declared.find((i) => requires(c, i)) ??
-				declared.find((i) => room[i] > 0) ??
-				takers.find((i) => this.programmes[i].subject === 'open' && room[i] > 0) ??
-				declared[0] ??
-				takers[0];
-			if (pick !== undefined) claim(c, pick);
-		}
-		return claimedBy;
-	});
-
-	// ── programme stats for the hints panel ──
-	stats: ProgrammeStat[] = $derived.by(() => {
-		const claimedBy = this.claims;
-		return this.programmes.map((prog, i) => {
-			const total = creditsFor(prog.subject, prog.role, this.fourYear, this.isDouble, this.batchStartYear);
-			const sets = this.programmeSets[i];
-			// only the courses this programme has claimed (see above)
-			const mine = this.placed.filter((p) => claimedBy.get(p.code)?.includes(i)).map((p) => byCode(p.code));
-			const placedCredits = mine.reduce((s, c) => s + c.credits, 0);
-			// the open minor has no course list of its own, its claimed courses
-			// are whatever isn't foundation core and no declared programme took
-			if (prog.subject === 'open') {
-				return {
-					role: prog.role,
-					subject: prog.subject,
-					label: 'open minor',
-					totalCredits: total,
-					creditsLeft: Math.max(0, total - placedCredits),
-					requiredDone: 0,
-					requiredNeeded: 0,
-					electiveDone: Math.min(total, placedCredits),
-					electiveNeeded: total,
-					requiredLeft: []
-				};
-			}
-			// everything that satisfies the required structure, the fixed
-			// core closed over prereqs (incl. a cross-department prereq that
-			// fills the credit budget, like BIOS201 for env studies) plus the
-			// choice pools. requiredAll (not required) so those support courses
-			// still count toward the degree's required credits.
-			const structure = new Set([...sets.requiredAll, ...sets.pick]);
-			// what the degree *demands* comes from the site's own credit table
-			// when stated, the course list overstates it when it's choice
-			// pools (history: pick 3 of 5 methodology courses)
-			const requiredNeeded =
-				requiredCreditsFor(prog.subject, prog.role, this.fourYear, this.isDouble, this.batchStartYear) ??
-				creditsOfCodes(requiredSetFor(prog.subject, prog.role, this.fourYear, this.isDouble, this.batchStartYear));
-			const requiredDone = Math.min(
-				requiredNeeded,
-				mine.filter((c) => this.#satisfiesStructure(c, structure)).reduce((s, c) => s + c.credits, 0)
-			);
-			return {
-				role: prog.role,
-				subject: prog.subject,
-				label: subjectById(prog.subject).label,
-				totalCredits: total,
-				creditsLeft: Math.max(0, total - placedCredits),
-				requiredDone,
-				requiredNeeded,
-				electiveDone: Math.min(Math.max(0, total - requiredNeeded), Math.max(0, placedCredits - requiredDone)),
-				electiveNeeded: Math.max(0, total - requiredNeeded),
-				requiredLeft: this.requiredLeftFor(i)
-			};
-		});
-	});
-
-	// ── choice pools per programme (history's "any three of…" groups) ──
-	// the website's 'choose N from' groups the seeded required core can't make
-	// for the student, shown in the sidebar so the choices are visible
-	// Each pool also says what its picks count toward, the programme's
-	// required credits (most pools), its electives, or either (literature's
-	// "from the required courses … and the elective courses"), and how many
-	// of it the plan already holds.
-	choices = $derived.by(() =>
-		this.programmes
-			.map((prog, i) => {
-				const sets = this.programmeSets[i];
-				const countsAs = (code: string | null): 'required' | 'elective' | null => {
-					if (!code || !hasCode(code)) return null;
-					const codes = byCode(code).codes;
-					if (codes.some((x) => sets.requiredAll.has(x) || sets.pick.has(x))) return 'required';
-					if (codes.some((x) => sets.elective.has(x))) return 'elective';
-					return null;
-				};
-				const groups = choiceGroupsFor(prog.subject, prog.role, this.fourYear, this.isDouble, this.batchStartYear).map(
-					(group) => {
-						const kinds = new Set(group.courses.map((c) => countsAs(c.code)).filter((k) => k !== null));
-						if (/elective/i.test(group.rule)) kinds.add('elective');
-						const counts =
-							kinds.has('elective') && kinds.has('required')
-								? 'required or elective'
-								: kinds.has('elective')
-									? 'elective'
-									: 'required'; // a pick pool fills required credits unless shown otherwise
-						// how many of the pool are already on the plan, or satisfied by an
-						// interchangeable course
-						const placed = (code: string) =>
-							this.placedCodes.has(code) || satisfiedBy(code).some((sub) => this.placedCodes.has(sub));
-						const chosen = group.courses.filter((c) => c.code && hasCode(c.code) && placed(byCode(c.code).code)).length;
-						return { ...group, rule: group.rule.replace(/[\s:.]+$/, ''), counts, chosen };
-					}
-				);
-				return { role: prog.role, label: subjectById(prog.subject).label, groups };
-			})
-			.filter((p) => p.groups.length)
-	);
+	/** the 'choose N from' groups, see choices.ts */
+	choices = $derived.by(() => choicePools(this));
 
 	// ── catalogue (filtered + sorted) ──
 	catalogueSubject = $state('');

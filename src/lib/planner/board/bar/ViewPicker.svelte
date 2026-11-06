@@ -1,7 +1,7 @@
 <script lang="ts">
 	// what the board shows: the plan, or one view laid over it. one at a time,
 	// so the menu shuts on a pick, a click anywhere else, or escape.
-	import { BOARD_VIEWS, type BoardView } from '$lib/planner/plan.svelte';
+	import { BOARD_VIEWS, type BoardView } from '$lib/planner/structure';
 	import { usePlan } from '$lib/planner/context';
 	import PixelIcon from '$lib/ui/PixelIcon.svelte';
 	import { useBoard } from '$lib/planner/board/boardState.svelte';

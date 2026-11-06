@@ -5,7 +5,8 @@
 import { createContext } from 'svelte';
 import { planEnd, prereqChain, whatIfVerdict } from './views';
 import { slotOrder } from '$lib/planner/calendar';
-import type { BoardView, Plan } from '$lib/planner/plan.svelte';
+import type { Plan } from '$lib/planner/plan.svelte';
+import type { BoardView } from '$lib/planner/structure';
 import type { TrimNum } from '$lib/types';
 import { GridDrag } from '$lib/planner/board/grid/drag.svelte';
 

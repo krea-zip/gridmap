@@ -16,7 +16,8 @@ import {
 	satisfiedBy,
 	termLabel
 } from '$lib/curriculum/data';
-import { MAX_YEARS, type Plan } from '$lib/planner/plan.svelte';
+import type { Plan } from '$lib/planner/plan.svelte';
+import { MAX_YEARS } from '$lib/planner/structure';
 import { slotAt, slotOrder, type Here } from '$lib/planner/calendar';
 import type { TrimNum } from '$lib/types';
 

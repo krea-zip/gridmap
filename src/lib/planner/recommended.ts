@@ -9,7 +9,6 @@ import {
 	CORE_COURSES,
 	hasCode,
 	isCore,
-	MATHS_COVERS,
 	reachableIn,
 	recommendedFor,
 	requiredSetFor,
