@@ -6,11 +6,6 @@ node_modules
 # build output, Vercel makes its own on every deploy
 /.vercel
 
-# generated data-pipeline artifacts (rebuilt by misc/*.py)
-/course-tree.html
-/misc
-misc/__pycache__/
-misc/.scrape_cache/
 *.pyc
 .env
 .env.*
@@ -28,5 +23,5 @@ vite.config.ts.timestamp-*
 # supabase cli state for the linked project (project ref, pooler url)
 supabase/.temp/
 
-# university documents the requirements were read from, not ours to publish
-/sources/
+# university documents, scraped pages and old pipeline output, not published
+/reference/
