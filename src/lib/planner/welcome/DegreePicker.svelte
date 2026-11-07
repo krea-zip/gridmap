@@ -10,13 +10,42 @@
 	let { answers }: { answers: DegreeAnswers } = $props();
 	const plan = usePlan();
 
-	let subjects = $derived(plan.pickOptions(answers.active).map((o) => o.subject));
-	const chosen = (role: PickRole) => (answers.answered[role] ? subjectById(plan.picks[role]).label : 'pick one…');
+	let subjects = $derived(
+		plan.pickOptions(answers.active).map((o) => o.subject),
+	);
+	const departments = [
+		{
+			label: 'arts & humanities',
+			names: ['history', 'literature', 'philosophy', 'arts'],
+		},
+		{
+			label: 'social sciences',
+			names: ['economics', 'political science', 'psychology', 'sociology'],
+		},
+		{
+			label: 'sciences & mathematics',
+			names: [
+				'biology',
+				'chemistry',
+				'computer science',
+				'data science',
+				'environmental studies',
+				'mathematics',
+				'physics',
+			],
+		},
+	];
+	const chosen = (role: PickRole) =>
+		answers.answered[role] ? subjectById(plan.picks[role]).label : 'pick one…';
 </script>
 
 <div class="slots">
 	{#each answers.roles as role (role)}
-		<div class="slot" class:active={answers.active === role} class:filled={answers.answered[role]}>
+		<div
+			class="slot"
+			class:active={answers.active === role}
+			class:filled={answers.answered[role]}
+		>
 			<button
 				class="fill"
 				disabled={!answers.canFocus(role)}
@@ -27,13 +56,19 @@
 				<span>{chosen(role)}</span>
 			</button>
 			{#if role !== 'major1'}
-				<button class="drop" aria-label="no {ROLE_LABEL[role]}" onclick={() => answers.remove(role)}>×</button>
+				<button
+					class="drop"
+					aria-label="no {ROLE_LABEL[role]}"
+					onclick={() => answers.remove(role)}>×</button
+				>
 			{/if}
 		</div>
 	{/each}
 	{#if answers.answered.major1}
 		{#each answers.addable as role (role)}
-			<button class="add" onclick={() => answers.add(role)}>+ {ROLE_LABEL[role]}</button>
+			<button class="add" onclick={() => answers.add(role)}
+				>+ {ROLE_LABEL[role]}</button
+			>
 		{/each}
 	{/if}
 </div>
@@ -48,27 +83,42 @@
 	{/if}
 </p>
 
-<div class="pills" role="group" aria-label="choose your {ROLE_LABEL[answers.active]}">
-	{#each subjects as subject (subject.id)}
-		{@const by = answers.heldBy(subject.id)}
-		{@const mine = answers.answered[answers.active] && plan.picks[answers.active] === subject.id}
-		<button
-			class="pill"
-			class:on={mine}
-			class:held={!!by}
-			style:--hue={subject.hue}
-			disabled={!!by}
-			aria-pressed={mine}
-			onclick={() => answers.pick(subject.id)}
-		>
-			{subject.label}{#if by}<small>· {ROLE_LABEL[by]}</small>{/if}
-		</button>
-	{/each}
-</div>
+{#each departments as department}
+	<h4 class="department">{department.label}</h4>
+	<div
+		class="pills"
+		role="group"
+		aria-label="choose your {ROLE_LABEL[answers.active]}"
+	>
+		{#each subjects.filter((subject) => department.names.includes(subject.label.toLowerCase()) || (department.label === 'arts & humanities' && !departments.some( (d) => d.names.includes(subject.label.toLowerCase()) ))) as subject (subject.id)}
+			{@const by = answers.heldBy(subject.id)}
+			{@const mine =
+				answers.answered[answers.active] &&
+				plan.picks[answers.active] === subject.id}
+			<button
+				class="pill"
+				class:on={mine}
+				class:held={!!by}
+				style:--hue={subject.hue}
+				disabled={!!by}
+				aria-pressed={mine}
+				onclick={() => answers.pick(subject.id)}
+			>
+				{subject.label}{#if by}<small>· {ROLE_LABEL[by]}</small>{/if}
+			</button>
+		{/each}
+	</div>
+{/each}
 
 <style lang="scss">
 	@use '$lib/styles/mixins' as *;
 
+	.department {
+		margin: 1.4rem 0 0.4rem;
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
 	.slots {
 		display: flex;
 		flex-wrap: wrap;
@@ -95,7 +145,8 @@
 
 		&.active {
 			border: 1px solid var(--color-accent);
-			box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 22%, transparent);
+			box-shadow: 0 0 0 2px
+				color-mix(in srgb, var(--color-accent) 22%, transparent);
 		}
 	}
 

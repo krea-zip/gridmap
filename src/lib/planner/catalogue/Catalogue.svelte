@@ -6,6 +6,7 @@
 	import { offeredIn } from '$lib/planner/calendar';
 	import { carried } from '$lib/planner/drag/courseDrag';
 	import CatalogueCard from './CatalogueCard.svelte';
+	import CatalogueAdvanced from './CatalogueAdvanced.svelte';
 	import CatalogueFilters from './CatalogueFilters.svelte';
 	import CatalogueRibbon from './CatalogueRibbon.svelte';
 
@@ -13,6 +14,8 @@
 	const plan = usePlan();
 
 	let catalogueEl: HTMLDivElement;
+	let advanced = $state(false);
+	let ticks = $state<string[]>([]);
 	$effect(() => {
 		const request = plan.catalogueReveal;
 		if (!request || mobile) return;
@@ -104,7 +107,8 @@
 
 		<CatalogueFilters />
 	</div>
-	<CatalogueRibbon />
+	<CatalogueRibbon bind:advanced {ticks} />
+	<CatalogueAdvanced {advanced} bind:ticks />
 
 	{#if plan.zoom}
 		<div class="reveal-note">

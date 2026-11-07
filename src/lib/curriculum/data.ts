@@ -7,7 +7,7 @@
 // ─────────────────────────────────────────────
 
 import snapshotData from '$lib/data/curriculum.json';
-import { previewSnapshot } from './preview';
+import { runtimeSnapshot } from './runtime';
 import {
 	subjectOffered,
 	variantOf,
@@ -24,7 +24,7 @@ import type { Course, ProgrammeRole, Subject, TrimNum } from '$lib/types';
 
 export type { ChoiceCourse, ChoiceGroup } from './snapshot';
 
-const snapshot: CurriculumSnapshot = previewSnapshot() ?? (snapshotData as unknown as CurriculumSnapshot);
+const snapshot: CurriculumSnapshot = runtimeSnapshot() ?? (snapshotData as unknown as CurriculumSnapshot);
 export const PREVIEWING = snapshot !== (snapshotData as unknown);
 
 /** when the catalogue was last rebuilt from the term sheets */

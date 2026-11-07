@@ -10,10 +10,22 @@
 	let {
 		title,
 		width = '46rem',
+		height,
+		flush = false,
 		dismiss,
 		onclose,
 		children
-	}: { title: string; width?: string; dismiss?: string; onclose: () => void; children: Snippet } = $props();
+	}: {
+		title: string;
+		width?: string;
+		/** a fixed height, for content that fills the card rather than sizing it */
+		height?: string;
+		/** no padding or scrolling on the body: its content lays itself out */
+		flush?: boolean;
+		dismiss?: string;
+		onclose: () => void;
+		children: Snippet;
+	} = $props();
 </script>
 
 <svelte:window onkeydown={(e) => e.key === 'Escape' && onclose()} />
@@ -36,6 +48,7 @@
 		aria-modal="true"
 		aria-label={title}
 		style="--w: {width}"
+		style:--h={height}
 		in:scale={{ start: 0.96, duration: 260, easing: quintOut }}
 		out:scale={{ start: 0.98, duration: 140 }}
 	>
@@ -46,7 +59,7 @@
 				>{dismiss ?? '×'}</button
 			>
 		</header>
-		<div class="body">
+		<div class="body" class:flush>
 			{@render children()}
 		</div>
 	</div>
@@ -71,13 +84,23 @@
 		display: flex;
 		flex-direction: column;
 		width: var(--w);
+		height: var(--h, auto);
 		max-width: 100%;
 		max-height: 100%;
-		transition: width 0.24s var(--ease-out);
+		interpolate-size: allow-keywords; // so a change of height can animate from auto
+		transition:
+			width 0.24s var(--ease-out),
+			height 0.24s var(--ease-out);
 		background: linear-gradient(to bottom, var(--color-bg-card-start) 0%, var(--color-bg-card-end) 100%);
 		border: 1px solid var(--color-border-card);
 		border-radius: 8px;
 		@include card-shine;
+
+		// it takes the focus on opening so a keyboard starts inside it; nobody
+		// is about to use the card itself, so no ring round the whole thing
+		&:focus-visible {
+			outline: none;
+		}
 	}
 
 	header {
@@ -126,6 +149,14 @@
 		min-height: 0;
 		overflow-y: auto;
 		padding: 1.8rem;
+
+		&.flush {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			padding: 0;
+		}
 	}
 	@include mobile {
 		.backdrop {

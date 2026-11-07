@@ -7,12 +7,12 @@
 // ─────────────────────────────────────────────
 
 import { browser } from '$app/environment';
-import { previewSnapshot } from './preview';
+import { runtimeSnapshot } from './runtime';
 
 let descriptions = $state<Record<string, string> | null>(null);
 let started = false;
 // the office's student preview carries its own descriptions
-const previewed = previewSnapshot()?.descriptions;
+const previewed = runtimeSnapshot()?.descriptions;
 
 /** start fetching the descriptions chunk, safe to call as often as you like */
 export function loadDescriptions() {

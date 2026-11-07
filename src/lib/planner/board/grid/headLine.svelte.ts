@@ -2,6 +2,8 @@
 // t1 t2 t3, the academic year under y1 y2. one click on any of them hides or
 // shows them all. a per-viewer preference, so it lives in this browser only,
 // not in the plan.
+import { isPlayground } from '$lib/curriculum/runtime';
+
 const KEY = 'kcal.headLine';
 
 class HeadLine {
@@ -12,7 +14,7 @@ class HeadLine {
 	#restored = false;
 
 	restore() {
-		if (this.#restored) return;
+		if (this.#restored || isPlayground()) return;
 		this.#restored = true;
 		try {
 			this.shown = localStorage.getItem(KEY) === 'shown';
@@ -23,6 +25,7 @@ class HeadLine {
 
 	toggle() {
 		this.shown = !this.shown;
+		if (isPlayground()) return;
 		try {
 			localStorage.setItem(KEY, this.shown ? 'shown' : 'hidden');
 		} catch {

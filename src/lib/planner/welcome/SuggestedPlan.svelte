@@ -5,8 +5,11 @@
 </script>
 
 <div class="suggestion-grid" aria-label="suggested plan grid">
-	<div class="path">
+	<div class="path" style:--cols={plan.trims.length}>
+		<span></span>
+		{#each plan.trims as t (t)}<span class="head">t{t}</span>{/each}
 		{#each plan.years as y (y)}
+			<span class="head year">y{y}</span>
 			{#each plan.trims as t (t)}<div class="cell" data-year={y} data-trim={t}>
 					{#each plan.recommended[`${y}-${t}`] ?? [] as code (code)}<span
 							class="rc"
@@ -34,8 +37,14 @@
 	}
 	.path {
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+		grid-template-columns: 3rem repeat(var(--cols), minmax(0, 1fr));
 		gap: 0.5rem;
+	}
+	.head {
+		align-self: center;
+		font-size: 1.4rem;
+		text-align: center;
+		color: var(--color-text);
 	}
 	.cell {
 		min-width: 0;

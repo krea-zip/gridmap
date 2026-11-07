@@ -1,196 +1,136 @@
 <script lang="ts">
-	// The tour uses the planner's own controls on an unsaved copy.
-	import { onMount, untrack } from 'svelte';
-	import { usePlan, providePlan } from '$lib/planner/context';
-	import { Plan } from '$lib/planner/plan.svelte';
-	import { COURSES, byCode, canAudit, facultyOf } from '$lib/curriculum/data';
-	import { viewport } from '$lib/planner/viewport.svelte';
-	import { BoardState, provideBoard } from '$lib/planner/board/boardState.svelte';
+	// Holds the playground's frame and talks to it: which slide is up, the
+	// page's theme and text size, the task being pointed at; and back, which
+	// tasks are done. It stays mounted between slides, so the pretend plan keeps
+	// what the student did to it, and loads while the setup steps are up.
+	import { onMount } from 'svelte';
 	import type { Lesson } from './lessons';
-	import TrimHead from '$lib/planner/board/grid/TrimHead.svelte';
-	import YearHead from '$lib/planner/board/grid/YearHead.svelte';
-	import PlanGrid from '$lib/planner/board/grid/PlanGrid.svelte';
-	import TrimesterZoom from '$lib/planner/board/TrimesterZoom.svelte';
-	import OverviewGrid from '$lib/planner/board/OverviewGrid.svelte';
-	import DegreeProgress from '$lib/planner/sidebar/DegreeProgress.svelte';
-	import ChoicePools from '$lib/planner/sidebar/ChoicePools.svelte';
-	import Hints from '$lib/planner/sidebar/Hints.svelte';
-	import Catalogue from '$lib/planner/catalogue/Catalogue.svelte';
-	import CatalogueCard from '$lib/planner/catalogue/CatalogueCard.svelte';
-	import DetailsPanel from '$lib/planner/details/DetailsPanel.svelte';
-	import DisplayLesson from './DisplayLesson.svelte';
 
-	let { lesson }: { lesson: Lesson } = $props();
-	const source = usePlan();
-	const plan = providePlan(
-		untrack(() => {
-			const copy = new Plan();
-			copy.rehearsing = true;
-			copy.restore(JSON.parse(JSON.stringify(source.snapshot())));
-			copy.welcoming = true;
-			copy.touched = true;
-			copy.showCodes = true;
-			copy.showTitles = false;
-			copy.trimNaming = 'year';
-			copy.view = 'plan';
-			copy.now = { year: 2, trim: 3 };
-			copy.clearNarrowing();
-			copy.search = '';
-			copy.placements = {};
-			copy.audited = [];
-			copy.grades = {};
-			copy.breaks = {};
-			copy.waived = [];
-			copy.place('KCCS190', 1, 1);
-			for (let i = 0; i < copy.programmes.length; i++) {
-				for (const kind of ['required', 'elective']) {
-					const course = COURSES.find((c) => copy.programmeOf(c.code) === i && copy.courseType(c.code) === kind);
-					if (!course) continue;
-					const at = copy.years
-						.flatMap((year) => copy.trims.map((trim) => ({ year, trim })))
-						.find((p) => copy.canDrop(course.code, p.year, p.trim));
-					if (at) copy.place(course.code, at.year, at.trim);
-				}
-			}
-			return copy;
-		})
-	);
-	const board = provideBoard(new BoardState(plan));
-	onMount(() => plan.startHistory());
-	const example = untrack(
-		() =>
-			COURSES.find((c) => plan.programmeOf(c.code) === 0 && canAudit(c.code) && facultyOf(c.code).length)?.code ??
-			'KCCS190'
-	);
-	untrack(() => {
-		if (lesson === 'details') plan.select(example);
-		if (lesson === 'catalogue') plan.filters = [plan.programmes[0].subject];
+	let {
+		lesson,
+		active,
+		point = null,
+		onprogress
+	}: {
+		lesson: Lesson;
+		active: boolean;
+		point?: string | null;
+		onprogress: (done: string[]) => void;
+	} = $props();
+
+	// narrower than this and the app's phone layout would take over inside the
+	// frame, so a smaller window draws it at this width and scales it down
+	const MIN_WIDTH = 900;
+
+	let frame = $state<HTMLIFrameElement>();
+	let width = $state(0);
+	let height = $state(0);
+	let ready = $state(false);
+	let scale = $derived(width ? Math.min(1, width / MIN_WIDTH) : 1);
+
+	function sync() {
+		frame?.contentWindow?.postMessage(
+			{
+				type: 'kcal-playground-lesson',
+				lesson,
+				active,
+				point,
+				theme: document.documentElement.dataset.theme ?? 'light',
+				rem: getComputedStyle(document.documentElement).fontSize
+			},
+			location.origin
+		);
+	}
+
+	$effect(() => {
+		void [lesson, active, point];
+		if (ready) sync();
 	});
+
+	onMount(() => {
+		const theme = new MutationObserver(sync);
+		theme.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+		return () => theme.disconnect();
+	});
+
+	// with the focus out here, ctrl+z would reach the real plan behind the
+	// welcome. while the playground's up, it's the playground's to undo
+	function holdHistory(e: KeyboardEvent) {
+		if (!active || !ready || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+		const key = e.key.toLowerCase();
+		const history = key === 'z' ? (e.shiftKey ? 'redo' : 'undo') : key === 'y' ? 'redo' : null;
+		if (!history) return;
+		e.preventDefault();
+		e.stopPropagation();
+		frame?.contentWindow?.postMessage({ type: 'kcal-playground-lesson', history }, location.origin);
+	}
+
+	function receive(event: MessageEvent) {
+		if (event.source !== frame?.contentWindow || event.origin !== location.origin) return;
+		if (event.data?.type === 'kcal-playground-ready') {
+			ready = true;
+			sync();
+		}
+		if (event.data?.type === 'kcal-playground-progress' && Array.isArray(event.data.done)) onprogress(event.data.done);
+	}
 </script>
 
-<div class="tour-demo" data-lesson={lesson}>
-	{#if lesson === 'terms'}
-		<div class="term-demo" aria-label="trimester numbering example">
-			<YearHead year={2} />
-			{#each plan.trims as trim (trim)}<TrimHead {trim} />{/each}
-		</div>
-		<p class="caption">{plan.trimName(2, 3)} · year 2, trimester 3</p>
-	{:else if lesson === 'display'}
-		<DisplayLesson />
-	{:else if lesson === 'board'}
-		{#if plan.zoom}<TrimesterZoom touchLayout={!viewport.desktop} />{:else}<PlanGrid
-				touchLayout={!viewport.desktop}
-			/>{/if}
-	{:else if lesson === 'catalogue'}
-		<div class="catalogue-demo"><Catalogue mobile={!viewport.desktop} /></div>
-	{:else if lesson === 'progress'}
-		<div class="rail-demo"><DegreeProgress /><ChoicePools /></div>
-	{:else if lesson === 'hints'}
-		<div class="rail-demo"><Hints /></div>
-	{:else if lesson === 'details'}
-		<div class="course-example">
-			<CatalogueCard
-				course={byCode(example)}
-				type={plan.courseType(example)}
-				placed={plan.onBoard(example)}
-				mobile={!viewport.desktop}
-			/>
-		</div>
-	{:else if lesson === 'views'}
-		{#if !viewport.desktop}<p class="caption">these views are available on desktop.</p>{/if}
-		{#if plan.zoom}<TrimesterZoom touchLayout={!viewport.desktop} />{:else}<OverviewGrid
-				touchLayout={!viewport.desktop}
-			/>{/if}
-	{/if}
-	{#if plan.selected}
-		<div class="course-demo"><DetailsPanel /></div>
+<svelte:window onmessage={receive} onresize={sync} onkeydowncapture={holdHistory} />
+
+<div class="host" class:active class:ready bind:clientWidth={width} bind:clientHeight={height} inert={!active}>
+	<iframe
+		bind:this={frame}
+		title="a working miniature of the planner, with pretend courses"
+		src="/welcome-playground"
+		style:width="{width / scale}px"
+		style:height="{height / scale}px"
+		style:transform="scale({scale})"
+		data-playground-frame
+	></iframe>
+	{#if !ready}
+		<p class="loading">setting up the tiny planner…</p>
 	{/if}
 </div>
 
 <style lang="scss">
-	.tour-demo {
-		--board-gutter: 1.2rem;
-		min-width: 0;
-		padding: 1.4rem;
-		border: 1px solid var(--color-border-card);
-		border-radius: 14px;
-		background: color-mix(in srgb, var(--color-accent) 3%, var(--color-bg-light));
-	}
-	.term-demo {
-		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 1rem;
-		padding: 1.2rem 0;
-	}
-	.term-demo :global(.trim-head) {
-		display: flex;
-	}
-	.term-demo :global(.year-head) {
-		grid-column: auto;
-		flex-direction: column;
-		padding: 0;
-	}
-	.caption {
-		margin-top: 1rem;
-		text-align: center;
-		font-size: 1.2rem;
-		color: var(--color-text-muted);
-	}
-	.rail-demo,
-	.course-example,
-	.course-demo {
-		max-width: 40rem;
-		margin-inline: auto;
-	}
-	.rail-demo {
-		max-height: 36rem;
-		overflow-y: auto;
-	}
-	.catalogue-demo {
-		height: 36rem;
-		min-height: 0;
-		overflow: auto;
-	}
-	.catalogue-demo :global(.catalogue) {
-		height: 100%;
-		min-height: 0;
-	}
-	.course-demo {
-		margin-top: 1.4rem;
-		border: 1px solid var(--color-border-card);
-		border-radius: 10px;
-		background: var(--color-bg-light);
-	}
-	.tour-demo :global(.overview) {
-		padding: 1rem 0;
-		gap: 0.6rem;
-		grid-template-columns: 3rem repeat(3, minmax(0, 1fr));
-	}
-	.tour-demo :global(.overview .cell) {
-		min-height: 6rem;
-	}
-	.tour-demo :global(.overview .chip) {
-		max-width: 100%;
-		padding-left: 0.5rem;
-	}
-	.tour-demo :global(.overview .chip .label) {
-		white-space: nowrap;
-	}
-	.tour-demo :global(.board-bar) {
+	.host {
 		position: relative;
-		padding: 0.6rem;
-		gap: 0.8rem;
-		border-radius: 8px;
+		min-width: 0;
+		min-height: 0;
+		overflow: hidden;
+		background: var(--color-bg);
+
+		// waiting out the setup steps: laid out at full size so it's ready,
+		// but out of the way and out of reach
+		&:not(.active) {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100rem;
+			height: 60rem;
+			visibility: hidden;
+			pointer-events: none;
+		}
 	}
-	@media (max-width: 600px) {
-		.tour-demo {
-			padding: 1rem;
-		}
-		.tour-demo :global(.overview) {
-			grid-template-columns: minmax(0, 1fr);
-		}
-		.term-demo {
-			gap: 0.6rem;
-		}
+
+	iframe {
+		display: block;
+		border: 0;
+		transform-origin: 0 0;
+		opacity: 0;
+		transition: opacity 0.2s ease;
+	}
+
+	.ready iframe {
+		opacity: 1;
+	}
+
+	.loading {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		font-size: 1.3rem;
+		color: var(--color-text-muted);
 	}
 </style>

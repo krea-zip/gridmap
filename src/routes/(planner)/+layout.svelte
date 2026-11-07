@@ -433,7 +433,7 @@
 
 		.app.details-docked {
 			--rail-w: var(--rail-user-w, minmax(0, 25rem));
-			--catalogue-w: var(--catalogue-user-w, 25rem);
+			--catalogue-w: var(--catalogue-user-w, 32rem);
 			--details-w: 30rem;
 			grid-template-areas: 'rail catalogue board details';
 			grid-template-columns: var(--rail-w) var(--catalogue-w) var(--board-w) var(--details-w);

@@ -2,11 +2,13 @@
 	import '../app.scss';
 	import type { Snippet } from 'svelte';
 	import { onMount } from 'svelte';
+	import { isPlayground } from '$lib/curriculum/runtime';
 	import { account } from '$lib/plans/account.svelte';
 	import { getSupabase } from '$lib/supabase/browser';
 
 	let { children }: { children: Snippet } = $props();
 	onMount(() => {
+		if (isPlayground()) return;
 		let stop = () => {};
 		let disposed = false;
 		void account.refresh().then(async () => {

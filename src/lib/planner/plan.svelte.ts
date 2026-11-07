@@ -194,13 +194,18 @@ export class Plan {
 	flash = $state<string | null>(null); // transient "not offered" style message
 	#flashTimer: ReturnType<typeof setTimeout> | undefined;
 
-	constructor() {
+	// A miniature is an unsaved, two-year plan inside the welcome frame.
+	readonly miniature: boolean = false;
+
+	constructor({ miniature = false } = {}) {
+		this.miniature = miniature;
+		this.rehearsing = miniature;
 		// default plan = the department order for the chosen programmes;
 		// a saved plan (below) replaces it
-		this.seedRecommended();
+		if (!miniature) this.seedRecommended();
 		if (!browser) return;
 		try {
-			restoreBoard(localStorage, (value) => this.applySave(value));
+			if (!miniature) restoreBoard(localStorage, (value) => this.applySave(value));
 		} catch {
 			/* Browser storage can be blocked; the current session still works. */
 		}
@@ -424,11 +429,11 @@ export class Plan {
 	// seeder packs. The student can add a fifth year (the manual allows n + 2)
 	// or, on a 3-year degree, take year 4 off, never below the degree's own
 	// length.
-	minYears = $derived(this.fourYear ? 4 : 3);
-	years = $derived(Array.from({ length: Math.max(this.yearCount, this.minYears) }, (_, i) => i + 1));
+	minYears = $derived(this.miniature ? 2 : this.fourYear ? 4 : 3);
+	years = $derived(Array.from({ length: this.miniature ? 2 : Math.max(this.yearCount, this.minYears) }, (_, i) => i + 1));
 	canRemoveYear = $derived(this.years.length > this.minYears);
 	/** an n-year degree gets n + 2 years: the grid never runs past that */
-	maxYears = $derived(this.minYears + 2);
+	maxYears = $derived(this.miniature ? 2 : this.minYears + 2);
 	/** where the student is now: what they said, or the guess */
 	here: Here = $derived(this.now ?? guessNow(this.batchStartYear, new Date(), this.years.length));
 	/** credits earned on terms away, toward the total (not a programme) */

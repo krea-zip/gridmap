@@ -92,6 +92,11 @@ export function dragMotion(root: HTMLElement) {
 		if (!source) return;
 		sourceNode = source;
 		const rect = source.getBoundingClientRect();
+		// a chip may already wear its empty "left behind" outline by now (the
+		// framework flushes between this event's listeners), so the copy is
+		// taken from the course as it looked before it was picked up
+		const left = source.classList.contains('dragging');
+		if (left) source.classList.remove('dragging');
 		ghost = source.cloneNode(true) as HTMLElement;
 		// Preserve scoped styling and inherited colours outside the source panel.
 		const originals = [source, ...source.querySelectorAll<HTMLElement>('*')];
@@ -102,6 +107,7 @@ export function dragMotion(root: HTMLElement) {
 			copies[i].removeAttribute('id');
 			copies[i].removeAttribute('tabindex');
 		});
+		if (left) source.classList.add('dragging');
 		ghost.inert = true;
 		ghost.setAttribute('aria-hidden', 'true');
 		Object.assign(ghost.style, {

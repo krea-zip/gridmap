@@ -124,7 +124,7 @@ export async function publishDraft(db: SupabaseClient, revision: number, name: s
  *  it once the deploy finishes; the live site stays up meanwhile */
 export async function requestDeploy(db: SupabaseClient, release: string, hook: string | undefined) {
 	let status: 'requested' | 'failed' | 'not-configured' = 'not-configured';
-	let message = 'Published in Supabase. Add VERCEL_DEPLOY_HOOK in Vercel to update the website automatically.';
+	let message = 'Published in Supabase. Add DEPLOY_HOOK_URL in Vercel to update the website automatically.';
 	if (hook) {
 		try {
 			const url = new URL(hook);

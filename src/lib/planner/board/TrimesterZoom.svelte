@@ -25,6 +25,7 @@
 	// the 20-credit cap, and a final faint strip that is laying-out space past
 	// the cap rather than credits you're meant to fill.
 	const MIN_BOXES = Array.from({ length: TRIM_MIN / 4 }, (_, i) => i);
+	const MIN_WORDS = ['', 'one', 'two', 'three', 'four', 'five'];
 	const REST_CELLS = Array.from({ length: TRIM_HARD_MAX - TRIM_MIN }, (_, i) => i);
 	const OVER_CELLS = Array.from({ length: COLS * ROWS - TRIM_HARD_MAX }, (_, i) => i);
 	const FREE_CELLS = Array.from({ length: COLS * ROWS }, (_, i) => i);
@@ -120,8 +121,8 @@
 	<p class="how">
 		each square is one credit{exempt
 			? ''
-			: `, the shaded blocks are the ${TRIM_MIN}-credit minimum, three 4-credit courses`}. arrange the courses however
-		helps you think; where they sit here doesn't change your plan.
+			: `, the shaded blocks are the ${TRIM_MIN}-credit minimum, ${MIN_WORDS[TRIM_MIN / 4] ?? TRIM_MIN / 4} 4-credit courses`}.
+		arrange the courses however helps you think; where they sit here doesn't change your plan.
 	</p>
 {/if}
 

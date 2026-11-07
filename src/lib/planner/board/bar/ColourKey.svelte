@@ -12,6 +12,7 @@
 	import { slotOrder } from '$lib/planner/calendar';
 	import { armed } from '$lib/planner/board/grid/armed.svelte';
 
+	let { inline = false }: { inline?: boolean } = $props();
 	const plan = usePlan();
 
 	const TYPE_KEYS = [
@@ -122,7 +123,7 @@
 	}
 
 	// the guide shows the key open: the colours are the first thing worth knowing
-	$effect(() => setOpen(plan.guiding));
+	$effect(() => setOpen(inline || plan.guiding));
 
 	const toggle = (id: string) => (picked = picked.includes(id) ? picked.filter((p) => p !== id) : [...picked, id]);
 
@@ -135,7 +136,7 @@
 
 <svelte:window
 	onpointerdown={(e) => {
-		if (open && !root.contains(e.target as Node)) setOpen(false);
+		if (!inline && open && !root.contains(e.target as Node)) setOpen(false);
 	}}
 />
 
@@ -143,6 +144,7 @@
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div
 	class="colour-key"
+	class:inline
 	role="group"
 	aria-label="display options"
 	bind:this={root}
@@ -161,7 +163,7 @@
 			class:active={open}
 			aria-expanded={open}
 			aria-controls="colour-key"
-			onclick={() => setOpen(!open)}
+			onclick={() => !inline && setOpen(!open)}
 		>
 			<!-- just the essentials on its face: a square per subject, then
 			     required and elective; kccs and other dept. wait inside -->
@@ -183,7 +185,7 @@
 			in:scale={{ start: 0.94, duration: reducedMotion() ? 0 : 260, easing: backOut }}
 			out:fade={{ duration: reducedMotion() ? 0 : 100 }}
 		>
-			{#if viewport.desktop}
+			{#if inline || viewport.desktop}
 				<div class="labels">
 					<p class="section-label">course labels</p>
 					<LabelKeys />
@@ -301,6 +303,24 @@
 				border: 1px solid subject-tone(elective-deep);
 			}
 		}
+	}
+
+	.inline > :global(.keys) {
+		display: none;
+	}
+
+	.inline .pop {
+		position: relative;
+		top: auto;
+		left: auto;
+		right: auto;
+		width: 100%;
+		max-width: none;
+		max-height: none;
+		padding: 0;
+		background: none;
+		border: 0;
+		box-shadow: none;
 	}
 
 	.pop {

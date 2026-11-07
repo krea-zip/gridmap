@@ -22,7 +22,7 @@ export const actions = {
 		attempt(async () => {
 			const { db, name } = officeAccess(event);
 			const release = await publishDraft(db, await reviewed(event.request), name);
-			return requestDeploy(db, release, env.VERCEL_DEPLOY_HOOK);
+			return requestDeploy(db, release, env.DEPLOY_HOOK_URL);
 		}),
 
 	redeploy: (event) =>
@@ -30,6 +30,6 @@ export const actions = {
 			const { db } = officeAccess(event);
 			const { data } = await db.from('office_workspace').select('published_release').single();
 			if (!data?.published_release) error(400, 'There is no published release to deploy.');
-			return requestDeploy(db, data.published_release, env.VERCEL_DEPLOY_HOOK);
+			return requestDeploy(db, data.published_release, env.DEPLOY_HOOK_URL);
 		})
 };
